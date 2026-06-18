@@ -11,35 +11,39 @@ if (getApps().length === 0) {
 
 const db = getFirestore();
 
-async function findHire() {
+async function mergeHire() {
     try {
-        console.log("Searching for Hiré villages...");
-        const villagesRef = db.collection('villages');
-        
-        // We'll search by exact name "Hiré"
-        const snapshot = await villagesRef.where('name', '==', 'Hiré').get();
-        
-        const docs = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
-        console.log(`Found ${docs.length} matches:`);
-        
-        docs.forEach(d => {
-            console.log(`ID: ${d.id}, Region: ${d.region}, Dept: ${d.department}, Chief: ${d.currentChiefId}`);
-        });
+        const idToKeep = 'VWaRTUzZ6xEuBqYDcX31';
+        const idToDelete = 'a4wdzecvZuWlin6u4oEm';
 
-        // Let's also check for "Hire" without accent
-        const snapshotNoAccent = await villagesRef.where('name', '==', 'Hire').get();
-        if (!snapshotNoAccent.empty) {
-            console.log(`Found ${snapshotNoAccent.docs.length} without accent`);
-            snapshotNoAccent.docs.forEach(doc => {
-                const d = { id: doc.id, ...(doc.data() as any) };
-                console.log(`ID: ${d.id}, Region: ${d.region}, Dept: ${d.department}, Chief: ${d.currentChiefId}`);
+        console.log(`Merging ${idToDelete} into ${idToKeep}`);
+
+        // Update any chiefs that reference the deleted village
+        const chiefsRef = db.collection('chiefs');
+        const snapshot = await chiefsRef.where('villageId', '==', idToDelete).get();
+        
+        if (!snapshot.empty) {
+            console.log(`Found ${snapshot.docs.length} chiefs pointing to the old village. Updating...`);
+            const batch = db.batch();
+            snapshot.docs.forEach(doc => {
+                batch.update(doc.ref, { villageId: idToKeep });
             });
+            await batch.commit();
+            console.log('Chiefs updated successfully.');
+        } else {
+            console.log('No chiefs needed updating.');
         }
+
+        // Delete the duplicate village
+        console.log(`Deleting duplicate village ${idToDelete}...`);
+        await db.collection('villages').doc(idToDelete).delete();
+        console.log('Duplicate village deleted.');
 
         process.exit(0);
     } catch (e) {
         console.error(e);
+        process.exit(1);
     }
 }
 
-findHire();
+mergeHire();

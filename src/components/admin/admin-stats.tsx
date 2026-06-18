@@ -52,14 +52,14 @@ export function AdminStats({ stats }: AdminStatsProps) {
   ];
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {items.map((item) => (
         <Card 
           key={item.label} 
           className={cn(
-            "relative overflow-hidden border-white/20 shadow-3xl transition-all duration-700 group",
-            "hover:border-white/40 hover:-translate-y-3 hover:shadow-cyan-500/5",
-            "bg-white/40 backdrop-blur-xl rounded-xl"
+            "relative overflow-hidden border-white/20 shadow-md transition-all duration-700 group",
+            "hover:border-white/40 hover:-translate-y-1 hover:shadow-cyan-500/10",
+            "bg-white/40 backdrop-blur-xl rounded-lg"
           )}
         >
           {/* Enhanced Subtle Glow */}
@@ -68,26 +68,26 @@ export function AdminStats({ stats }: AdminStatsProps) {
             item.glow
           )} />
           
-          <CardHeader className="flex flex-row items-center justify-between pb-2 p-5 relative z-10">
-            <CardTitle className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 group-hover:text-slate-900 transition-colors">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-4 relative z-10">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors">
               {item.label}
             </CardTitle>
             <div className={cn(
-                "p-4 rounded-[1.5rem] transition-all duration-700 group-hover:scale-110 group-hover:rotate-6 shadow-2xl", 
+                "p-2.5 rounded-lg transition-all duration-700 group-hover:scale-105 group-hover:rotate-3 shadow-md", 
                 item.bg, 
                 item.border, 
                 "border shadow-inner"
             )}>
-              <item.icon className={cn("h-6 w-6", item.color)} />
+              <item.icon className={cn("h-5 w-5", item.color)} />
             </div>
           </CardHeader>
-          <CardContent className="p-5 pt-0 relative z-10">
+          <CardContent className="p-4 pt-0 relative z-10">
             <div className="flex items-end justify-between">
-              <div className="text-5xl font-black tracking-tighter tabular-nums text-slate-900 group-hover:scale-105 transition-transform duration-700 origin-left">
+              <div className="text-3xl font-black tracking-tighter tabular-nums text-slate-900 group-hover:scale-105 transition-transform duration-700 origin-left">
                 {item.value.toString().padStart(2, '0')}
               </div>
-              <div className="flex items-center text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-900/5 px-3 py-1.5 rounded-xl border border-slate-900/5 group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
-                Gouvernance <ArrowUpRight className="ml-1.5 h-3.5 w-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center text-[9px] font-bold uppercase tracking-widest text-slate-400 bg-slate-900/5 px-2 py-1 rounded-md border border-slate-900/5 group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
+                Gouv. <ArrowUpRight className="ml-1 h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
               </div>
             </div>
             

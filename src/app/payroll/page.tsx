@@ -172,7 +172,8 @@ export default function PayrollPage() {
           let payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
 
           // Data-level filtering: If not admin/HR, only show the user's own profile
-          if (!hasPermission('page:payroll:view') && user?.employeeId) {
+          const canManagePayroll = hasPermission('page:payroll:update') || hasPermission('page:payroll:create') || hasPermission('page:payroll:delete');
+          if (!canManagePayroll && user?.employeeId) {
             payrollEmployees = payrollEmployees.filter(e => e.id === user.employeeId);
           }
 
@@ -664,16 +665,16 @@ export default function PayrollPage() {
         )}
 
         <Dialog open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Choisir la Période du Bulletin</DialogTitle>
-              <DialogDescription>
-                Sélectionnez le mois et l'année pour générer le bulletin de paie de {selectedEmployee?.name}.
+          <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-slate-50/50 border-slate-200 shadow-xl">
+            <DialogHeader className="px-6 py-5 bg-white border-b border-slate-100 shrink-0">
+              <DialogTitle className="text-xl font-semibold text-slate-800">Choisir la Période du Bulletin</DialogTitle>
+              <DialogDescription className="text-sm text-slate-500 mt-1.5">
+                Sélectionnez le mois et l'année pour générer le bulletin de paie de <span className="font-medium text-slate-700">{selectedEmployee?.name}</span>.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-5 px-6 py-6">
               <div className="grid gap-2">
-                <Label>Mode de génération</Label>
+                <Label className="text-slate-700 font-medium">Mode de génération</Label>
                 <Select value={generationMode} onValueChange={(v: any) => setGenerationMode(v)}>
                   <SelectTrigger>
                     <SelectValue />
@@ -687,7 +688,7 @@ export default function PayrollPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="year">Année</Label>
+                  <Label htmlFor="year" className="text-slate-700 font-medium">Année</Label>
                   <Select value={year} onValueChange={setYear}>
                     <SelectTrigger id="year"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -696,7 +697,7 @@ export default function PayrollPage() {
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="month">{generationMode === 'monthly' ? 'Mois' : 'Mois de début'}</Label>
+                  <Label htmlFor="month" className="text-slate-700 font-medium">{generationMode === 'monthly' ? 'Mois' : 'Mois de début'}</Label>
                   <Select value={month} onValueChange={setMonth}>
                     <SelectTrigger id="month"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -721,7 +722,7 @@ export default function PayrollPage() {
               {generationMode === 'period' && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="endYear">Année de fin</Label>
+                    <Label htmlFor="endYear" className="text-slate-700 font-medium">Année de fin</Label>
                     <Select value={endYear} onValueChange={setEndYear}>
                       <SelectTrigger id="endYear"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -733,7 +734,7 @@ export default function PayrollPage() {
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="endMonth">Mois de fin</Label>
+                    <Label htmlFor="endMonth" className="text-slate-700 font-medium">Mois de fin</Label>
                     <Select value={endMonth} onValueChange={setEndMonth}>
                       <SelectTrigger id="endMonth"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -757,9 +758,9 @@ export default function PayrollPage() {
                 </div>
               )}
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDateDialogOpen(false)}>Annuler</Button>
-              <Button onClick={handleNavigateToPayslip}>
+            <DialogFooter className="px-6 py-4 bg-white border-t border-slate-100 shrink-0">
+              <Button variant="outline" className="px-6 border-slate-200" onClick={() => setIsDateDialogOpen(false)}>Annuler</Button>
+              <Button className="px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={handleNavigateToPayslip}>
                 {generationMode === 'monthly' ? 'Générer le Bulletin' : 'Générer les Bulletins'}
               </Button>
             </DialogFooter>
@@ -767,16 +768,16 @@ export default function PayrollPage() {
         </Dialog>
 
         <Dialog open={isBulkPrintDialogOpen} onOpenChange={setIsBulkPrintDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Imprimer les bulletins de la sélection</DialogTitle>
-              <DialogDescription>
-                Vous êtes sur le point d'imprimer {filteredEmployees.length} bulletin(s) de paie. Veuillez choisir la période.
+          <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-slate-50/50 border-slate-200 shadow-xl">
+            <DialogHeader className="px-6 py-5 bg-white border-b border-slate-100 shrink-0">
+              <DialogTitle className="text-xl font-semibold text-slate-800">Imprimer les bulletins de la sélection</DialogTitle>
+              <DialogDescription className="text-sm text-slate-500 mt-1.5">
+                Vous êtes sur le point d'imprimer <span className="font-medium text-slate-700">{filteredEmployees.length}</span> bulletin(s) de paie. Veuillez choisir la période.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4 px-6 py-6">
               <div className="grid gap-2">
-                <Label htmlFor="bulk-year">Année</Label>
+                <Label htmlFor="bulk-year" className="text-slate-700 font-medium">Année</Label>
                 <Select value={year} onValueChange={setYear}>
                   <SelectTrigger id="bulk-year"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -788,7 +789,7 @@ export default function PayrollPage() {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="bulk-month">Mois</Label>
+                <Label htmlFor="bulk-month" className="text-slate-700 font-medium">Mois</Label>
                 <Select value={month} onValueChange={setMonth}>
                   <SelectTrigger id="bulk-month"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -809,13 +810,13 @@ export default function PayrollPage() {
                 </Select>
               </div>
             </div>
-            <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setIsBulkPrintDialogOpen(false)} className="sm:mr-auto">Annuler</Button>
-              <Button variant="secondary" onClick={() => handleBulkAction('pdf')} disabled={isProcessingBulk} className="gap-2">
+            <DialogFooter className="px-6 py-4 bg-white border-t border-slate-100 shrink-0 flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setIsBulkPrintDialogOpen(false)} className="sm:mr-auto px-6 border-slate-200">Annuler</Button>
+              <Button variant="secondary" onClick={() => handleBulkAction('pdf')} disabled={isProcessingBulk} className="gap-2 px-6 shadow-sm">
                 {isProcessingBulk && bulkActionType === 'pdf' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                 Exporter en PDF
               </Button>
-              <Button onClick={() => handleBulkAction('print')} disabled={isProcessingBulk} className="gap-2">
+              <Button onClick={() => handleBulkAction('print')} disabled={isProcessingBulk} className="gap-2 px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
                 {isProcessingBulk && bulkActionType === 'print' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
                 Imprimer
               </Button>

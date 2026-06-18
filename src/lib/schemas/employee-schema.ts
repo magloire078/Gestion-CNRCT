@@ -25,6 +25,8 @@ export const employeeSchema = z.object({
     mobile: z.string().optional(),
     Date_Naissance: z.string().optional(),
     Lieu_Naissance: z.string().optional(),
+    sousPrefecture: z.string().optional(),
+    village: z.string().optional(),
     situationMatrimoniale: z.string().optional(),
     enfants: z.number().optional(),
     sexe: z.enum(['Homme', 'Femme', 'Autre', 'M', 'F', 'H'])

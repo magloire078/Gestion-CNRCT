@@ -59,10 +59,10 @@ const UserRow = memo(({
 
   return (
     <TableRow className="group hover:bg-white/40 transition-all duration-500 border-white/10">
-      <TableCell className="text-center font-black text-slate-300 group-hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]">
+      <TableCell className="text-center font-bold text-slate-400 uppercase tracking-widest text-xs">
         {((userCurrentPage - 1) * userItemsPerPage + index + 1).toString().padStart(2, '0')}
       </TableCell>
-      <TableCell className="py-5">
+      <TableCell className="py-2">
         <div className="flex flex-col">
           <span className="font-black text-slate-900 text-sm uppercase tracking-tight flex items-center gap-2 group-hover:translate-x-1 transition-transform">
             {user.name}
@@ -98,8 +98,8 @@ const UserRow = memo(({
           )}
         </div>
       </TableCell>
-      <TableCell className="text-right pr-6 py-5">
-        <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 duration-300">
+      <TableCell className="text-right pr-4 py-2">
+        <div className="flex justify-end gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-blue-50 hover:text-blue-600 transition-all" onClick={() => onLinkUserAction(user)}>
@@ -166,47 +166,45 @@ export const UsersTab = memo(function UsersTab({
   }, [filteredUsers, userItemsPerPage]);
 
   return (
-    <Card className="border-white/20 shadow-3xl overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl transition-all duration-700 hover:border-white/30">
-      <CardHeader className="p-6 pb-6 relative overflow-hidden">
+    <Card className="border-white/20 shadow-md overflow-hidden bg-white/40 backdrop-blur-xl rounded-lg transition-all duration-700 hover:border-white/30">
+      <CardHeader className="p-4 pb-4 relative overflow-hidden flex flex-row items-center justify-between">
         {/* Subtle Institutional Pattern */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]" />
         
-        <div className="flex items-center justify-between relative z-10">
-          <div className="space-y-1">
-            <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Registre des Accès</CardTitle>
-            <CardDescription className="text-3xl font-black tracking-tighter text-slate-900 uppercase">Utilisateurs</CardDescription>
-          </div>
-          <Button 
-            onClick={onAddUserAction} 
-            className="h-14 px-6 bg-slate-900 hover:bg-black text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl active:scale-95 transition-all gap-3 group"
-          >
-            <PlusCircle className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" /> 
-            Nouveau Compte
-          </Button>
+        <div className="space-y-1 relative z-10">
+          <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Registre des Accès</CardTitle>
+          <CardDescription className="text-xl font-bold tracking-tight text-slate-900 uppercase">Utilisateurs</CardDescription>
         </div>
+        <Button 
+          onClick={onAddUserAction} 
+          className="h-10 px-4 bg-slate-900 hover:bg-black text-white rounded-md font-bold uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all gap-2 relative z-10"
+        >
+          <PlusCircle className="h-4 w-4" /> 
+          Nouveau Compte
+        </Button>
       </CardHeader>
       
-      <CardContent className="px-6 pb-6 pt-4 relative z-10">
-        <div className="flex items-center justify-between mb-10 gap-6">
+      <CardContent className="px-4 pb-4 pt-0 relative z-10">
+        <div className="flex items-center justify-between mb-6 gap-4">
           <div className="relative flex-1 group/search">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within/search:text-blue-600 transition-colors duration-500" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within/search:text-blue-600 transition-colors duration-500" />
             <Input
               placeholder="RECHERCHER UN IDENTIFIANT OU COLLABORATEUR..."
               value={userSearch}
               onChange={(e) => { setUserSearch(e.target.value); setUserCurrentPage(1); }}
-              className="pl-14 h-14 border-white/40 bg-white/30 backdrop-blur-sm rounded-2xl focus-visible:ring-blue-500 focus-visible:border-blue-500 transition-all font-black uppercase tracking-widest text-[10px] shadow-inner placeholder:text-slate-400/50"
+              className="pl-10 h-10 border-white/40 bg-white/30 backdrop-blur-sm rounded-md focus-visible:ring-blue-500 focus-visible:border-blue-500 transition-all font-bold uppercase tracking-wider text-xs shadow-inner placeholder:text-slate-400/50"
             />
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm">
+        <div className="rounded-lg border border-white/40 bg-white/20 overflow-x-auto shadow-inner backdrop-blur-sm">
           <Table>
             <TableHeader className="bg-slate-900/5">
               <TableRow className="hover:bg-transparent border-white/20">
-                <TableHead className="w-[100px] text-center font-black uppercase text-[10px] tracking-[0.25em] text-slate-400 py-6">Code</TableHead>
-                <TableHead className="py-6 font-black uppercase text-[10px] tracking-[0.25em] text-slate-900">Collaborateur</TableHead>
-                <TableHead className="py-6 font-black uppercase text-[10px] tracking-[0.25em] text-slate-900">Rang & Accès</TableHead>
-                <TableHead className="text-right py-6 font-black uppercase text-[10px] tracking-[0.25em] text-slate-400 pr-10">Protocole</TableHead>
+                <TableHead className="w-[80px] text-center font-bold uppercase text-[10px] tracking-wider text-slate-500 py-3">Code</TableHead>
+                <TableHead className="py-3 font-bold uppercase text-[10px] tracking-wider text-slate-900">Collaborateur</TableHead>
+                <TableHead className="py-3 font-bold uppercase text-[10px] tracking-wider text-slate-900">Rang & Accès</TableHead>
+                <TableHead className="text-right py-3 font-bold uppercase text-[10px] tracking-wider text-slate-500 pr-4">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

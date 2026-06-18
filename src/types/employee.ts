@@ -21,6 +21,8 @@ export type Employe = {
     mobile?: string;
     Date_Naissance?: string;
     Lieu_Naissance?: string;
+    sousPrefecture?: string;
+    village?: string;
     situationMatrimoniale?: string; // 'Célibataire', 'Marié(e)', etc.
     enfants?: number;
     sexe?: 'Homme' | 'Femme' | 'Autre';

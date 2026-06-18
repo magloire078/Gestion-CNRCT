@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetClose,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -229,72 +229,71 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-2xl bg-white/60 backdrop-blur-3xl border-l border-white/20 p-0 shadow-3xl overflow-hidden rounded-l-sm">
-        <form onSubmit={handleSubmit} className="h-full flex flex-col">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 to-transparent pointer-events-none" />
-          
-          <SheetHeader className="p-5 pb-4 relative z-10 bg-slate-50/50 border-b border-slate-100">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="h-8 w-8 rounded-sm bg-slate-900 flex items-center justify-center shadow-lg">
-                <History className="h-4 w-4 text-white" />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-2xl bg-slate-50/50 p-0 shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+        <form onSubmit={handleSubmit} className="h-full flex flex-col overflow-hidden">
+          <DialogHeader className="px-6 py-5 bg-white border-b border-slate-100 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <History className="h-5 w-5 text-blue-600" />
               </div>
-              <SheetTitle className="text-xl font-black uppercase tracking-tight text-slate-900">
-                {isEditMode ? "Édition Événement" : "Nouvel Événement"}
-              </SheetTitle>
+              <div>
+                <DialogTitle className="text-xl font-semibold text-slate-800 text-left">
+                  {isEditMode ? "Édition Événement" : "Nouvel Événement"}
+                </DialogTitle>
+                <DialogDescription className="text-sm text-slate-500 mt-1 text-left">
+                  {isEditMode ? "Modification d'une étape de carrière existante" : "Enregistrement d'une mutation ou revalorisation dans le parcours agent"}
+                </DialogDescription>
+              </div>
             </div>
-            <SheetDescription className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-              {isEditMode ? "Modification d'une étape de carrière existante" : "Enregistrement d'une mutation ou revalorisation dans le parcours agent"}
-            </SheetDescription>
-          </SheetHeader>
+          </DialogHeader>
 
-          <div className="flex-1 overflow-hidden relative z-10">
-            <ScrollArea className="h-full w-full px-5">
-              <div className="grid gap-4 py-4">
+          <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-slate-200">
+              <div className="grid gap-6">
                 {/* Main Fields */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 border-b border-slate-100 pb-1.5">
-                    <Info className="h-3.5 w-3.5 text-slate-400" />
-                    <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Classification de l'acte</h3>
+                <div className="space-y-5 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Info className="h-5 w-5 text-blue-500" />
+                    <h3 className="text-base font-semibold text-slate-800">Classification de l'acte</h3>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <Label htmlFor="eventType" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Type d'acte professionnel</Label>
+                      <Label htmlFor="eventType" className="text-slate-700 font-medium">Type d'acte professionnel</Label>
                       <Select value={eventType} onValueChange={(value: EmployeeEvent['eventType']) => {
                         startTransition(() => {
                           setEventType(value);
                         });
                       }}>
-                        <SelectTrigger className="h-10 rounded-sm border-slate-200 bg-white font-bold text-slate-900 shadow-sm text-xs">
+                        <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white focus-visible:ring-blue-500/50">
                           <SelectValue placeholder="Sélectionner..." />
                         </SelectTrigger>
-                        <SelectContent className="rounded-sm border-slate-100 shadow-3xl">
+                        <SelectContent className="rounded-lg">
                           {eventTypes.map(type => (
-                            <SelectItem key={type} value={type} className="font-bold py-3 uppercase text-[9px] tracking-widest">{type}</SelectItem>
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="effectiveDate" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Date d'effet</Label>
+                      <Label htmlFor="effectiveDate" className="text-slate-700 font-medium">Date d'effet</Label>
                       <Input
                         id="effectiveDate"
                         type="date"
                         value={effectiveDate}
                         onChange={(e) => setEffectiveDate(e.target.value)}
-                        className="h-10 rounded-sm border-slate-200 bg-white font-bold text-xs"
+                        className="h-11 rounded-lg border-slate-200 bg-white focus-visible:ring-blue-500/50"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Libellé / Description de l'acte</Label>
+                    <Label htmlFor="description" className="text-slate-700 font-medium">Libellé / Description de l'acte</Label>
                     <Textarea 
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="rounded-sm border-slate-200 bg-white/60 min-h-[80px] p-4 text-xs font-medium focus-visible:ring-blue-500/50 shadow-inner"
+                      className="rounded-xl border-slate-200 bg-white min-h-[80px] p-4 text-sm focus-visible:ring-blue-500/50"
                       placeholder="Précisez la nature et le contexte de cet événement (ex: Décision N°...)"
                     />
                   </div>
@@ -302,31 +301,28 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
 
                 {/* Salary Simulation Section */}
                 {isSalaryEventType && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-1.5">
-                      <Wallet className="h-3.5 w-3.5 text-blue-500" />
-                      <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500">Composantes de Rémunération</h3>
+                  <div className="space-y-5 bg-white p-6 rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Wallet className="h-5 w-5 text-indigo-500" />
+                      <h3 className="text-base font-semibold text-slate-800">Composantes de Rémunération</h3>
                     </div>
                     
-                    <div className="p-4 bg-blue-50/50 rounded-sm border border-blue-100 shadow-lg shadow-blue-500/5 items-center justify-between group relative overflow-hidden">
-                       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <TrendingUp className="h-16 w-16" />
-                      </div>
-                      <div className="space-y-4">
-                        <Label htmlFor="netSimulator" className="text-[10px] font-black uppercase tracking-widest text-slate-700">Calculateur de net vers brut</Label>
-                        <div className="flex gap-2">
+                    <div className="p-5 bg-blue-50 border border-blue-100 rounded-xl relative overflow-hidden group">
+                      <div className="space-y-3">
+                        <Label htmlFor="netSimulator" className="text-sm font-semibold text-slate-800">Calculateur de net vers brut</Label>
+                        <div className="flex gap-3">
                           <Input 
                             id="netSimulator" 
                             type="number" 
                             placeholder="Salaire Net Requis (ex: 500000)" 
                             value={desiredNetSalary}
                             onChange={(e) => setDesiredNetSalary(e.target.value)}
-                            className="h-11 rounded-sm border-blue-200 bg-white/60 font-black tracking-widest focus-visible:ring-blue-500 shadow-inner text-xs"
+                            className="h-11 rounded-lg border-blue-200 bg-white focus-visible:ring-blue-500"
                           />
                           <Button 
                             type="button" 
                             onClick={handleSimulation}
-                            className="h-11 px-6 rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[9px] shadow-xl shadow-blue-200 hover:scale-105 transition-all"
+                            className="h-11 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition-all"
                           >
                             <Calculator className="mr-2 h-4 w-4" /> Simuler
                           </Button>
@@ -334,15 +330,15 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                       {indemnityFields.map(field => (
                         <div key={field.id} className="space-y-2">
                           <div className="flex items-center justify-between pr-2">
-                            <Label htmlFor={field.id} className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                            <Label htmlFor={field.id} className="text-slate-700 font-medium">
                               {field.label}
                             </Label>
                             {field.id === 'baseSalary' && originalBaseSalary !== null && (
-                              <Button type="button" variant="link" size="sm" className="h-auto p-0 text-[10px] font-black uppercase text-blue-600 hover:text-blue-800" onClick={handleRevertSalary}>
+                              <Button type="button" variant="link" size="sm" className="h-auto p-0 text-xs font-semibold text-blue-600 hover:text-blue-800" onClick={handleRevertSalary}>
                                 <Undo2 className="mr-1 h-3 w-3" /> Rétablir
                               </Button>
                             )}
@@ -355,12 +351,12 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                               placeholder="0" 
                               onChange={e => handleDetailChange(field.id, e.target.value)} 
                               className={cn(
-                                "h-10 rounded-sm border-slate-200 bg-white font-black tracking-widest text-xs",
-                                field.id === 'baseSalary' ? "border-blue-200 text-blue-600 bg-blue-50/20" : ""
+                                "h-11 rounded-lg border-slate-200 bg-white focus-visible:ring-blue-500/50",
+                                field.id === 'baseSalary' ? "border-blue-200 font-semibold text-blue-700 bg-blue-50" : ""
                               )}
                             />
                             {field.id === 'baseSalary' && originalBaseSalary !== null && (
-                              <div className="absolute -top-1 -right-1 bg-slate-100 px-2 py-0.5 rounded-sm text-[8px] font-black uppercase text-slate-400 line-through tracking-widest border border-slate-200 bg-white shadow-sm">
+                              <div className="absolute -top-3 -right-2 bg-slate-100 px-2 py-0.5 rounded text-xs font-semibold text-slate-500 line-through border border-slate-200 shadow-sm">
                                 {originalBaseSalary.toLocaleString()}
                               </div>
                             )}
@@ -372,46 +368,46 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                 )}
 
                 {(eventType === 'Promotion' || eventType === 'Changement de poste') && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
-                      <Briefcase className="h-4 w-4 text-slate-400" />
-                      <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Nouvelles Fonctions</h3>
+                  <div className="space-y-5 bg-white p-6 rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Briefcase className="h-5 w-5 text-emerald-500" />
+                      <h3 className="text-base font-semibold text-slate-800">Nouvelles Fonctions</h3>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newPoste" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nouvel Intitulé de Poste</Label>
-                      <Input id="newPoste" type="text" value={details.newPoste || ''} placeholder="ex: Chef de Service..." onChange={e => handleDetailChange('newPoste', e.target.value)} className="h-11 rounded-sm border-slate-200 bg-white font-black uppercase text-blue-600 tracking-wider shadow-sm text-xs" />
+                      <Label htmlFor="newPoste" className="text-slate-700 font-medium">Nouvel Intitulé de Poste</Label>
+                      <Input id="newPoste" type="text" value={details.newPoste || ''} placeholder="ex: Chef de Service..." onChange={e => handleDetailChange('newPoste', e.target.value)} className="h-11 rounded-lg border-slate-200 bg-white font-medium" />
                     </div>
                   </div>
                 )}
 
                 {livePreview && (
-                  <div className="p-4 bg-slate-900 rounded-sm shadow-2xl relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.15),transparent)] opacity-50" />
-                    <div className="relative z-10 space-y-4">
+                  <div className="p-6 bg-slate-900 rounded-xl shadow-lg relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent opacity-50" />
+                    <div className="relative z-10 space-y-5">
                        <div className="flex items-center justify-between border-b border-white/10 pb-4">
                         <div className="flex items-center gap-2">
-                          <Activity className="h-4 w-4 text-blue-400" />
-                          <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Impact Financier Estimé</h4>
+                          <Activity className="h-5 w-5 text-blue-400" />
+                          <h4 className="text-sm font-semibold text-slate-300">Impact Financier Estimé</h4>
                         </div>
-                        <div className="text-[8px] font-black uppercase tracking-widest px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">Aperçu Live</div>
+                        <div className="text-xs font-semibold px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30">Aperçu Live</div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                         <div className="space-y-1">
-                          <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">Ancienneté d'effet</p>
-                          <p className="text-sm font-bold text-white uppercase">{livePreview.anciennete}</p>
+                          <p className="text-xs text-slate-400">Ancienneté d'effet</p>
+                          <p className="text-base font-semibold text-white">{livePreview.anciennete}</p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">Part Patronale/Salariale CNPS</p>
-                          <p className="text-sm font-bold text-white tracking-widest">{livePreview.cnps.toLocaleString('fr-FR')} <span className="text-[10px] opacity-40">FCFA</span></p>
+                          <p className="text-xs text-slate-400">Part CNPS</p>
+                          <p className="text-base font-semibold text-white">{livePreview.cnps.toLocaleString('fr-FR')} <span className="text-xs text-slate-500">FCFA</span></p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">Salaire Brut Imposable</p>
-                          <p className="text-sm font-bold text-blue-400 tracking-widest">{livePreview.brut.toLocaleString('fr-FR')} <span className="text-[10px] opacity-40">FCFA</span></p>
+                          <p className="text-xs text-slate-400">Brut Imposable</p>
+                          <p className="text-base font-semibold text-blue-300">{livePreview.brut.toLocaleString('fr-FR')} <span className="text-xs text-blue-300/50">FCFA</span></p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">Salaire Net à Payer</p>
-                          <p className="text-lg font-black text-emerald-400 tracking-widest">{livePreview.net.toLocaleString('fr-FR')} <span className="text-xs opacity-40">FCFA</span></p>
+                          <p className="text-xs text-slate-400">Net à Payer</p>
+                          <p className="text-xl font-bold text-emerald-400">{livePreview.net.toLocaleString('fr-FR')} <span className="text-sm text-emerald-400/50">FCFA</span></p>
                         </div>
                       </div>
                     </div>
@@ -419,45 +415,44 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                 )}
 
                 {error && (
-                  <div className="p-4 bg-rose-50 border border-rose-100 rounded-sm flex items-center gap-3 text-rose-600 shadow-lg shadow-rose-200/50">
+                  <div className="p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 text-rose-600 shadow-sm">
                     <XCircle className="h-5 w-5" />
-                    <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">{error}</p>
+                    <p className="text-sm font-medium">{error}</p>
                   </div>
                 )}
               </div>
-            </ScrollArea>
           </div>
 
-          <SheetFooter className="p-5 bg-white/40 border-t border-white/20 backdrop-blur-md relative z-10">
-            <div className="flex gap-3 w-full">
-              <SheetClose asChild>
+          <DialogFooter className="px-6 py-4 bg-white border-t border-slate-100 shrink-0">
+            <div className="flex gap-3 w-full justify-end">
+              <DialogClose asChild>
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={handleClose}
-                  className="h-11 flex-1 rounded-sm border-slate-200 bg-white font-black uppercase tracking-widest text-[9px] hover:bg-slate-50 hover:text-slate-900 shadow-lg"
+                  className="h-10 px-6 border-slate-200 text-slate-700 font-medium"
                 >
                   Annuler
                 </Button>
-              </SheetClose>
+              </DialogClose>
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="h-11 flex-1 rounded-sm bg-slate-900 text-white font-black uppercase tracking-widest text-[9px] hover:bg-black shadow-2xl shadow-black/20 group"
+                className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-medium"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <Save className="mr-2.5 h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" /> 
+                    <Save className="mr-2 h-4 w-4" /> 
                     {isEditMode ? "Mettre à jour" : "Valider l'acte"}
                   </>
                 )}
               </Button>
             </div>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Employe } from "@/lib/data";
-import { Calculator, Undo2 } from "lucide-react";
+import { Calculator, Undo2, User, Coins, FileText, Landmark } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateSeniority } from "@/services/payslip-details-service";
 
@@ -208,47 +208,67 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Modifier les Détails de Paie</DialogTitle>
-            <DialogDescription>
-              Mettez à jour les informations de paie pour {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}.
+      <DialogContent className="sm:max-w-3xl p-0 overflow-hidden bg-slate-50/50 border-slate-200 shadow-xl">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[90vh]">
+          <DialogHeader className="px-6 py-5 bg-white border-b border-slate-100 shrink-0">
+            <DialogTitle className="text-xl font-semibold text-slate-800">Modifier les Détails de Paie</DialogTitle>
+            <DialogDescription className="text-sm text-slate-500 mt-1.5">
+              Mettez à jour les informations de paie pour <span className="font-medium text-slate-700">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</span>.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-            <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
-              <AccordionItem value="item-1">
-                <AccordionTrigger>Informations Générales</AccordionTrigger>
-                <AccordionContent className="space-y-4 pt-2">
-                  <div className="space-y-2">
-                    <Label>Employé</Label>
-                    <p className="font-medium text-muted-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
+          <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-slate-200">
+            <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-4">
+              <AccordionItem value="item-1" className="border border-slate-100 rounded-xl bg-white shadow-sm overflow-hidden">
+                <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center text-base font-semibold">
+                    <User className="h-5 w-5 mr-3 text-primary" />
+                    Informations Générales
                   </div>
-                  <div className="space-y-2">
-                    <Label>Fréquence de Paie</Label>
-                    <Input value="Mensuel" readOnly className="bg-muted" />
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-4 px-4 pb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-500">Employé</Label>
+                      <p className="font-semibold text-lg">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-500">Fréquence de Paie</Label>
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          Mensuel
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger>Gains & Indemnités</AccordionTrigger>
-                <AccordionContent className="space-y-4 pt-2">
-                  <div className="p-4 border rounded-md bg-muted/50 space-y-2">
-                    <Label htmlFor="netSimulator">Simuler à partir du Net</Label>
-                    <div className="flex gap-2">
+              <AccordionItem value="item-2" className="border border-slate-100 rounded-xl bg-white shadow-sm overflow-hidden">
+                <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center text-base font-semibold">
+                    <Coins className="h-5 w-5 mr-3 text-green-600" />
+                    Gains & Indemnités
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-5 pt-4 px-4 pb-4">
+                  <div className="p-5 border border-indigo-100 rounded-xl bg-indigo-50/50 space-y-3 shadow-sm">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calculator className="h-4 w-4 text-indigo-600" />
+                      <Label htmlFor="netSimulator" className="font-semibold text-indigo-900">Simuler à partir du Net</Label>
+                    </div>
+                    <div className="flex gap-3">
                       <Input
                         id="netSimulator"
                         type="number"
+                        className="bg-white border-indigo-200 focus-visible:ring-indigo-500"
                         placeholder="Entrez le net souhaité..."
                         value={desiredNetSalary}
                         onChange={(e) => setDesiredNetSalary(e.target.value)}
                       />
-                      <Button type="button" variant="secondary" onClick={handleSimulation}>
-                        <Calculator className="mr-2 h-4 w-4" />
+                      <Button type="button" className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm" onClick={handleSimulation}>
                         Calculer
                       </Button>
                     </div>
+                    <p className="text-xs text-indigo-600/80">Cette calculatrice ajustera automatiquement le Salaire de Base pour atteindre ce Net.</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -302,38 +322,48 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-4">
-                <AccordionTrigger>Cotisations & Totaux (Estimations)</AccordionTrigger>
-                <AccordionContent className="space-y-4 pt-2">
+              <AccordionItem value="item-4" className="border border-slate-100 rounded-xl bg-white shadow-sm overflow-hidden">
+                <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center text-base font-semibold">
+                    <Landmark className="h-5 w-5 mr-3 text-orange-500" />
+                    Cotisations & Totaux (Estimations)
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-5 pt-4 px-4 pb-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>CNPS Employé</Label>
-                      <Input value={formatCurrency(cnpsEmploye)} readOnly className="font-mono bg-muted" />
+                    <div className="space-y-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                      <Label className="text-slate-500 text-xs uppercase tracking-wider">CNPS Employé</Label>
+                      <p className="font-mono text-sm font-medium">{formatCurrency(cnpsEmploye)}</p>
                     </div>
-                    <div className="space-y-2">
-                      <Label>CNPS Employeur</Label>
-                      <Input value={formatCurrency(cnpsEmployeur)} readOnly className="font-mono bg-muted" />
+                    <div className="space-y-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                      <Label className="text-slate-500 text-xs uppercase tracking-wider">CNPS Employeur</Label>
+                      <p className="font-mono text-sm font-medium">{formatCurrency(cnpsEmployeur)}</p>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Base de calcul</Label>
-                      <Input value={formatCurrency(baseCalculCotisations)} readOnly className="font-mono bg-muted" />
+                    <div className="space-y-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                      <Label className="text-slate-500 text-xs uppercase tracking-wider">Base de calcul</Label>
+                      <p className="font-mono text-sm font-medium">{formatCurrency(baseCalculCotisations)}</p>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Salaire Brut Imposable</Label>
-                      <Input value={formatCurrency(brutImposable)} readOnly className="font-bold bg-muted" />
+                  <div className="mt-4 pt-5 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2 p-4 bg-blue-50/50 border border-blue-100 rounded-xl">
+                      <Label className="text-blue-600 text-sm font-semibold uppercase tracking-wider">Salaire Brut Imposable</Label>
+                      <p className="text-2xl font-bold text-blue-900">{formatCurrency(brutImposable)}</p>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Net à Payer</Label>
-                      <Input value={formatCurrency(netAPayer)} readOnly className="font-bold bg-muted" />
+                    <div className="space-y-2 p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl shadow-sm">
+                      <Label className="text-emerald-600 text-sm font-semibold uppercase tracking-wider">Net à Payer</Label>
+                      <p className="text-3xl font-black text-emerald-700 tracking-tight">{formatCurrency(netAPayer)}</p>
                     </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger>Détails du Bulletin de Paie</AccordionTrigger>
-                <AccordionContent className="space-y-4 pt-2">
+              <AccordionItem value="item-3" className="border border-slate-100 rounded-xl bg-white shadow-sm overflow-hidden">
+                <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center text-base font-semibold">
+                    <FileText className="h-5 w-5 mr-3 text-purple-500" />
+                    Détails du Bulletin de Paie
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-5 pt-4 px-4 pb-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center space-x-2 md:col-span-2">
                       <Checkbox
@@ -409,11 +439,11 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
 
             {error && <p className="text-sm text-destructive text-center pt-2">{error}</p>}
           </div>
-          <DialogFooter>
+          <DialogFooter className="px-6 py-4 bg-white border-t border-slate-100 shrink-0">
             <DialogClose asChild>
-              <Button type="button" variant="outline">Annuler</Button>
+              <Button type="button" variant="outline" className="px-6 border-slate-200">Annuler</Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="px-6 bg-slate-900 hover:bg-slate-800 text-white shadow-sm">
               {isSubmitting ? "Enregistrement..." : "Enregistrer les modifications"}
             </Button>
           </DialogFooter>

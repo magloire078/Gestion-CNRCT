@@ -80,6 +80,8 @@ export function EmployeeOfficialReport({
                 </span>
             );
             case 'sexe': return emp.sexe || '---';
+            case 'Departement': return (emp as any).Departement || (emp as any).departement || '---';
+            case 'Region': return (emp as any).Region || (emp as any).region || '---';
             case 'subPrefecture': return (emp as any).sousPrefecture || (emp as any).subPrefecture || '---';
             case 'Village': return (emp as any).village || (emp as any).Village || '---';
             default: return (emp as any)[key] || '---';
@@ -167,7 +169,7 @@ export function EmployeeOfficialReport({
                                             (key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart') && "w-[75px]",
                                             key === 'Lieu_Naissance' && "w-[130px]",
                                             key === 'poste' && "w-[150px]",
-                                            key === 'department' && "w-[120px]"
+                                            (key === 'department' || key === 'Departement' || key === 'subPrefecture' || key === 'Region' || key === 'Village') && "w-[120px]"
                                         )}>
                                             {getColumnLabel(key)}
                                         </th>

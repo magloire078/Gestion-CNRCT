@@ -870,7 +870,7 @@ export default function EmployeesPage() {
                                     </span>
                                     {isGeoTab ? (
                                       <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate max-w-[200px]">
-                                        {[employee.subPrefecture, employee.Village].filter(Boolean).join(' - ')}
+                                        {[employee.sousPrefecture || employee.subPrefecture, employee.village || employee.Village].filter(Boolean).join(' - ')}
                                       </span>
                                     ) : (
                                       <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.poste}</span>

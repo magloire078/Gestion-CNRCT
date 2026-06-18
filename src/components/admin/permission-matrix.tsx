@@ -103,17 +103,17 @@ const PermissionRow = React.memo(function PermissionRow({
 
     if (isGroup) {
         return (
-            <TableRow className="bg-slate-900 border-y border-white/10 hover:bg-black sticky z-10 transition-colors duration-500">
-                <TableCell colSpan={5} className="py-6 pl-10">
-                    <div className="flex items-center gap-5">
-                        <div className="p-3 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-2xl">
-                            <Icon className="h-5 w-5 text-emerald-400" />
+            <TableRow style={{ backgroundColor: '#1e293b' }} className="border-y border-slate-700 transition-colors duration-500">
+                <TableCell colSpan={5} className="py-4 pl-8">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-600 flex items-center justify-center shadow-sm">
+                            <Icon className="h-4 w-4 text-emerald-400" />
                         </div>
                         <div className="space-y-1">
-                            <span className="text-[12px] font-black uppercase tracking-[0.3em] text-white">
+                            <span className="text-[11px] font-black uppercase tracking-widest text-white">
                                 {resource.label}
                             </span>
-                            <div className="h-0.5 w-12 bg-emerald-500/50 rounded-full" />
+                            <div className="h-0.5 w-10 bg-emerald-500 rounded-full" />
                         </div>
                     </div>
                 </TableCell>
@@ -326,29 +326,29 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
     const hasNoSpecificPerms = targetType === 'user' && Object.keys(permissions).length === 0;
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-4">
             <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-center justify-between gap-6 p-5 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/30 shadow-3xl">
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg bg-white/40 backdrop-blur-xl border border-white/30 shadow-md">
                     <div className="flex items-center gap-4">
                         <div className={cn(
-                            "px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all duration-500 shadow-sm",
+                            "px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider border transition-all duration-500 shadow-sm",
                             hasNoSpecificPerms 
                                 ? "bg-slate-100 text-slate-500 border-slate-200" 
                                 : accessLevel.variant === 'default' 
-                                    ? "bg-emerald-600 text-white border-none shadow-[0_0_20px_rgba(5,150,105,0.4)]"
+                                    ? "bg-emerald-600 text-white border-none shadow-md"
                                     : accessLevel.variant === 'secondary'
-                                        ? "bg-amber-600 text-white border-none shadow-[0_0_20px_rgba(217,119,6,0.4)]"
-                                        : "bg-rose-600 text-white border-none shadow-[0_0_20px_rgba(225,29,72,0.4)]"
+                                        ? "bg-amber-600 text-white border-none shadow-md"
+                                        : "bg-rose-600 text-white border-none shadow-md"
                         )}>
                             {hasNoSpecificPerms ? 'Protocole Hérité' : accessLevel.label}
                         </div>
                         {isSystem && (
-                            <div className="px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-slate-900 text-white border-none gap-2 flex items-center shadow-xl">
+                            <div className="px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-900 text-white border-none gap-2 flex items-center shadow-md">
                                 <ShieldCheck className="h-4 w-4 text-emerald-400" /> Registre Système
                             </div>
                         )}
                         {targetType === 'user' && !hasNoSpecificPerms && (
-                            <div className="px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-blue-600 text-white border-none shadow-xl">
+                            <div className="px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white border-none shadow-md">
                                 Exception Active
                             </div>
                         )}
@@ -396,7 +396,7 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
                                 onClick={handleSave} 
                                 disabled={!dirty || saving} 
                                 size="sm" 
-                                className="h-12 px-6 rounded-2xl gap-3 font-black uppercase tracking-[0.2em] text-[10px] bg-slate-900 hover:bg-black text-white shadow-3xl shadow-slate-900/40 active:scale-95 transition-all group"
+                                className="h-10 px-4 rounded-md gap-2 font-bold uppercase tracking-wider text-[10px] bg-slate-900 hover:bg-black text-white shadow-md active:scale-95 transition-all group"
                             >
                                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
                                 Publier les Droits
@@ -406,10 +406,10 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
                 </div>
 
                 <div className="relative group/search">
-                    <Search className="absolute left-6 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within/search:text-blue-600 transition-colors duration-500" />
+                    <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within/search:text-blue-600 transition-colors duration-500" />
                     <Input 
                         placeholder="RECHERCHER UNE HABILITATION, UN MODULE OU UNE RESSOURCE..." 
-                        className="pl-16 h-16 rounded-xl bg-white/40 backdrop-blur-xl border-white/30 shadow-2xl focus-visible:ring-blue-500 focus-visible:border-blue-500 font-black uppercase tracking-widest text-[10px] transition-all duration-700 placeholder:text-slate-300"
+                        className="pl-10 h-10 rounded-md bg-white/40 backdrop-blur-xl border-white/30 shadow-md focus-visible:ring-blue-500 focus-visible:border-blue-500 font-bold uppercase tracking-wider text-[10px] transition-all duration-700 placeholder:text-slate-400"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -426,14 +426,14 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
             )}
 
             {/* Matrix table */}
-            <div className="max-h-[70vh] overflow-auto rounded-2xl border border-white/20 shadow-3xl group/table bg-white/40 backdrop-blur-xl custom-scrollbar relative">
-                <Table className="relative">
-                    <TableHeader className="sticky top-0 z-30">
-                        <TableRow className="bg-slate-900 border-none hover:bg-black transition-colors duration-500">
-                            <TableHead className="w-80 py-4 pl-10 font-black text-[11px] uppercase tracking-[0.3em] text-slate-400 border-none">Architecture de Droits</TableHead>
+            <div className="rounded-lg border border-white/20 shadow-md group/table bg-white/40 backdrop-blur-xl relative [&>div]:max-h-[60vh] [&>div]:custom-scrollbar">
+                <Table>
+                    <TableHeader className="sticky top-0 z-30 bg-slate-900 shadow-xl border-b border-slate-700">
+                        <TableRow className="border-none hover:bg-slate-900 transition-colors duration-500">
+                            <TableHead className="w-80 py-3 pl-6 font-bold text-[10px] uppercase tracking-wider text-slate-400 border-none">Architecture de Droits</TableHead>
                             {CRUD_ACTIONS.map(action => (
                                 <TableHead key={action} className={cn(
-                                    "text-center w-40 py-4 font-black text-[11px] uppercase tracking-[0.3em] transition-all duration-500 border-none",
+                                    "text-center w-40 py-3 font-bold text-[10px] uppercase tracking-wider transition-all duration-500 border-none",
                                     action === 'read' ? 'text-blue-400' :
                                     action === 'create' ? 'text-emerald-400' :
                                     action === 'update' ? 'text-amber-400' :
@@ -499,28 +499,16 @@ export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) 
     }
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 p-12 pb-0">
-                <div className="flex items-center gap-4">
-                    <div className="h-1 w-12 bg-emerald-500 rounded-full" />
-                    <h3 className="text-3xl font-black uppercase tracking-tighter text-white flex items-center gap-4">
-                        <Crown className="h-10 w-10 text-emerald-400" /> 
-                        Matrice de Gouvernance
-                    </h3>
-                </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400/80 pl-20 italic">
-                    Contrôle granulaire des accès par palier institutionnel
-                </p>
-            </div>
+        <div className="space-y-4">
 
             <Tabs defaultValue={rolesToDisplay[0].id} className="w-full">
-                <div className="px-12 overflow-x-auto scrollbar-none pb-4">
-                    <TabsList className="flex h-auto w-fit gap-3 bg-white/20 p-2.5 rounded-xl border border-white/30 backdrop-blur-md shadow-2xl">
+                <div className="px-6 pt-6 pb-4">
+                    <TabsList className="flex flex-wrap h-auto w-full justify-start gap-2 bg-white/40 p-2 rounded-lg border border-white/40 backdrop-blur-md shadow-md">
                         {rolesToDisplay.map(role => (
                             <TabsTrigger
                                 key={role.id}
                                 value={role.id}
-                                className="data-[state=active]:bg-slate-900 data-[state=active]:text-white lg:px-5 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 active:scale-95 shadow-sm border border-transparent data-[state=active]:shadow-2xl data-[state=active]:shadow-slate-900/40"
+                                className="data-[state=active]:bg-slate-900 data-[state=active]:text-white px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-500 active:scale-95 shadow-sm border border-transparent data-[state=active]:shadow-md"
                             >
                                 {role.label}
                                 {role.isSystem && <ShieldCheck className="ml-3 h-4 w-4 text-emerald-400" />}
@@ -530,7 +518,7 @@ export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) 
                 </div>
 
                 {rolesToDisplay.map(role => (
-                    <TabsContent key={role.id} value={role.id} className="mt-10 p-12 pt-0 outline-none animate-in fade-in slide-in-from-bottom-6 duration-700">
+                    <TabsContent key={role.id} value={role.id} className="mt-4 p-6 pt-0 outline-none animate-in fade-in slide-in-from-bottom-6 duration-700">
                         <PermissionsEditor targetId={role.id} targetType="role" isSystem={role.isSystem ?? false} />
                     </TabsContent>
                 ))}

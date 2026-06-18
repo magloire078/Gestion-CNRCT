@@ -108,7 +108,7 @@ export default function EmployeeDetailPage() {
     const router = useRouter();
     const { toast } = useToast();
     const { formatDate, formatCurrency } = useFormat();
-    const { hasPermission } = useAuth();
+    const { hasPermission, user } = useAuth();
     
     const [employee, setEmployee] = useState<Employe | null>(null);
     const [units, setUnits] = useState<{ departments: Department[], directions: Direction[], services: Service[] } | null>(null);
@@ -233,7 +233,11 @@ export default function EmployeeDetailPage() {
 
     const canEdit = hasPermission('page:employees:edit');
     const canDelete = hasPermission('page:employees:delete');
-    const canViewSalary = hasPermission('page:payroll:view') || hasPermission('feature:payroll:view-sensitive');
+    
+    // Un employé ne peut voir la rémunération que s'il a les droits de modification de la paie, ou si c'est son propre profil
+    const canManagePayroll = hasPermission('page:payroll:update') || hasPermission('page:payroll:create') || hasPermission('page:payroll:delete');
+    const isSelf = user?.employeeId === employee.id || user?.email === employee.email;
+    const canViewSalary = canManagePayroll || isSelf;
 
     // Salary total calculations (fallback if database totals are 0)
     const baseSalary = employee.baseSalary || 0;

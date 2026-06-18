@@ -300,6 +300,16 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Label htmlFor="Lieu_Naissance" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Lieu de naissance</Label>
                       <Input id="Lieu_Naissance" value={formData.Lieu_Naissance || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="sousPrefecture" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Sous-préfecture</Label>
+                      <Input id="sousPrefecture" value={formData.sousPrefecture || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="village" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Village</Label>
+                      <Input id="village" value={formData.village || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
+                    </div>
                   </CardContent>
                 </Card>
 

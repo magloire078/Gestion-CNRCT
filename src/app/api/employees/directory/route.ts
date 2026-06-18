@@ -18,9 +18,7 @@ export async function GET() {
     }
 
     const employeesRef = adminDb.collection('employees');
-    const snapshot = await employeesRef
-      .where('status', 'in', ['Actif', 'En congé'])
-      .get();
+    const snapshot = await employeesRef.get();
 
     if (snapshot.empty) {
       return NextResponse.json([]);

@@ -31,8 +31,9 @@ export default function LandingPage() {
                     getEmployeeDirectory()
                 ]);
                 
-                const directory = directoryRaw.filter(emp => !emp.status || emp.status === 'Actif');
-                const members = membersRaw.filter(emp => !emp.status || emp.status === 'Actif');
+                const directory = directoryRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé');
+                const inactiveDirectory = directoryRaw.filter(emp => emp.status !== 'Actif' && emp.status !== 'En congé' && emp.status);
+                const members = membersRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé');
 
                 setDirectoireMembers(members);
 
@@ -48,8 +49,7 @@ export default function LandingPage() {
                          emp.poste?.toLowerCase().includes('point focal') ||
                          emp.poste?.toLowerCase().includes('chef') || 
                          emp.poste?.toLowerCase().includes('president') || 
-                         emp.poste?.toLowerCase().includes('président')) &&
-                        (!emp.status || emp.status === 'Actif')
+                         emp.poste?.toLowerCase().includes('président'))
                     ) || null;
 
                     const committeeMembers: Employe[] = [];
@@ -67,10 +67,25 @@ export default function LandingPage() {
                     
                     committeeMembers.push(...regionMembers);
 
+                    const pastMembers = inactiveDirectory.filter(emp => 
+                        emp.Region === region && 
+                        (emp.poste?.toLowerCase().includes('membre du directoire') ||
+                         emp.poste?.toLowerCase().includes('membre du bureau') ||
+                         emp.poste?.toLowerCase().includes('point focal') ||
+                         emp.poste?.toLowerCase().includes('chef') || 
+                         emp.poste?.toLowerCase().includes('president') || 
+                         emp.poste?.toLowerCase().includes('président') ||
+                         emp.poste?.toLowerCase().includes('comité') || 
+                         emp.poste?.toLowerCase().includes('comite') ||
+                         emp.poste?.toLowerCase().includes('bureau') ||
+                         emp.poste?.toLowerCase().includes('membre'))
+                    );
+
                     return {
                         region,
                         president,
-                        members: committeeMembers
+                        members: committeeMembers,
+                        pastMembers
                     };
                 });
                 setRegionalCommittees(computedCommittees);

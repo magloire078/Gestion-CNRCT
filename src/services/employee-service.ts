@@ -32,6 +32,7 @@ export type RegionalCommittee = {
     region: string;
     president: Employe | null;
     members: Employe[];
+    pastMembers?: Employe[];
 };
 
 /**

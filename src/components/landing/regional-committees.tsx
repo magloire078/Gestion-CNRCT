@@ -248,6 +248,41 @@ export function RegionalCommittees({
                                       </p>
                                     </div>
                                   )}
+
+                                  {selected.pastMembers && selected.pastMembers.length > 0 && (
+                                    <div className="pt-4 mt-6 border-t border-primary/5">
+                                      <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Anciens Représentants</h5>
+                                      <div className="space-y-4 opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
+                                        {selected.pastMembers.map((member, mIdx) => (
+                                          <div key={`past-${mIdx}`} className="group/item flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-black text-slate-400 shadow-sm overflow-hidden relative">
+                                              {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') ? (
+                                                <Image src={member.photoUrl} alt={member.name} fill className="object-cover" sizes="40px" />
+                                              ) : (
+                                                getInitials(member.name || '')
+                                              )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                              <p className="text-sm font-bold text-slate-700 leading-tight mb-0.5">{member.name}</p>
+                                              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                                                <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">{member.poste}</p>
+                                                {member.status && (
+                                                  <>
+                                                    <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                                                    <Badge 
+                                                      className="bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent text-slate-500"
+                                                    >
+                                                      {member.status}
+                                                    </Badge>
+                                                  </>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </ScrollArea>
                             </div>

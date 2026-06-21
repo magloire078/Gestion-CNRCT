@@ -341,13 +341,69 @@ export default function DashboardPage() {
                         </div>
 
                         <TabsContent value="overview" className="space-y-12 focus-visible:outline-none focus-visible:ring-0">
-                            {/* Key Performance Indicators Upgraded */}
-                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-                                <StatCard loading={loading} title="Effectifs Total" value={globalStats.activeEmployees.toString()} icon={Users} color="primary" trend={{ value: "+2.4%", up: true }} />
-                                <StatCard loading={loading} title="Conseil des Sages" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} color="amber" trend={{ value: "Stable", up: true }} />
-                                <StatCard loading={loading} title="Incidents SIG" value={globalStats.conflicts.filter(c => c.status !== 'Résolu').length.toString()} icon={AlertTriangle} color="rose" trend={{ value: "-4%", up: false }} description="Alertes territoriales actives" />
-                                <StatCard loading={loading} title="Pôles d'Action" value={globalStats.departments.length.toString()} icon={Building} color="info" trend={{ value: "+1", up: true }} />
+                            {/* Key Performance Indicators */}
+                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                                <StatCard loading={loading} title="Effectifs Actifs" value={globalStats.activeEmployees.toString()} icon={Users} color="primary" href="/employees" />
+                                <StatCard loading={loading} title="Conseil des Sages" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} color="amber" href="/employees?filter=directoire" />
+                                <StatCard loading={loading} title="Missions en cours" value={globalStats.missionsInProgress.toString()} icon={Briefcase} color="success" href="/missions" description="Déploiements actifs" />
+                                <StatCard loading={loading} title="Dossiers ouverts" value={globalStats.conflicts.filter(c => c.status !== 'Résolu' && c.status !== 'Classé sans suite').length.toString()} icon={AlertTriangle} color="rose" href="/conflicts" description="Conflits à traiter" />
+                                <StatCard
+                                    loading={loading}
+                                    title="Taux de résolution"
+                                    value={(() => {
+                                        const total = globalStats.conflicts.length;
+                                        if (total === 0) return "—";
+                                        const resolved = globalStats.conflicts.filter(c => c.status === 'Résolu').length;
+                                        return Math.round((resolved / total) * 100) + "%";
+                                    })()}
+                                    icon={ShieldCheck}
+                                    color="success"
+                                    href="/conflicts/analytics"
+                                    description="Conflits clos avec succès"
+                                />
+                                <StatCard loading={loading} title="Pôles d'Action" value={globalStats.departments.length.toString()} icon={Building} color="info" />
                             </div>
+
+                            {/* Operational alerts banner */}
+                            {!loading && (() => {
+                                const today = new Date();
+                                const overdueConflicts = globalStats.conflicts.filter(c => {
+                                    const s = c.status || 'Ouvert';
+                                    if (s === 'Résolu' || s === 'Classé sans suite' || !c.reportedDate) return false;
+                                    try {
+                                        const days = (today.getTime() - parseISO(c.reportedDate).getTime()) / 86400000;
+                                        return days >= 30;
+                                    } catch { return false; }
+                                }).length;
+                                const retirementsThisYear = upcomingRetirements.filter(emp => emp.calculatedRetirementDate.getFullYear() === today.getFullYear()).length;
+                                const totalAlerts = overdueConflicts + retirementsThisYear;
+                                if (totalAlerts === 0) return null;
+                                return (
+                                    <div className="flex flex-wrap items-center justify-between gap-4 px-8 py-5 rounded-3xl bg-amber-50 border border-amber-200">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-12 w-12 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg">
+                                                <AlertTriangle className="h-6 w-6 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">Centre d'alertes opérationnelles</p>
+                                                <p className="text-sm font-bold text-amber-900 mt-0.5">{totalAlerts} point{totalAlerts > 1 ? 's' : ''} requièrent votre attention.</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            {overdueConflicts > 0 && (
+                                                <Link href="/conflicts" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 transition-colors">
+                                                    <AlertTriangle className="h-3 w-3" /> {overdueConflicts} conflit{overdueConflicts > 1 ? 's' : ''} en retard
+                                                </Link>
+                                            )}
+                                            {retirementsThisYear > 0 && (
+                                                <Link href="/employees" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-amber-700 transition-colors">
+                                                    <LogOutIcon className="h-3 w-3" /> {retirementsThisYear} retraite{retirementsThisYear > 1 ? 's' : ''} cette année
+                                                </Link>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
                             {/* Charts Section */}
                             <div className="grid gap-10 lg:grid-cols-7">

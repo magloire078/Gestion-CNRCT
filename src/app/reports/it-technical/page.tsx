@@ -48,7 +48,7 @@ export default function TechnicalManagementReportPage() {
   };
 
   return (
-    <PermissionGuard permission="page:reports:view">
+    <PermissionGuard permission="page:reports:it-technical:view">
       <div className="flex flex-col gap-5 pb-10 max-w-6xl mx-auto py-12 px-6 sm:px-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         {/* Controls - Hidden on Print */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 print:hidden">

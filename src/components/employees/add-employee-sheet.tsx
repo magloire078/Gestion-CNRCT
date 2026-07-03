@@ -43,6 +43,7 @@ import { Textarea } from "../ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { getOfficialRegion, getOfficialDepartment } from "@/lib/normalization-utils";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { VillageCombobox } from "@/components/chiefs/village-combobox";
@@ -378,7 +379,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                           <Select value={departement} onValueChange={(val) => { setDepartement(val); setSubPrefecture(""); setVillage(""); }} disabled={!region}>
                             <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
                             <SelectContent className="rounded-lg max-h-[300px]">
-                              {Object.keys(divisions[region] || {}).sort().map(d => (
+                              {Object.keys(divisions[getOfficialRegion(region)] || {}).sort().map(d => (
                                 <SelectItem key={d} value={d}>{d}</SelectItem>
                               ))}
                             </SelectContent>
@@ -391,7 +392,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                           <Select value={subPrefecture} onValueChange={(val) => { setSubPrefecture(val); setVillage(""); }} disabled={!departement}>
                             <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
                             <SelectContent className="rounded-lg max-h-[300px]">
-                              {Object.keys(divisions[region]?.[departement] || {}).sort().map(sp => (
+                              {Object.keys(divisions[getOfficialRegion(region)]?.[getOfficialDepartment(region, departement)] || {}).sort().map(sp => (
                                 <SelectItem key={sp} value={sp}>{sp}</SelectItem>
                               ))}
                             </SelectContent>
@@ -426,8 +427,10 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                             <SelectContent className="rounded-lg">
                               <SelectItem value="Actif">Actif</SelectItem>
                               <SelectItem value="En congé">En congé</SelectItem>
+                              <SelectItem value="Licencié">Licencié</SelectItem>
                               <SelectItem value="Remplacé">Remplacé</SelectItem>
                               <SelectItem value="Retraité">Retraité</SelectItem>
+                              <SelectItem value="Décédé">Décédé</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

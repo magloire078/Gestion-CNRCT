@@ -39,6 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import { addVillage } from "@/services/village-service";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { getOfficialRegion, getOfficialDepartment } from "@/lib/normalization-utils";
 import { calculateDevelopmentScore } from "@/services/village-service";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -140,9 +141,12 @@ export function AddVillageSheet() {
     const selectedRegion = form.watch("region");
     const selectedDepartment = form.watch("department");
 
-    const departments = selectedRegion ? Object.keys(divisions[selectedRegion] || {}) : [];
-    const subPrefectures = (selectedRegion && selectedDepartment) 
-        ? Object.keys(divisions[selectedRegion][selectedDepartment] || {}) 
+    const officialRegion = getOfficialRegion(selectedRegion);
+    const officialDept = getOfficialDepartment(officialRegion, selectedDepartment);
+
+    const departments = officialRegion ? Object.keys(divisions[officialRegion] || {}) : [];
+    const subPrefectures = (officialRegion && officialDept) 
+        ? Object.keys(divisions[officialRegion][officialDept] || {}) 
         : [];
         
     const { cantons, tribus } = useCustomaryDivisions();

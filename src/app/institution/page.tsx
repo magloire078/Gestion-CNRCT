@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { getDirectoireMembers, getEmployeeDirectory, type RegionalCommittee } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { getOfficialRegion, getOfficialDepartment } from "@/lib/normalization-utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 
 // Import landing components
 import { OrganizationStructure } from "@/components/landing/organization-structure";
-import { TraditionalHierarchy } from "@/components/landing/traditional-hierarchy";
 import { BureauDirectoire } from "@/components/landing/bureau-directoire";
 import { RegionalCommittees } from "@/components/landing/regional-committees";
 
@@ -23,19 +23,22 @@ export default function InstitutionPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [members, directory] = await Promise.all([
+                const [membersRaw, directoryRaw] = await Promise.all([
                     getDirectoireMembers(),
                     getEmployeeDirectory()
                 ]);
+                const members = membersRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé');
+                const directory = directoryRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé');
                 setDirectoireMembers(members);
 
                 // Compute regional committees locally
                 const regionsList = Object.keys(divisions);
                 const computedCommittees: RegionalCommittee[] = regionsList.map(region => {
-                    const depts = Object.keys(divisions[region] || {});
+                    const officialRegion = getOfficialRegion(region);
+                    const depts = Object.keys(divisions[officialRegion] || {});
                     
                     const president = directory.find(emp => 
-                        emp.Region === region && 
+                        getOfficialRegion(emp.Region || "") === officialRegion && 
                         emp.poste?.toLowerCase().includes('membre du directoire')
                     ) || null;
 
@@ -43,9 +46,10 @@ export default function InstitutionPage() {
                     if (president) committeeMembers.push(president);
 
                     depts.forEach(dept => {
+                        const officialDept = getOfficialDepartment(officialRegion, dept);
                         const deptMembers = directory.filter(emp => 
-                            emp.Region === region && 
-                            emp.Departement === dept && 
+                            getOfficialRegion(emp.Region || "") === officialRegion && 
+                            getOfficialDepartment(officialRegion, emp.Departement || "") === officialDept && 
                             emp.id !== president?.id &&
                             (emp.poste?.toLowerCase().includes('comité') || emp.poste?.toLowerCase().includes('comite'))
                         );
@@ -90,7 +94,6 @@ export default function InstitutionPage() {
             <div className="flex flex-col min-h-screen bg-[#fafaf8] text-[#1a1a1a] font-body rounded-2xl overflow-hidden shadow-sm border border-slate-200">
                 <main className="flex-1">
                     <OrganizationStructure />
-                    <TraditionalHierarchy />
                     
                     <BureauDirectoire 
                         loading={loading} 

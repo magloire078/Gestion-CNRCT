@@ -19,9 +19,10 @@ interface BureauDirectoireProps {
   loading: boolean;
   members: Employe[];
   allDirectors?: Employe[];
+  pastDirectors?: Employe[];
 }
 
-export function BureauDirectoire({ loading, members, allDirectors = [] }: BureauDirectoireProps) {
+export function BureauDirectoire({ loading, members, allDirectors = [], pastDirectors = [] }: BureauDirectoireProps) {
   const { canSeeGovernanceStatus } = usePermissions();
   const showStatus = canSeeGovernanceStatus();
   const isEmpActive = (m: Employe) => !m.status || m.status === 'Actif' || m.status === 'En congé';
@@ -46,9 +47,9 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
       !p.includes('assistant') &&
       !p.includes('sous-direct');
   }).sort((a, b) => {
-    const aIsCabinet = (a.poste?.toLowerCase().includes('directrice de cabinet') || a.poste?.toLowerCase().includes('directeur de cabinet')) ? -1 : 1;
-    const bIsCabinet = (b.poste?.toLowerCase().includes('directrice de cabinet') || b.poste?.toLowerCase().includes('directeur de cabinet')) ? -1 : 1;
-    return aIsCabinet - bIsCabinet;
+    const aIsSG = (a.poste?.toLowerCase().includes('secrétaire général') || a.poste?.toLowerCase().includes('secretaire general')) ? -1 : 1;
+    const bIsSG = (b.poste?.toLowerCase().includes('secrétaire général') || b.poste?.toLowerCase().includes('secretaire general')) ? -1 : 1;
+    return aIsSG - bIsSG;
   });
 
   const otherDirectors = (allDirectors.length > 0 ? allDirectors : members).filter(m => {
@@ -61,6 +62,15 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
       !p.includes('chauffeur') &&
       !p.includes('assistant') &&
       !p.includes('sous-direct');
+  }).sort((a, b) => {
+    const getRank = (name: string) => {
+      const n = name.toLowerCase();
+      if (n.includes('gagnie') || n.includes('ange-marie')) return 1;
+      if (n.includes('adje') || n.includes('pascal')) return 2;
+      if (n.includes('kassi') || n.includes('lucien')) return 3;
+      return 4;
+    };
+    return getRank(a.name || '') - getRank(b.name || '');
   });
 
   return (
@@ -86,7 +96,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                   <div className="absolute inset-x-[-20px] top-[-20px] bottom-[-20px] bg-gradient-to-br from-emerald-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl blur-xl" />
                   <div className="relative flex flex-col items-center bg-white p-6 rounded-xl border border-amber-200/50 shadow-2xl shadow-amber-500/10 transition-all hover:-translate-y-2">
                     <div className="w-40 h-40 rounded-full bg-gradient-to-br from-emerald-50 to-amber-50 flex items-center justify-center mb-6 overflow-hidden border-[6px] border-white shadow-xl relative group-hover:scale-105 transition-transform duration-500">
-                      {president.photoUrl && !president.photoUrl.includes('ui-avatars.com') && !president.photoUrl.includes('placehold.co') ? (
+                      {president.photoUrl && (president.photoUrl.startsWith('http') || president.photoUrl.startsWith('/')) && !president.photoUrl.includes('ui-avatars.com') && !president.photoUrl.includes('placehold.co') ? (
                         <Image src={president.photoUrl} alt={president.name || ''} fill className="object-cover" sizes="160px" />
                       ) : (
                         <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(president.name || 'P')}&backgroundColor=f59e0b&fontFamily=Inter`} alt={president.name || ''} fill className="object-cover" sizes="160px" />
@@ -116,7 +126,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                     <div className="absolute inset-x-[-10px] top-[-10px] bottom-[-10px] bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl blur-lg" />
                     <div className="relative flex flex-col items-center bg-white p-5 rounded-xl border border-slate-100 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-2">
                       <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center mb-6 border-4 border-white shadow-lg overflow-hidden relative group-hover:scale-110 transition-transform duration-500">
-                        {vp.photoUrl && !vp.photoUrl.includes('ui-avatars.com') && !vp.photoUrl.includes('placehold.co') ? (
+                        {vp.photoUrl && (vp.photoUrl.startsWith('http') || vp.photoUrl.startsWith('/')) && !vp.photoUrl.includes('ui-avatars.com') && !vp.photoUrl.includes('placehold.co') ? (
                           <Image src={vp.photoUrl} alt={vp.name || ''} fill className="object-cover" sizes="96px" />
                         ) : (
                           <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(vp.name || 'VP')}&backgroundColor=f59e0b&fontFamily=Inter`} alt={vp.name || ''} fill className="object-cover" sizes="96px" />
@@ -153,7 +163,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                     <div key={index} className="group relative">
                       <div className="relative flex flex-col items-center bg-white p-6 rounded-[1.5rem] border border-slate-100 transition-all hover:bg-slate-50/50 hover:shadow-xl hover:-translate-y-1">
                         <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4 border-2 border-white shadow-sm overflow-hidden relative group-hover:scale-110 transition-transform">
-                          {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
+                          {member.photoUrl && (member.photoUrl.startsWith('http') || member.photoUrl.startsWith('/')) && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                             <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
                           ) : (
                             <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name || 'MB')}&backgroundColor=f59e0b&fontFamily=Inter`} alt={member.name || ''} fill className="object-cover" sizes="64px" />
@@ -183,7 +193,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
               <>
                 <div className="flex items-center gap-4 mb-6 mt-10 max-w-6xl mx-auto">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#006039]/20" />
-                  <h3 className="text-xl font-black text-[#006039] uppercase tracking-[0.2em]">Cabinet et Secrétariat Général</h3>
+                  <h3 className="text-xl font-black text-[#006039] uppercase tracking-[0.2em]">Secrétariat Général & Cabinet</h3>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#006039]/20" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-400">
@@ -191,7 +201,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                     <div key={index} className="group relative h-full">
                       <div className="relative flex flex-col items-center h-full bg-[#006039]/5 backdrop-blur-sm p-5 rounded-2xl border border-[#006039]/10 transition-all hover:bg-[#006039]/10 hover:shadow-lg">
                         <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center mb-4 border border-primary/10 shadow-sm overflow-hidden relative">
-                          {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
+                          {member.photoUrl && (member.photoUrl.startsWith('http') || member.photoUrl.startsWith('/')) && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                             <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="80px" />
                           ) : (
                             <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name || 'CAB')}&backgroundColor=006039&fontFamily=Arial`} alt={member.name || ''} fill className="object-cover" sizes="80px" />
@@ -229,7 +239,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                     <div key={index} className="group relative w-full sm:max-w-[280px] flex-1 min-w-[240px]">
                       <div className="relative flex flex-col items-center h-full bg-white/40 backdrop-blur-sm p-6 rounded-2xl border border-primary/5 transition-all hover:bg-white/80 hover:shadow-lg">
                         <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4 border border-white shadow-sm overflow-hidden relative">
-                          {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
+                          {member.photoUrl && (member.photoUrl.startsWith('http') || member.photoUrl.startsWith('/')) && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                             <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
                           ) : (
                             <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name || 'DIR')}&backgroundColor=006039&fontFamily=Arial`} alt={member.name || ''} fill className="object-cover" sizes="64px" />
@@ -246,6 +256,39 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                             )}
                           >
                             {member.status || 'Actif'}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {pastDirectors.length > 0 && (
+              <>
+                <div className="flex items-center gap-4 mb-6 mt-16 max-w-6xl mx-auto opacity-70">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Anciens Membres du Directoire</h4>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+                <div className="flex flex-wrap justify-center gap-4 max-w-6xl mx-auto opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
+                  {pastDirectors.map((member, index) => (
+                    <div key={`past-${index}`} className="group relative w-full sm:max-w-[200px] flex-1 min-w-[180px]">
+                      <div className="relative flex flex-col items-center h-full bg-slate-50/50 p-4 rounded-xl border border-slate-100 transition-all hover:bg-slate-50 hover:shadow-sm">
+                        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-3 border border-slate-200 shadow-sm overflow-hidden relative">
+                          {member.photoUrl && (member.photoUrl.startsWith('http') || member.photoUrl.startsWith('/')) && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
+                            <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="48px" />
+                          ) : (
+                            <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name || 'AN')}&backgroundColor=94a3b8&fontFamily=Inter`} alt={member.name || ''} fill className="object-cover" sizes="48px" />
+                          )}
+                        </div>
+                        <p className="text-[9px] uppercase tracking-widest font-bold text-slate-400 text-center leading-tight mb-1">{member.poste}</p>
+                        <h4 className="font-bold text-xs text-slate-600 text-center mb-2">{member.name}</h4>
+                        {member.status && (
+                          <Badge 
+                            className="bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none text-slate-500 hover:bg-transparent"
+                          >
+                            {member.status}
                           </Badge>
                         )}
                       </div>

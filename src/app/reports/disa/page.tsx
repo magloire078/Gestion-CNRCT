@@ -13,14 +13,20 @@ import { PermissionGuard } from "@/components/auth/permission-guard";
 import { DisaOfficialReport } from "@/components/reports/disa-official-report";
 
 // Helper for formatting currency in CFA
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR').format(amount);
+const formatCurrency = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null || isNaN(amount)) return "0";
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(amount));
 };
 
 // Year labels for headers
 const monthLabels = [
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+];
+
+const shortMonthLabels = [
+    "Jan.", "Fév.", "Mar.", "Avr.", "Mai", "Jun.",
+    "Jul.", "Aoû.", "Sep.", "Oct.", "Nov.", "Déc."
 ];
 
 const DisaHeader = ({ organizationLogos, year, isPrinting = false }: { organizationLogos?: any, year: string, isPrinting?: boolean }) => (
@@ -217,44 +223,44 @@ export default function DisaPage() {
                                         <table className="w-full border-collapse">
                                             <thead className="bg-[#1e3a8a] text-white">
                                                 <tr>
-                                                    <th className="w-12 text-center text-[9px] font-black uppercase bg-[#1e3a8a] border-r border-white/20 p-4 text-white/80">N°</th>
-                                                    <th className="w-24 text-center text-[9px] font-black uppercase bg-[#1e3a8a] border-r border-white/20 p-4 text-white/80">Matricule</th>
-                                                    <th className="min-w-[220px] text-left pl-6 text-[9px] font-black uppercase bg-[#1e3a8a] border-r border-white/20 p-4 text-white/60">Nom & Prénoms</th>
-                                                    {monthLabels.map((m: string, i: number) => (
-                                                        <th key={`header-month-${i}`} className="text-right text-[8px] font-black uppercase border-r border-white/10 bg-[#1e3a8a] px-3 p-4 text-white/70">
-                                                            {m.substring(0, 3)}
+                                                    <th className="w-12 text-center text-[10px] font-bold uppercase bg-[#1e3a8a] border-r border-white/20 p-4 text-white">N°</th>
+                                                    <th className="w-24 text-center text-[10px] font-bold uppercase bg-[#1e3a8a] border-r border-white/20 p-4 text-white">Matricule</th>
+                                                    <th className="min-w-[220px] text-left pl-6 text-[10px] font-bold uppercase bg-[#1e3a8a] border-r border-white/20 p-4 text-white">Nom & Prénoms</th>
+                                                    {shortMonthLabels.map((m: string, i: number) => (
+                                                        <th key={`header-month-${i}`} className="text-right text-[9px] font-bold uppercase border-r border-white/15 bg-[#1e3a8a] px-3 p-4 text-white">
+                                                            {m}
                                                         </th>
                                                     ))}
-                                                    <th className="text-right font-black text-[9px] uppercase px-4 bg-[#1e3a8a] text-white/90 border-r border-white/20 p-4">Gratif.</th>
-                                                    <th className="text-right font-black text-[9px] uppercase px-4 bg-[#1e3a8a] border-r border-white/20 p-4 text-white">Total Brut</th>
-                                                    <th className="text-right font-black text-[9px] uppercase px-4 bg-[#1e3a8a] p-4 text-blue-300">CNPS</th>
+                                                    <th className="text-right font-bold text-[10px] uppercase px-4 bg-[#1e3a8a] text-white border-r border-white/20 p-4">Gratif.</th>
+                                                    <th className="text-right font-bold text-[10px] uppercase px-4 bg-[#1e3a8a] border-r border-white/20 p-4 text-white">Total Brut</th>
+                                                    <th className="text-right font-bold text-[10px] uppercase px-4 bg-[#1e3a8a] p-4 text-white">CNPS</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white">
                                                 {state.reportData.map((row: any, index: number) => (
                                                     <tr key={row.matricule} className="border-b border-slate-50 hover:bg-slate-50 transition-colors group">
                                                         <td className="text-center font-bold border-r border-slate-50 text-[10px] text-slate-400 p-3">{index + 1}</td>
-                                                        <td className="text-center font-mono font-black border-r border-slate-50 text-[11px] text-slate-700 p-3 bg-slate-50/30 group-hover:bg-slate-100 transition-colors">{row.matricule}</td>
-                                                        <td className="font-black whitespace-nowrap pl-6 border-r border-slate-50 text-sm text-slate-900 p-3">{row.name}</td>
+                                                        <td className="text-center font-mono font-bold border-r border-slate-50 text-[10px] text-slate-700 p-3 bg-slate-50/30 group-hover:bg-slate-100 transition-colors">{row.matricule}</td>
+                                                        <td className="font-semibold whitespace-nowrap pl-6 border-r border-slate-50 text-[11px] text-slate-900 p-3">{row.name}</td>
                                                         {row.monthlySalaries.map((salary: number, i: number) => (
                                                             <td key={`${row.matricule}-month-${i}`} className="text-right font-mono text-[10px] border-r border-slate-50 px-3 tracking-tighter text-slate-600 tabular-nums p-3">
                                                                 {formatCurrency(salary)}
                                                             </td>
                                                         ))}
-                                                        <td className="text-right font-mono font-bold text-[10px] px-4 border-r border-slate-50 tracking-tighter text-slate-800 p-3">{formatCurrency(row.gratification)}</td>
-                                                        <td className="text-right font-mono font-black text-[11px] px-4 border-r border-slate-50 tracking-tighter text-slate-900 bg-slate-50/50 p-3">{formatCurrency(row.totalBrut)}</td>
-                                                        <td className="text-right font-mono font-black text-[12px] px-4 tracking-tighter text-blue-600 p-3">{formatCurrency(row.totalCNPS)}</td>
+                                                        <td className="text-right font-mono text-[10px] px-4 border-r border-slate-50 tracking-tighter text-slate-650 p-3">{formatCurrency(row.gratification)}</td>
+                                                        <td className="text-right font-mono font-semibold text-[10px] px-4 border-r border-slate-50 tracking-tighter text-slate-700 bg-slate-50/30 p-3">{formatCurrency(row.totalBrut)}</td>
+                                                        <td className="text-right font-mono font-semibold text-[10px] px-4 tracking-tighter text-slate-700 bg-slate-50/30 p-3">{formatCurrency(row.totalCNPS)}</td>
                                                     </tr>
                                                 ))}
                                                 {state.grandTotal && (
-                                                    <tr className="font-black bg-slate-900 text-white">
-                                                        <td colSpan={3} className="text-right font-black text-[10px] uppercase pr-6 p-5 tracking-widest text-slate-400">TOTALISATION GÉNÉRALE</td>
+                                                    <tr className="font-bold bg-slate-900 text-white">
+                                                        <td colSpan={3} className="text-right font-bold text-[10px] uppercase pr-6 p-5 tracking-wider text-slate-350">TOTALISATION GÉNÉRALE</td>
                                                         {state.grandTotal.monthly.map((total: number, index: number) => (
-                                                            <td key={`total-month-${index}`} className="text-right font-mono text-[9px] font-bold border-r border-white/5 px-3 tracking-tighter p-5 text-slate-300">{formatCurrency(total)}</td>
+                                                            <td key={`total-month-${index}`} className="text-right font-mono text-[9px] font-bold border-r border-white/10 px-3 tracking-tighter p-5 text-white/90">{formatCurrency(total)}</td>
                                                         ))}
-                                                        <td className="text-right font-mono text-[10px] font-black px-4 border-r border-white/5 tracking-tighter p-5">{formatCurrency(state.grandTotal.gratification)}</td>
-                                                        <td className="text-right font-mono text-[11px] font-black px-4 border-r border-white/5 tracking-tighter p-5">{formatCurrency(state.grandTotal.brut)}</td>
-                                                        <td className="text-right font-mono text-[13px] font-black px-4 tracking-tighter p-5 text-blue-400">{formatCurrency(state.grandTotal.cnps)}</td>
+                                                        <td className="text-right font-mono text-[9px] font-bold px-4 border-r border-white/10 tracking-tighter p-5 text-white/90">{formatCurrency(state.grandTotal.gratification)}</td>
+                                                        <td className="text-right font-mono text-[9px] font-bold px-4 border-r border-white/10 tracking-tighter p-5 text-white bg-white/5">{formatCurrency(state.grandTotal.brut)}</td>
+                                                        <td className="text-right font-mono text-[9px] font-bold px-4 tracking-tighter p-5 text-white bg-white/5">{formatCurrency(state.grandTotal.cnps)}</td>
                                                     </tr>
                                                 )}
                                             </tbody>

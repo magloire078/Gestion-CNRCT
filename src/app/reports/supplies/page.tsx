@@ -146,7 +146,7 @@ export default function SupplyReportsPage() {
     }
 
     return (
-        <PermissionGuard permission="page:reports:view">
+        <PermissionGuard permission="page:supplies:view">
             <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-700">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">

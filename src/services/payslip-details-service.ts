@@ -171,11 +171,19 @@ export async function getPayslipDetails(
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
 
-    // Robust CNPS Activity check
-    const isCNPSActive = !!employee.CNPS && (
-        (!employee.Date_Immatriculation || !isAfter(startOfMonth(parseISO(employee.Date_Immatriculation)), payslipDateObj)) &&
-        (!employee.Date_Cessation_CNPS || isBefore(payslipDateObj, parseISO(employee.Date_Cessation_CNPS)))
-    );
+    // Robust CNPS Activity check based on current status and active periods
+    const parsedImmatriculation = employee.Date_Immatriculation ? parseISO(employee.Date_Immatriculation) : null;
+    const dateImmatriculation = parsedImmatriculation && isValid(parsedImmatriculation) ? startOfMonth(parsedImmatriculation) : null;
+
+    const parsedCessation = employee.Date_Cessation_CNPS ? parseISO(employee.Date_Cessation_CNPS) : null;
+    const dateCessation = parsedCessation && isValid(parsedCessation) ? parsedCessation : null;
+
+    const isAfterImmatriculation = !dateImmatriculation || !isAfter(dateImmatriculation, payslipDateObj);
+    const isBeforeCessation = !dateCessation || isBefore(payslipDateObj, dateCessation);
+
+    const isCNPSActive = (employee.CNPS || (!!dateImmatriculation && !!dateCessation)) && 
+                         isAfterImmatriculation && 
+                         isBeforeCessation;
 
     const cnps = isCNPSActive ? (brutImposable * 0.063) : 0;
     const its = 0;

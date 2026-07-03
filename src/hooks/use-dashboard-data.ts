@@ -277,7 +277,7 @@ export function useDashboardData(user: User | null) {
                 } catch { return null; }
             })
             .filter((emp): emp is Employe & { calculatedRetirementDate: Date, formattedRetirementDate: string } => {
-                if (!emp || emp.status === 'Retraité' || emp.status === 'Décédé') return false;
+                if (!emp || (emp.status !== 'Actif' && emp.status !== 'En congé')) return false;
                 return emp.calculatedRetirementDate.getFullYear() === retirementYearNum;
             })
             .sort((a, b) => a.calculatedRetirementDate.getTime() - b.calculatedRetirementDate.getTime());

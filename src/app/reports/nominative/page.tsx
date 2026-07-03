@@ -155,7 +155,7 @@ export default function NominativeReportPage() {
   const formatCurrency = (value: number) => value === 0 ? '-' : value.toLocaleString('fr-FR') + ' FCFA';
 
   return (
-    <PermissionGuard permission="page:reports:view">
+    <PermissionGuard permission="page:reports:nominative:view">
       <>
         <div className={`flex flex-col gap-5 pb-10 animate-in fade-in duration-1000 ${isPrinting ? 'print-hidden' : ''}`}>
           {/* Header */}

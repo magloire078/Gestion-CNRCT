@@ -40,22 +40,40 @@ if (typeof window !== 'undefined') {
         );
     };
 
-    // ─── Intercepteur console.error ───────────────────────────────────────────
-    const originalError = console.error.bind(console);
-    console.error = (...args: any[]) => {
-        const msg = args.join(' ');
-        if (isPermanentNoise(msg)) return;
-        if (Date.now() - appStartTime < 30000 && isInitialLoadNoise(msg)) return;
-        originalError(...args);
-    };
+    // ─── Intercepteur console.error avec robustesse face aux surcharges (Next.js/React) ───
+    let currentError = console.error;
+    Object.defineProperty(console, 'error', {
+        get() {
+            return (...args: any[]) => {
+                const msg = args.join(' ');
+                if (isPermanentNoise(msg)) return;
+                if (Date.now() - appStartTime < 30000 && isInitialLoadNoise(msg)) return;
+                currentError(...args);
+            };
+        },
+        set(val) {
+            currentError = val;
+        },
+        configurable: true,
+        enumerable: true
+    });
 
-    // ─── Intercepteur console.warn (script tag warning peut venir en warn) ───
-    const originalWarn = console.warn.bind(console);
-    console.warn = (...args: any[]) => {
-        const msg = args.join(' ');
-        if (isPermanentNoise(msg)) return;
-        originalWarn(...args);
-    };
+    // ─── Intercepteur console.warn avec robustesse face aux surcharges (Next.js/React) ───
+    let currentWarn = console.warn;
+    Object.defineProperty(console, 'warn', {
+        get() {
+            return (...args: any[]) => {
+                const msg = args.join(' ');
+                if (isPermanentNoise(msg)) return;
+                currentWarn(...args);
+            };
+        },
+        set(val) {
+            currentWarn = val;
+        },
+        configurable: true,
+        enumerable: true
+    });
 
     // ─── Erreurs non gérées ───────────────────────────────────────────────────
     window.addEventListener('error', (event) => {

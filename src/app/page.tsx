@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { getDirectoireMembers, getEmployeeDirectory, type RegionalCommittee } from "@/services/employee-service";
-import type { Employe } from "@/lib/data";
+import type { Employe, Conflict } from "@/lib/data";
+import { getConflicts } from "@/services/conflict-service";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { getOfficialRegion } from "@/lib/normalization-utils";
 
 // Import landing components
 import { LandingHeader } from "@/components/landing/landing-header";
 import { HeroSection } from "@/components/landing/hero-section";
 import { MissionsSection } from "@/components/landing/missions-section";
 import { OrganizationStructure } from "@/components/landing/organization-structure";
-import { TraditionalHierarchy } from "@/components/landing/traditional-hierarchy";
 import { BureauDirectoire } from "@/components/landing/bureau-directoire";
 import { RegionalCommittees } from "@/components/landing/regional-committees";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -22,13 +23,16 @@ export default function LandingPage() {
     const [loading, setLoading] = useState(true);
     const [selectedRegionIndex, setSelectedRegionIndex] = useState<number>(0);
     const [searchQuery, setSearchQuery] = useState("");
+    const [conflicts, setConflicts] = useState<Conflict[]>([]);
+    const [pastDirectors, setPastDirectors] = useState<Employe[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [membersRaw, directoryRaw] = await Promise.all([
+                const [membersRaw, directoryRaw, conflictsData] = await Promise.all([
                     getDirectoireMembers(),
-                    getEmployeeDirectory()
+                    getEmployeeDirectory(),
+                    getConflicts()
                 ]);
                 
                 const directory = directoryRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé');
@@ -36,14 +40,18 @@ export default function LandingPage() {
                 const members = membersRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé');
 
                 setDirectoireMembers(members);
+                setAllDirectors(directoryRaw);
+                setPastDirectors(inactiveDirectory);
+                setConflicts(conflictsData);
 
                 // Compute regional committees locally
                 const regionsList = Object.keys(divisions);
                 const computedCommittees: RegionalCommittee[] = regionsList.map(region => {
-                    const depts = Object.keys(divisions[region] || {});
+                    const officialRegion = getOfficialRegion(region);
+                    const depts = Object.keys(divisions[officialRegion] || {});
                     
                     const president = directory.find(emp => 
-                        emp.Region === region && 
+                        getOfficialRegion(emp.Region || "") === officialRegion && 
                         (emp.poste?.toLowerCase().includes('membre du directoire') ||
                          emp.poste?.toLowerCase().includes('membre du bureau') ||
                          emp.poste?.toLowerCase().includes('point focal') ||
@@ -56,7 +64,7 @@ export default function LandingPage() {
                     if (president) committeeMembers.push(president);
 
                     const regionMembers = directory.filter(emp => 
-                        emp.Region === region && 
+                        getOfficialRegion(emp.Region || "") === officialRegion && 
                         emp.id !== president?.id &&
                         (emp.poste?.toLowerCase().includes('comité') || 
                          emp.poste?.toLowerCase().includes('comite') ||
@@ -68,7 +76,7 @@ export default function LandingPage() {
                     committeeMembers.push(...regionMembers);
 
                     const pastMembers = inactiveDirectory.filter(emp => 
-                        emp.Region === region && 
+                        getOfficialRegion(emp.Region || "") === officialRegion && 
                         (emp.poste?.toLowerCase().includes('membre du directoire') ||
                          emp.poste?.toLowerCase().includes('membre du bureau') ||
                          emp.poste?.toLowerCase().includes('point focal') ||
@@ -124,12 +132,12 @@ export default function LandingPage() {
                 <HeroSection />
                 <MissionsSection />
                 <OrganizationStructure />
-                <TraditionalHierarchy />
                 
                 <BureauDirectoire 
                     loading={loading} 
                     members={directoireMembers}
                     allDirectors={allDirectors}
+                    pastDirectors={pastDirectors}
                 />
 
                 <RegionalCommittees 
@@ -139,6 +147,7 @@ export default function LandingPage() {
                     setSearchQuery={setSearchQuery}
                     selectedRegionIndex={selectedRegionIndex}
                     setSelectedRegionIndex={setSelectedRegionIndex}
+                    conflicts={conflicts}
                 />
             </main>
 

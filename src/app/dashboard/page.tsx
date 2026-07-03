@@ -104,9 +104,9 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading, color 
                 <div className={cn("absolute top-0 right-0 p-5 opacity-[0.02] transition-transform group-hover:scale-150 group-hover:opacity-[0.06] duration-1000 pointer-events-none")}>
                     <Icon className="h-32 w-32 rotate-12" />
                 </div>
-                <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10 px-5 pt-8">
-                    <div className={cn("p-3.5 rounded-2xl shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", colorClasses[color])}>
-                        <Icon className="h-6 w-6" />
+                <CardHeader className="flex flex-row items-center justify-between pb-1 relative z-10 px-5 pt-5">
+                    <div className={cn("p-3 rounded-2xl shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", colorClasses[color])}>
+                        <Icon className="h-5 w-5" />
                     </div>
                     {trend && (
                         <div className={cn("flex items-center gap-1.5 text-[9px] font-black uppercase px-3 py-1 rounded-full border shadow-sm backdrop-blur-md", trend.up ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" : "bg-rose-500/10 text-rose-700 border-rose-500/20")}>
@@ -114,15 +114,15 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading, color 
                         </div>
                     )}
                 </CardHeader>
-                <CardContent className="relative z-10 px-5 pb-5 pt-4">
+                <CardContent className="relative z-10 px-5 pb-4 pt-2">
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 pl-0.5">{title}</span>
-                        {loading ? <Skeleton className="h-10 w-24 mt-2 rounded-lg bg-slate-200/50" /> : (
-                            <div className="text-4xl font-black text-slate-900 tracking-tighter">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1.5 pl-0.5">{title}</span>
+                        {loading ? <Skeleton className="h-8 w-24 mt-1 rounded-lg bg-slate-200/50" /> : (
+                            <div className="text-3xl font-black text-slate-900 tracking-tighter">
                                 {value}
                             </div>
                         )}
-                        {description && <p className="text-[10px] text-slate-400 font-bold mt-3 italic border-l-2 border-slate-200 pl-4">{description}</p>}
+                        {description && <p className="text-[10px] text-slate-400 font-bold mt-2 italic border-l-2 border-slate-200 pl-4">{description}</p>}
                     </div>
                 </CardContent>
             </Card>
@@ -188,24 +188,24 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
                             </TabsList>
                             {categoriesWithRecruits.map(([group, recruits]) => (
                                 <TabsContent key={group} value={group} className="focus-visible:outline-none">
-                                    <div className="space-y-6">
+                                    <div className="space-y-3">
                                         {recruits.slice(0, 4).map(emp => (
-                                            <div key={emp.id} className="flex items-center gap-5 group p-3 hover:bg-white/60 rounded-2xl transition-all border border-transparent hover:border-white/40 shadow-sm hover:shadow-xl">
-                                                <Avatar className="h-14 w-14 border-[3px] border-white shadow-2xl ring-1 ring-slate-100">
+                                            <div key={emp.id} className="flex items-center gap-4 group p-2.5 hover:bg-white/60 rounded-xl transition-all border border-transparent hover:border-white/40 shadow-sm hover:shadow-xl">
+                                                <Avatar className="h-11 w-11 border-2 border-white shadow-2xl ring-1 ring-slate-100">
                                                     <AvatarImage src={emp.photoUrl} alt={emp.name} className="object-cover" />
-                                                    <AvatarFallback className="bg-slate-100 font-black text-slate-400 text-sm">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                    <AvatarFallback className="bg-slate-100 font-black text-slate-400 text-xs">{emp.lastName?.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-black text-slate-900 group-hover:text-primary transition-colors truncate text-sm uppercase tracking-tight">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                                    <p className="text-[10px] text-primary font-black uppercase tracking-[0.2em] mb-1">{emp.poste}</p>
-                                                    <div className="flex items-center gap-4">
-                                                        <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest opacity-60">ID : {emp.matricule}</span>
+                                                    <p className="font-black text-slate-900 group-hover:text-primary transition-colors truncate text-xs uppercase tracking-tight">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                    <p className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mb-0.5">{emp.poste}</p>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[8px] text-slate-400 font-black uppercase tracking-widest opacity-60">ID : {emp.matricule}</span>
                                                         <div className="h-1 w-1 rounded-full bg-slate-200" />
-                                                        <span className="text-[9px] text-slate-400 font-bold italic tracking-widest opacity-60">Entrée {formatDate(emp.dateEmbauche)}</span>
+                                                        <span className="text-[8px] text-slate-400 font-bold italic tracking-widest opacity-60">Entrée {formatDate(emp.dateEmbauche)}</span>
                                                     </div>
                                                 </div>
-                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full opacity-0 group-hover:opacity-100 group-hover:bg-slate-900 group-hover:text-white transition-all" asChild>
-                                                    <Link href="/employees"><ArrowUpRight className="h-5 w-5" /></Link>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 group-hover:bg-slate-900 group-hover:text-white transition-all" asChild>
+                                                    <Link href="/employees"><ArrowUpRight className="h-4 w-4" /></Link>
                                                 </Button>
                                             </div>
                                         ))}
@@ -244,11 +244,13 @@ export default function DashboardPage() {
         setSelectedAnniversaryYear,
         selectedRetirementYear,
         setSelectedRetirementYear,
+        organizationLogos,
     } = useDashboardData(user);
     const { formatDate } = useFormat();
 
     const [isPrintingAnniversaries, setIsPrintingAnniversaries] = useState(false);
     const [isPrintingRetirements, setIsPrintingRetirements] = useState(false);
+    const [anniversaryTab, setAnniversaryTab] = useState("seniority");
     const [activeTab, setActiveTab] = useState("overview");
     const [isPending, startTransition] = useTransition();
 
@@ -264,56 +266,56 @@ export default function DashboardPage() {
 
     return (
         <PermissionGuard permission="page:dashboard:view">
-            <div className="pb-10 space-y-6">
-                <div className="flex flex-col gap-5">
+            <div className="pb-8 space-y-4">
+                <div className="flex flex-col gap-4">
                     {/* Hero Welcome Ultra-Premium */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 p-6 rounded-2xl bg-card/40 backdrop-blur-md border border-white/10 shadow-3xl relative overflow-hidden group">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-xl bg-card/40 backdrop-blur-md border border-white/10 shadow-3xl relative overflow-hidden group">
                         {/* Institutional Background Element */}
                         <div className="absolute top-0 right-0 p-16 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-1000 pointer-events-none">
                             <Scale className="h-96 w-96 rotate-12" />
                         </div>
 
-                        <div className="flex flex-col md:flex-row md:items-center gap-5 relative z-10 font-black">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 relative z-10 font-black">
                             <div className="relative">
-                                <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full scale-125 animate-pulse" />
-                                <Avatar className="h-32 w-32 md:h-44 md:w-44 border-[6px] border-white shadow-3xl flex-shrink-0 relative z-10 transition-transform duration-700 group-hover:scale-110">
+                                <div className="absolute inset-0 bg-blue-500/20 blur-2xl rounded-full scale-125 animate-pulse" />
+                                <Avatar className="h-20 w-20 md:h-28 md:w-28 border-4 border-white shadow-3xl flex-shrink-0 relative z-10 transition-transform duration-700 group-hover:scale-110">
                                     <AvatarImage src={user?.photoUrl || undefined} alt={user?.name || ''} className="object-cover" />
-                                    <AvatarFallback className="bg-slate-900 text-white font-black text-5xl">
+                                    <AvatarFallback className="bg-slate-900 text-white font-black text-3xl md:text-4xl">
                                         {user?.name?.charAt(0)}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className="absolute -bottom-3 -right-3 h-12 w-12 bg-blue-600 border-[5px] border-white rounded-2xl shadow-3xl z-20 flex items-center justify-center transform rotate-12 group-hover:rotate-0 transition-transform">
-                                    <ShieldCheck className="h-6 w-6 text-white" />
+                                <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-blue-600 border-2 border-white rounded-lg shadow-3xl z-20 flex items-center justify-center transform rotate-12 group-hover:rotate-0 transition-transform">
+                                    <ShieldCheck className="h-4 w-4 text-white" />
                                 </div>
                             </div>
-                            <div className="space-y-4">
-                                <div className="flex flex-wrap items-center gap-4">
-                                    <div className="px-4 py-1.5 rounded-full bg-slate-900 text-[10px] font-black uppercase tracking-widest text-white shadow-xl">
+                            <div className="space-y-2">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div className="px-3 py-1 rounded-full bg-slate-900 text-[9px] font-black uppercase tracking-widest text-white shadow-xl">
                                         Observatoire National
                                     </div>
-                                    <div className="px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
+                                    <div className="px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm border border-slate-200 text-[9px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
                                         v3.2.0-ELITE
                                     </div>
                                 </div>
-                                <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9] uppercase">
-                                    Gouvernance <br/> <span className="text-slate-400">& Pilotage</span>
+                                <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter leading-tight uppercase">
+                                    Gouvernance <span className="text-slate-400">& Pilotage</span>
                                 </h1>
-                                <p className="text-slate-500 text-base md:text-xl font-bold leading-relaxed max-w-2xl opacity-80 uppercase tracking-tight">
-                                    Bonjour, <span className="text-slate-900 font-black decoration-blue-500/30 decoration-8 underline underline-offset-8">{user?.name}</span>. 
+                                <p className="text-slate-500 text-xs md:text-sm font-bold leading-relaxed max-w-2xl opacity-80 uppercase tracking-tight">
+                                    Bonjour, <span className="text-slate-900 font-black decoration-blue-500/30 decoration-4 underline underline-offset-4">{user?.name}</span>. 
                                     Synchronisation des indicateurs du Directoire National terminée.
                                 </p>
                             </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row items-center gap-6 relative z-10">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
                             <Link href="/reports">
-                                <Button variant="outline" className="h-16 rounded-2xl px-6 border-slate-200 font-black bg-white text-slate-900 shadow-2xl hover:bg-slate-50 hover:shadow-primary/10 transition-all uppercase text-[11px] tracking-widest active:scale-95">
-                                    <Download className="h-5 w-5 mr-4 text-blue-600" />
+                                <Button variant="outline" className="h-11 rounded-xl px-5 border-slate-200 font-black bg-white text-slate-900 shadow-2xl hover:bg-slate-50 hover:shadow-primary/10 transition-all uppercase text-[10px] tracking-widest active:scale-95">
+                                    <Download className="h-4 w-4 mr-2 text-blue-600" />
                                     Rapports de Contrôle
                                 </Button>
                             </Link>
                             <Link href="/mapping">
-                                <Button className="h-16 rounded-2xl px-6 bg-slate-900 font-black shadow-3xl shadow-slate-900/40 hover:bg-black transition-all uppercase text-[11px] tracking-widest border-t border-white/10 active:scale-95">
-                                    <Zap className="h-5 w-5 mr-4 text-blue-400 fill-blue-400 animate-pulse" />
+                                <Button className="h-11 rounded-xl px-5 bg-slate-900 font-black shadow-3xl shadow-slate-900/40 hover:bg-black transition-all uppercase text-[10px] tracking-widest border-t border-white/10 active:scale-95">
+                                    <Zap className="h-4 w-4 mr-2 text-blue-400 fill-blue-400 animate-pulse" />
                                     Plateforme SIG
                                 </Button>
                             </Link>
@@ -321,30 +323,30 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Dashboard Content Ultra-Premium */}
-                    <Tabs value={activeTab} onValueChange={(val) => startTransition(() => setActiveTab(val))} className="space-y-6">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b-[3px] border-slate-100 pb-4 px-4">
-                            <TabsList className="bg-transparent gap-16 h-auto p-0 flex flex-wrap lg:flex-nowrap">
+                    <Tabs value={activeTab} onValueChange={(val) => startTransition(() => setActiveTab(val))} className="space-y-4">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b-2 border-slate-100 pb-2 px-2">
+                            <TabsList className="bg-transparent gap-8 h-auto p-0 flex flex-wrap lg:flex-nowrap">
                                 <TabsTrigger 
                                     value="overview" 
-                                    className="px-0 py-4 h-auto rounded-none border-b-[5px] border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-slate-900 transition-all"
+                                    className="px-0 py-2.5 h-auto rounded-none border-b-4 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-slate-900 transition-all"
                                 >
                                     Flux Stratégiques
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="alerts" 
-                                    className="px-0 py-4 h-auto rounded-none border-b-[5px] border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-slate-900 transition-all"
+                                    className="px-0 py-2.5 h-auto rounded-none border-b-4 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-slate-900 transition-all"
                                 >
                                     Ressources Humaines
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="stability" 
-                                    className="px-0 py-4 h-auto rounded-none border-b-[5px] border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-slate-900 transition-all"
+                                    className="px-0 py-2.5 h-auto rounded-none border-b-4 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-slate-900 transition-all"
                                 >
                                     Intégrité & Sûreté
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="territory" 
-                                    className="px-0 py-4 h-auto rounded-none border-b-[5px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-blue-600 transition-all"
+                                    className="px-0 py-2.5 h-auto rounded-none border-b-4 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-blue-600 transition-all"
                                 >
                                     Territoires & Notabilités
                                 </TabsTrigger>
@@ -361,9 +363,9 @@ export default function DashboardPage() {
                             </div>
                         </div>
 
-                        <TabsContent value="overview" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+                        <TabsContent value="overview" className="space-y-4 focus-visible:outline-none focus-visible:ring-0">
                             {/* Key Performance Indicators Upgraded */}
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 <StatCard index={0} loading={loading} title="Effectifs Total" value={globalStats.activeEmployees.toString()} icon={Users} color="primary" trend={{ value: "+2.4%", up: true }} />
                                 <StatCard index={1} loading={loading} title="Conseil des Sages" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} color="amber" trend={{ value: "Stable", up: true }} />
                                 <StatCard index={2} loading={loading} title="Incidents SIG" value={globalStats.conflicts.filter(c => c.status !== 'Résolu').length.toString()} icon={AlertTriangle} color="rose" trend={{ value: "-4%", up: false }} description="Alertes territoriales actives" />
@@ -371,7 +373,7 @@ export default function DashboardPage() {
                             </div>
 
                             {/* Charts Section */}
-                            <div className="grid gap-5 lg:grid-cols-7">
+                            <div className="grid gap-4 lg:grid-cols-7">
                                 <Card className="lg:col-span-4 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden">
                                     <CardHeader className="p-5 pb-4">
                                         <div className="flex items-center justify-between">
@@ -397,7 +399,7 @@ export default function DashboardPage() {
                             </div>
 
                             {/* Triple Bottom Panels */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                                 <Card className="border-white/10 shadow-3xl rounded-xl bg-slate-950 text-white overflow-hidden relative group p-5 min-h-[300px] flex flex-col justify-between">
                                      <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-blue-600/20 to-transparent pointer-events-none" />
                                      <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12 group-hover:rotate-45 transition-transform duration-1000">
@@ -489,7 +491,7 @@ export default function DashboardPage() {
                                         <div className="flex items-center justify-between gap-6">
                                             <div className="space-y-2">
                                                 <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-5 text-slate-900">
-                                                    <Sparkles className="h-8 w-8 text-rose-500" /> Célébrations & Milestones
+                                                    <Sparkles className="h-8 w-8 text-rose-500" /> Ancienneté
                                                 </CardTitle>
                                                 <CardDescription className="text-[10px] font-black uppercase tracking-widest text-slate-500">Registre événementiel du personnel</CardDescription>
                                             </div>
@@ -505,7 +507,7 @@ export default function DashboardPage() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="p-6">
-                                        <Tabs defaultValue="seniority" className="w-full space-y-5">
+                                        <Tabs value={anniversaryTab} onValueChange={setAnniversaryTab} className="w-full space-y-5">
                                             <TabsList className="grid w-full grid-cols-2 bg-slate-100/50 rounded-2xl p-1.5 border border-slate-200/50">
                                                 <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all rounded-xl py-4">
                                                     <Award className="h-4 w-4 mr-3" /> Ancienneté
@@ -516,54 +518,54 @@ export default function DashboardPage() {
                                             </TabsList>
                                             {loading ? <Skeleton className="h-[400px] w-full rounded-xl" /> : (
                                                 <>
-                                                    <TabsContent value="seniority" className="space-y-4 focus-visible:outline-none">
+                                                    <TabsContent value="seniority" className="space-y-3 focus-visible:outline-none">
                                                         {seniorityAnniversaries.length > 0 ? (
-                                                            <div className="space-y-6">
+                                                            <div className="space-y-3">
                                                                 {seniorityAnniversaries.map(emp => (
-                                                                    <div key={`senior-${emp.id}`} className="flex items-center justify-between group p-4 hover:bg-white rounded-[1.5rem] transition-all border border-transparent hover:border-slate-100 shadow-sm hover:shadow-xl">
-                                                                        <div className="flex items-center gap-6">
-                                                                            <Avatar className="h-16 w-16 border-[3px] border-white shadow-2xl ring-1 ring-blue-100">
+                                                                    <div key={`senior-${emp.id}`} className="flex items-center justify-between group p-3 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-100 shadow-sm hover:shadow-xl">
+                                                                        <div className="flex items-center gap-4">
+                                                                            <Avatar className="h-12 w-12 border-2 border-white shadow-2xl ring-1 ring-blue-100">
                                                                                 <AvatarImage src={emp.photoUrl} alt={emp.name} className="object-cover" />
-                                                                                <AvatarFallback className="bg-blue-50 text-blue-400 font-black"><Award className="h-6 w-6" /></AvatarFallback>
+                                                                                <AvatarFallback className="bg-blue-50 text-blue-400 font-black"><Award className="h-5 w-5" /></AvatarFallback>
                                                                             </Avatar>
                                                                             <div>
-                                                                                <p className="font-black text-slate-900 text-base uppercase tracking-tight">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                                                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1">{emp.poste}</p>
+                                                                                <p className="font-black text-slate-900 text-sm uppercase tracking-tight">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-0.5">{emp.poste}</p>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="flex flex-col items-end gap-2">
-                                                                            <Badge className="bg-slate-900 text-white border-none font-black px-5 py-2 rounded-xl shadow-xl shadow-slate-900/10 text-[10px] uppercase tracking-widest whitespace-nowrap">{emp.seniorityYears} ANS DE SERVICE</Badge>
-                                                                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.15em] italic opacity-60">Fidélité Institutionalisée</span>
+                                                                        <div className="flex flex-col items-end gap-1">
+                                                                            <Badge className="bg-slate-900 text-white border-none font-black px-4 py-1.5 rounded-lg shadow-xl shadow-slate-900/10 text-[9px] uppercase tracking-widest whitespace-nowrap">{emp.seniorityYears} ANS DE SERVICE</Badge>
+                                                                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.15em] italic opacity-60">Embauché(e) le {formatDate(emp.dateEmbauche)}</span>
                                                                         </div>
                                                                     </div>
                                                                 ))}
                                                             </div>
                                                         ) : (
-                                                            <div className="py-10 text-center flex flex-col items-center gap-4 text-slate-300">
-                                                                <div className="h-24 w-24 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
-                                                                    <Award className="h-12 w-12 opacity-15" />
+                                                            <div className="py-8 text-center flex flex-col items-center gap-3 text-slate-300">
+                                                                <div className="h-20 w-20 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
+                                                                    <Award className="h-10 w-10 opacity-15" />
                                                                 </div>
                                                                 <p className="text-xs font-black uppercase tracking-widest opacity-60">Aucun jubilé archivé pour ce mois.</p>
                                                             </div>
                                                         )}
                                                     </TabsContent>
-                                                    <TabsContent value="birthdays" className="space-y-4 focus-visible:outline-none">
+                                                    <TabsContent value="birthdays" className="space-y-3 focus-visible:outline-none">
                                                         {birthdayAnniversaries.length > 0 ? (
-                                                            <div className="space-y-6">
+                                                            <div className="space-y-3">
                                                                 {birthdayAnniversaries.map(emp => (
-                                                                    <div key={`birth-${emp.id}`} className="flex items-center justify-between group p-4 hover:bg-white rounded-[1.5rem] transition-all border border-transparent hover:border-slate-100 shadow-sm hover:shadow-xl">
-                                                                        <div className="flex items-center gap-6">
-                                                                            <Avatar className="h-16 w-16 border-[3px] border-white shadow-2xl ring-1 ring-rose-100">
+                                                                    <div key={`birth-${emp.id}`} className="flex items-center justify-between group p-3 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-100 shadow-sm hover:shadow-xl">
+                                                                        <div className="flex items-center gap-4">
+                                                                            <Avatar className="h-12 w-12 border-2 border-white shadow-2xl ring-1 ring-rose-100">
                                                                                 <AvatarImage src={emp.photoUrl} alt={emp.name} className="object-cover" />
-                                                                                <AvatarFallback className="bg-rose-50 text-rose-400 font-black"><Cake className="h-6 w-6" /></AvatarFallback>
+                                                                                <AvatarFallback className="bg-rose-50 text-rose-400 font-black"><Cake className="h-5 w-5" /></AvatarFallback>
                                                                             </Avatar>
                                                                             <div>
-                                                                                <p className="font-black text-slate-900 text-base uppercase tracking-tight">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                                                                <p className="text-[10px] font-black text-rose-600 uppercase tracking-[0.2em] mt-1">{emp.poste}</p>
+                                                                                <p className="font-black text-slate-900 text-sm uppercase tracking-tight">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                                                <p className="text-[10px] font-black text-rose-600 uppercase tracking-[0.2em] mt-0.5">{emp.poste}</p>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="flex flex-col items-end gap-2">
-                                                                            <Badge className="bg-rose-500 text-white border-none font-black px-5 py-2 rounded-xl shadow-xl shadow-rose-500/20 text-[10px] uppercase tracking-widest uppercase">
+                                                                        <div className="flex flex-col items-end gap-1">
+                                                                            <Badge className="bg-rose-500 text-white border-none font-black px-4 py-1.5 rounded-lg shadow-xl shadow-rose-500/20 text-[9px] uppercase tracking-widest uppercase">
                                                                                 Célébré le {emp.birthDayFormatted}
                                                                             </Badge>
                                                                             <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.15em] italic opacity-60">Fraternité CNRCT</span>
@@ -572,9 +574,9 @@ export default function DashboardPage() {
                                                                 ))}
                                                             </div>
                                                         ) : (
-                                                            <div className="py-10 text-center flex flex-col items-center gap-4 text-slate-300">
-                                                                <div className="h-24 w-24 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
-                                                                    <Cake className="h-12 w-12 opacity-15" />
+                                                            <div className="py-8 text-center flex flex-col items-center gap-3 text-slate-300">
+                                                                <div className="h-20 w-20 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
+                                                                    <Cake className="h-10 w-10 opacity-15" />
                                                                 </div>
                                                                 <p className="text-xs font-black uppercase tracking-widest opacity-60">Aucun anniversaire identifié.</p>
                                                             </div>
@@ -607,23 +609,23 @@ export default function DashboardPage() {
                                     </CardHeader>
                                     <CardContent className="p-6">
                                         {loading ? <Skeleton className="h-[500px] w-full rounded-xl" /> : (
-                                            <div className="space-y-4">
+                                            <div className="space-y-3">
                                                 {upcomingRetirements.length > 0 ? (
-                                                    <div className="space-y-6">
+                                                    <div className="space-y-3">
                                                         {upcomingRetirements.map(emp => (
-                                                            <div key={emp.id} className="flex items-center justify-between group p-4 hover:bg-white rounded-[1.5rem] transition-all border border-transparent hover:border-slate-100 shadow-sm hover:shadow-xl">
-                                                                <div className="flex items-center gap-6">
-                                                                    <Avatar className="h-16 w-16 border-[3px] border-white shadow-2xl ring-1 ring-amber-100">
+                                                            <div key={emp.id} className="flex items-center justify-between group p-3 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-100 shadow-sm hover:shadow-xl">
+                                                                <div className="flex items-center gap-4">
+                                                                    <Avatar className="h-12 w-12 border-2 border-white shadow-2xl ring-1 ring-amber-100">
                                                                         <AvatarImage src={emp.photoUrl} alt={emp.name} className="object-cover" />
                                                                         <AvatarFallback className="bg-amber-50 text-amber-500 font-black text-xs">{emp.lastName?.charAt(0)}</AvatarFallback>
                                                                     </Avatar>
                                                                     <div>
-                                                                        <p className="font-black text-slate-900 text-base uppercase tracking-tight">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                                                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mt-1">{emp.poste}</p>
+                                                                        <p className="font-black text-slate-900 text-sm uppercase tracking-tight">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mt-0.5">{emp.poste}</p>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex flex-col items-end gap-2">
-                                                                    <Badge className="bg-amber-500 text-white border-none font-black px-5 py-2 rounded-xl shadow-xl shadow-amber-500/20 text-[10px] uppercase tracking-widest whitespace-nowrap">
+                                                                <div className="flex flex-col items-end gap-1">
+                                                                    <Badge className="bg-amber-500 text-white border-none font-black px-4 py-1.5 rounded-lg shadow-xl shadow-amber-500/20 text-[9px] uppercase tracking-widest whitespace-nowrap">
                                                                         DÉPART PREVU EN {emp.formattedRetirementDate.split(' ').pop()}
                                                                     </Badge>
                                                                     <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.15em] italic opacity-60">Reconnaissance de l'État</span>
@@ -632,9 +634,9 @@ export default function DashboardPage() {
                                                         ))}
                                                     </div>
                                                 ) : (
-                                                    <div className="py-12 text-center flex flex-col items-center gap-4 text-slate-300">
-                                                        <div className="h-24 w-24 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
-                                                            <LogOutIcon className="h-12 w-12 opacity-15" />
+                                                    <div className="py-8 text-center flex flex-col items-center gap-3 text-slate-300">
+                                                        <div className="h-20 w-20 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
+                                                            <LogOutIcon className="h-10 w-10 opacity-15" />
                                                         </div>
                                                         <p className="text-xs font-black uppercase tracking-widest opacity-60">Aucun départ à la retraite imminent.</p>
                                                     </div>
@@ -646,9 +648,9 @@ export default function DashboardPage() {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="stability" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+                        <TabsContent value="stability" className="space-y-4 focus-visible:outline-none focus-visible:ring-0">
                             {/* Territorial Heatmap Integration Premium */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                 <div className="lg:col-span-2 relative">
                                     <div className="absolute top-10 left-10 z-20 bg-slate-900/90 backdrop-blur-xl px-6 py-3 rounded-2xl shadow-3xl border border-white/20 flex items-center gap-4 scale-90 md:scale-100">
                                         <div className="h-3 w-3 rounded-full bg-rose-500 animate-ping shadow-[0_0_10px_rgba(244,63,94,0.8)]" />
@@ -656,66 +658,66 @@ export default function DashboardPage() {
                                     </div>
                                     <ConflictHeatmap conflicts={globalStats.conflicts} className="h-full border-4 border-white shadow-3xl rounded-2xl overflow-hidden bg-white min-h-[600px]" />
                                 </div>
-                                <div className="space-y-5">
+                                <div className="space-y-4">
                                     <Card className="border-white/10 shadow-3xl rounded-xl bg-slate-900 text-white overflow-hidden p-6 relative group border-t border-white/10">
                                          <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-blue-600/20 to-transparent pointer-events-none" />
                                          <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12 transition-transform duration-1000 group-hover:scale-110 pointer-events-none">
                                             <ShieldCheck className="h-64 w-64" />
                                          </div>
-                                         <h3 className="text-xs font-black uppercase tracking-[0.25em] text-blue-400 mb-10 flex items-center gap-4 relative z-10">
+                                         <h3 className="text-xs font-black uppercase tracking-[0.25em] text-blue-400 mb-5 flex items-center gap-4 relative z-10">
                                             <div className="h-1 lg:h-8 w-1 lg:w-1 bg-blue-500 rounded-full" />
                                             Analyse de Stabilité
                                          </h3>
-                                         <div className="space-y-5 relative z-10">
-                                            <div className="flex justify-between items-end border-b border-white/10 pb-5 group/item hover:translate-x-2 transition-transform cursor-pointer">
+                                         <div className="space-y-3 relative z-10">
+                                            <div className="flex justify-between items-end border-b border-white/10 pb-3 group/item hover:translate-x-2 transition-transform cursor-pointer">
                                                 <div>
-                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Dossiers Résolus</p>
-                                                    <p className="text-5xl font-black tracking-tight">{globalStats.conflicts.filter(c => c.status === 'Résolu').length}</p>
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Dossiers Résolus</p>
+                                                    <p className="text-4xl font-black tracking-tight">{globalStats.conflicts.filter(c => c.status === 'Résolu').length}</p>
                                                 </div>
                                                 <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] px-4 py-1.5 rounded-xl mb-2 shadow-2xl shadow-emerald-500/40 uppercase tracking-widest">SUCCESS 100%</Badge>
                                             </div>
-                                            <div className="flex justify-between items-end border-b border-white/10 pb-5 group/item hover:translate-x-2 transition-transform cursor-pointer">
+                                            <div className="flex justify-between items-end border-b border-white/10 pb-3 group/item hover:translate-x-2 transition-transform cursor-pointer">
                                                 <div>
-                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Médiations actives</p>
-                                                    <p className="text-5xl font-black tracking-tight text-amber-400">{globalStats.conflicts.filter(c => c.status === 'En médiation').length}</p>
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Médiations actives</p>
+                                                    <p className="text-4xl font-black tracking-tight text-amber-400">{globalStats.conflicts.filter(c => c.status === 'En médiation').length}</p>
                                                 </div>
                                                 <Badge className="bg-amber-500 text-white border-none font-black text-[9px] px-4 py-1.5 rounded-xl mb-2 shadow-2xl shadow-amber-500/40 uppercase tracking-widest">ALERTE MOYENNE</Badge>
                                             </div>
-                                            <div className="flex justify-between items-end pb-2 group/item hover:translate-x-2 transition-transform cursor-pointer">
+                                            <div className="flex justify-between items-end pb-1 group/item hover:translate-x-2 transition-transform cursor-pointer">
                                                 <div>
-                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Tensions Ouvertes</p>
-                                                    <p className="text-5xl font-black tracking-tight text-rose-500">{globalStats.conflicts.filter(c => c.status === 'Ouvert').length}</p>
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Tensions Ouvertes</p>
+                                                    <p className="text-4xl font-black tracking-tight text-rose-500">{globalStats.conflicts.filter(c => c.status === 'Ouvert').length}</p>
                                                 </div>
                                                 <Badge className="bg-rose-600 text-white border-none font-black text-[9px] px-4 py-1.5 rounded-xl mb-2 shadow-2xl shadow-rose-600/40 uppercase tracking-widest">URGENCE CRITIQUE</Badge>
                                             </div>
                                          </div>
-                                         <Button className="w-full mt-10 bg-blue-600 hover:bg-blue-700 h-16 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-3xl shadow-blue-500/40 transition-all border-none relative z-10 active:scale-95" asChild>
-                                             <Link href="/conflicts/analytics">Lancer Analyse de Terrain <TrendingUp className="ml-4 h-5 w-5" /></Link>
+                                         <Button className="w-full mt-5 bg-blue-600 hover:bg-blue-700 h-12 rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-3xl shadow-blue-500/40 transition-all border-none relative z-10 active:scale-95" asChild>
+                                             <Link href="/conflicts/analytics">Lancer Analyse de Terrain <TrendingUp className="ml-4 h-4 w-4" /></Link>
                                          </Button>
                                     </Card>
 
-                                    <Card className="border-white/10 shadow-3xl rounded-xl bg-white/60 backdrop-blur-md p-6 flex flex-col justify-between group">
+                                    <Card className="border-white/10 shadow-3xl rounded-xl bg-white/60 backdrop-blur-md p-5 flex flex-col justify-between group">
                                         <div>
-                                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mb-10 flex items-center gap-4">
+                                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mb-5 flex items-center gap-4">
                                                 <MapIcon className="h-5 w-5 text-slate-400" /> SIG : Flux de Proximité
                                             </h3>
-                                            <div className="space-y-4">
+                                            <div className="space-y-2.5">
                                                 {globalStats.conflicts.slice(0, 3).map(c => (
-                                                    <div key={c.id} className="flex gap-6 p-4 rounded-xl hover:bg-white transition-all group border border-transparent hover:border-slate-100 shadow-sm hover:shadow-2xl translate-z-0">
-                                                        <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-all group-hover:rotate-6", c.status === 'Résolu' ? "bg-emerald-50 text-emerald-500" : "bg-rose-50 text-rose-500")}>
-                                                            <AlertTriangle className="h-7 w-7" />
+                                                    <div key={c.id} className="flex gap-4 p-3 rounded-lg hover:bg-white transition-all group border border-transparent hover:border-slate-100 shadow-sm hover:shadow-2xl translate-z-0">
+                                                        <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0 shadow-lg transition-all group-hover:rotate-6", c.status === 'Résolu' ? "bg-emerald-50 text-emerald-500" : "bg-rose-50 text-rose-500")}>
+                                                            <AlertTriangle className="h-5 w-5" />
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1.5 opacity-60 leading-none">{c.village} · {c.region}</p>
-                                                            <p className="text-base font-black text-slate-900 group-hover:text-primary transition-colors line-clamp-1 truncate uppercase tracking-tight">{c.parties}</p>
-                                                            <p className="text-[10px] font-bold text-slate-400 italic tracking-widest mt-1 opacity-60 uppercase">Dossier N°SIG-{c.id.substring(0,4)}</p>
+                                                            <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1 opacity-60 leading-none">{c.village} · {c.region}</p>
+                                                            <p className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors line-clamp-1 truncate uppercase tracking-tight">{c.parties}</p>
+                                                            <p className="text-[8px] font-bold text-slate-400 italic tracking-widest mt-0.5 opacity-60 uppercase">Dossier N°SIG-{c.id.substring(0,4)}</p>
                                                         </div>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
-                                        <Button variant="ghost" className="w-full mt-10 h-14 rounded-2xl font-black uppercase tracking-widest text-[9px] text-slate-400 hover:bg-slate-900 hover:text-white transition-all" asChild>
-                                            <Link href="/village-repository">Voir toute la base SIG <ArrowUpRight className="ml-3 h-4 w-4" /></Link>
+                                        <Button variant="ghost" className="w-full mt-5 h-11 rounded-xl font-black uppercase tracking-widest text-[9px] text-slate-400 hover:bg-slate-900 hover:text-white transition-all" asChild>
+                                            <Link href="/village-repository">Voir toute la base SIG <ArrowUpRight className="ml-2 h-3.5 w-3.5" /></Link>
                                         </Button>
                                     </Card>
                                 </div>
@@ -723,16 +725,16 @@ export default function DashboardPage() {
                             {/* End of Stability Content */}
                         </TabsContent>
 
-                        <TabsContent value="territory" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+                        <TabsContent value="territory" className="space-y-4 focus-visible:outline-none focus-visible:ring-0">
                             {/* Territory High Level Stats */}
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 <StatCard index={0} loading={loading} title="Total Autorités" value={globalStats.chiefs.toString()} icon={Crown} color="amber" trend={{ value: "Actif", up: true }} />
                                 <StatCard index={1} loading={loading} title="Villages Répertoriés" value={globalStats.villagesCount ? globalStats.villagesCount.toString() : "0"} icon={MapPin} color="primary" trend={{ value: "En cours", up: true }} description="Extraction BD" />
                                 <StatCard index={2} loading={loading} title="Chefs de Canton" value={globalStats.allChiefs.filter(c => c.role === 'Chef de canton').length.toString()} icon={Building} color="success" />
                                 <StatCard index={3} loading={loading} title="Rois & Prov." value={globalStats.allChiefs.filter(c => c.role === 'Roi' || c.role === 'Chef de province').length.toString()} icon={ShieldCheck} color="info" />
                             </div>
 
-                            <div className="grid gap-5 lg:grid-cols-7">
+                            <div className="grid gap-4 lg:grid-cols-7">
                                 {/* Charts Section */}
                                 <Card className="lg:col-span-4 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden">
                                     <CardHeader className="p-5 pb-4">
@@ -751,26 +753,8 @@ export default function DashboardPage() {
                                     </CardContent>
                                 </Card>
 
-                                {/* Villages Distribution Chart */}
-                                <Card className="lg:col-span-7 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden mt-6">
-                                    <CardHeader className="p-5 pb-4">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
-                                                   <MapPin className="h-6 w-6 text-primary" />
-                                                   Implantation Territoriale
-                                                </CardTitle>
-                                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Répartition des Villages et Campements par Département</CardDescription>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="px-6 pb-6 pt-4">
-                                        <VillagesDistributionChart villages={globalStats.villages} />
-                                    </CardContent>
-                                </Card>
-
                                 {/* Latest Chiefs Added */}
-                                <Card className="lg:col-span-3 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden flex flex-col mt-6">
+                                <Card className="lg:col-span-3 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden flex flex-col">
                                     <CardHeader className="bg-amber-500/10 border-b border-border/50 py-4 px-5">
                                         <div className="flex items-center gap-4 mb-1">
                                             <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-lg">
@@ -817,11 +801,138 @@ export default function DashboardPage() {
                                         </Button>
                                     </div>
                                 </Card>
+
+                                {/* Villages Distribution Chart */}
+                                <Card className="lg:col-span-7 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden mt-4">
+                                    <CardHeader className="p-5 pb-4">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
+                                                   <MapPin className="h-6 w-6 text-primary" />
+                                                   Implantation Territoriale
+                                                </CardTitle>
+                                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Répartition des Villages et Campements par Département</CardDescription>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="px-6 pb-6 pt-4">
+                                        <VillagesDistributionChart villages={globalStats.villages} />
+                                    </CardContent>
+                                </Card>
                             </div>
                         </TabsContent>
                     </Tabs>
                 </div>
             </div>
+
+            {isPrintingAnniversaries && (
+                <PrintLayout
+                    logos={organizationLogos}
+                    title="ANCIENNETÉ"
+                    subtitle={`Registre événementiel du personnel - ${monthsForSelect[parseInt(selectedAnniversaryMonth)].label} ${selectedAnniversaryYear}`}
+                    orientation="portrait"
+                    onAfterPrint={() => setIsPrintingAnniversaries(false)}
+                >
+                    <div className="space-y-6 mt-6">
+                        <h3 className="text-md font-bold border-b pb-2">
+                            {anniversaryTab === 'seniority' ? 'ANCIENNETÉ (ANNIVERSAIRES DE SERVICE)' : 'NAISSANCES DU MOIS'}
+                        </h3>
+                        <table className="w-full table-fixed text-xs border-collapse border border-slate-300">
+                            <thead>
+                                <tr className="bg-slate-100">
+                                    <th className="border border-slate-300 p-2 text-left w-[4%]">N°</th>
+                                    {anniversaryTab === 'seniority' ? (
+                                        <>
+                                            <th className="border border-slate-300 p-2 text-left w-[8%]">N° Mat.</th>
+                                            <th className="border border-slate-300 p-2 text-left w-[32%]">Nom & Prénoms</th>
+                                            <th className="border border-slate-300 p-2 text-left w-[34%]">Poste</th>
+                                            <th className="border border-slate-300 p-2 text-left w-[12%]">Date d'embauche</th>
+                                            <th className="border border-slate-300 p-2 text-left w-[10%]">Années de service</th>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <th className="border border-slate-300 p-2 text-left w-[10%]">N° Mat.</th>
+                                            <th className="border border-slate-300 p-2 text-left w-[38%]">Nom & Prénoms</th>
+                                            <th className="border border-slate-300 p-2 text-left w-[34%]">Poste</th>
+                                            <th className="border border-slate-300 p-2 text-left w-[14%]">Date de naissance</th>
+                                        </>
+                                    )}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {anniversaryTab === 'seniority' ? (
+                                    seniorityAnniversaries.map((emp, index) => (
+                                                <tr key={emp.id}>
+                                            <td className="border border-slate-300 p-2 truncate">{index + 1}</td>
+                                            <td className="border border-slate-300 p-2 truncate">{emp.matricule}</td>
+                                            <td className="border border-slate-300 p-2 font-semibold truncate">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim().toUpperCase()}</td>
+                                            <td className="border border-slate-300 p-2 truncate">{emp.poste}</td>
+                                            <td className="border border-slate-300 p-2 truncate">{formatDate(emp.dateEmbauche)}</td>
+                                            <td className="border border-slate-300 p-2 truncate">{emp.seniorityYears} ans</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    birthdayAnniversaries.map((emp, index) => (
+                                        <tr key={emp.id}>
+                                            <td className="border border-slate-300 p-2 truncate">{index + 1}</td>
+                                            <td className="border border-slate-300 p-2 truncate">{emp.matricule}</td>
+                                            <td className="border border-slate-300 p-2 font-semibold truncate">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim().toUpperCase()}</td>
+                                            <td className="border border-slate-300 p-2 truncate">{emp.poste}</td>
+                                            <td className="border border-slate-300 p-2 truncate">{formatDate(emp.Date_Naissance)}</td>
+                                        </tr>
+                                    ))
+                                )}
+                                {((anniversaryTab === 'seniority' && seniorityAnniversaries.length === 0) || 
+                                  (anniversaryTab === 'birthdays' && birthdayAnniversaries.length === 0)) && (
+                                    <tr>
+                                        <td colSpan={anniversaryTab === 'seniority' ? 6 : 5} className="border border-slate-300 p-4 text-center text-slate-400 italic">Aucun enregistrement pour ce mois.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </PrintLayout>
+            )}
+
+            {isPrintingRetirements && (
+                <PrintLayout
+                    logos={organizationLogos}
+                    title="PASSATIONS DE RELAIS"
+                    subtitle={`Registre de planification des fins de carrières - Année ${selectedRetirementYear}`}
+                    orientation="portrait"
+                    onAfterPrint={() => setIsPrintingRetirements(false)}
+                >
+                    <div className="space-y-6 mt-6">
+                        <table className="w-full table-fixed text-xs border-collapse border border-slate-300">
+                            <thead>
+                                <tr className="bg-slate-100">
+                                    <th className="border border-slate-300 p-2 text-left w-[4%]">N°</th>
+                                    <th className="border border-slate-300 p-2 text-left w-[10%]">N° Mat.</th>
+                                    <th className="border border-slate-300 p-2 text-left w-[38%]">Nom & Prénoms</th>
+                                    <th className="border border-slate-300 p-2 text-left w-[34%]">Poste</th>
+                                    <th className="border border-slate-300 p-2 text-left w-[14%]">Date de départ prévue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {upcomingRetirements.map((emp, index) => (
+                                    <tr key={emp.id}>
+                                        <td className="border border-slate-300 p-2 truncate">{index + 1}</td>
+                                        <td className="border border-slate-300 p-2 truncate">{emp.matricule}</td>
+                                        <td className="border border-slate-300 p-2 font-semibold truncate">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim().toUpperCase()}</td>
+                                        <td className="border border-slate-300 p-2 truncate">{emp.poste}</td>
+                                        <td className="border border-slate-300 p-2 truncate">Le {emp.formattedRetirementDate}</td>
+                                    </tr>
+                                ))}
+                                {upcomingRetirements.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="border border-slate-300 p-4 text-center text-slate-400 italic">Aucun départ à la retraite prévu pour cette année.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </PrintLayout>
+            )}
         </PermissionGuard>
     );
 }

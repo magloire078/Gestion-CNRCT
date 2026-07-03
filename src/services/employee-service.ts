@@ -18,6 +18,7 @@ import { recalculateSalaryChain, getEmployeeHistory } from './employee-history-s
 import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
 import { parseISO, addYears, format, isValid } from 'date-fns';
 import { divisions } from '@/lib/ivory-coast-divisions';
+import { getOfficialRegion, getOfficialDepartment } from '@/lib/normalization-utils';
 
 
 const employeesCollection = collection(db, 'employees');
@@ -98,8 +99,10 @@ export async function createOrUpdateChiefFromEmployee(employee: Employe): Promis
     if (!isChief) return;
 
     let affiliation: 'Directoire' | 'Comité Régional' | 'Aucune' = 'Aucune';
-    if (isDirectoire) affiliation = 'Directoire';
-    else if (isComite) affiliation = 'Comité Régional';
+    if (employee.status !== 'Décédé' && employee.status !== 'Remplacé' && employee.status !== 'Licencié') {
+        if (isDirectoire) affiliation = 'Directoire';
+        else if (isComite) affiliation = 'Comité Régional';
+    }
 
     const chiefData: Partial<Chief> = {
         name: `${employee.lastName || ''} ${employee.firstName || ''}`.trim() || employee.name,
@@ -278,19 +281,38 @@ export function subscribeToEmployee(
 }
 
 export async function getEmployees(): Promise<Employe[]> {
-    const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
-        const data = { id: doc.id, ...doc.data() };
-        const result = employeeSchema.safeParse(data);
-        if (!result.success) {
-            // Log validation errors with details for debugging
-            console.warn(`[EmployeeService] validation error for ${doc.id}:`, result.error.errors);
-            // Return data anyway to avoid blocking the UI
-            return data as Employe;
+    try {
+        const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
+            const d = { id: doc.id, ...doc.data() };
+            const result = employeeSchema.safeParse(d);
+            if (!result.success) {
+                console.warn(`[EmployeeService] validation error for ${doc.id}:`, result.error.errors);
+                return d as Employe;
+            }
+            return result.data as Employe;
+        });
+
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('cnrct_cached_employees', JSON.stringify(data));
+            } catch (e) {
+                console.warn('[EmployeeService] Failed to save employees to localStorage:', e);
+            }
         }
-        return result.data as Employe;
-    });
+        return data;
+    } catch (error) {
+        console.error('[EmployeeService] getEmployees failed:', error);
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('cnrct_cached_employees');
+            if (cached) {
+                console.warn('[EmployeeService] Returning cached employees from localStorage due to query failure');
+                return JSON.parse(cached);
+            }
+        }
+        throw error;
+    }
 }
 
 /**
@@ -301,18 +323,31 @@ export async function getEmployeeDirectory(): Promise<Employe[]> {
     try {
         const response = await fetch('/api/employees/directory');
         if (!response.ok) {
-            // Log the error but fall back to client-side getEmployees
             console.warn('[EmployeeService] Directory API failed, falling back to client-side fetch');
             return await getEmployees();
         }
-        return await response.json();
+        const data = await response.json();
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('cnrct_cached_employees', JSON.stringify(data));
+            } catch (e) {
+                console.warn('[EmployeeService] Failed to save employee directory to localStorage:', e);
+            }
+        }
+        return data;
     } catch (error) {
         console.error('[EmployeeService] Failed to fetch employee directory API, falling back to client-side fetch:', error);
-        // Fallback to the regular getEmployees which uses the client SDK
         try {
             return await getEmployees();
         } catch (fallbackError) {
             console.error('[EmployeeService] Fallback to getEmployees also failed:', fallbackError);
+            if (typeof window !== 'undefined') {
+                const cached = localStorage.getItem('cnrct_cached_employees');
+                if (cached) {
+                    console.warn('[EmployeeService] Returning cached employees from localStorage due to fetch failure');
+                    return JSON.parse(cached);
+                }
+            }
             throw error;
         }
     }
@@ -712,11 +747,19 @@ export async function getRegionalCommitteesSummary(): Promise<{ region: string; 
  */
 export async function getRegionalCommitteeDetails(region: string): Promise<RegionalCommittee | null> {
     try {
-        // Query only employees for this specific region
+        const officialRegion = getOfficialRegion(region);
+        
+        // Query only employees for this specific region (flexible casing via `or`)
         const q = query(
             employeesCollection,
-            where('Region', '==', region),
-            where('status', '==', 'Actif')
+            and(
+                where('status', '==', 'Actif'),
+                or(
+                    where('Region', '==', officialRegion),
+                    where('Region', '==', officialRegion.toUpperCase()),
+                    where('Region', '==', officialRegion.toLowerCase())
+                )
+            )
         );
         
         const snapshot = await getDocs(q);
@@ -731,7 +774,7 @@ export async function getRegionalCommitteeDetails(region: string): Promise<Regio
         ) || null;
 
         // 2. Collect up to 2 chefs per department in this region
-        const regionDepts = Object.keys(divisions[region] || {});
+        const regionDepts = Object.keys(divisions[officialRegion] || {});
         const members: Employe[] = [];
 
         if (bureauHead) {
@@ -739,15 +782,16 @@ export async function getRegionalCommitteeDetails(region: string): Promise<Regio
         }
 
         regionDepts.forEach(deptName => {
+            const officialDept = getOfficialDepartment(officialRegion, deptName);
             const deptStaff = regionalStaff.filter(emp =>
-                emp.Departement === deptName &&
+                getOfficialDepartment(officialRegion, emp.Departement || "") === officialDept &&
                 emp.id !== bureauHead?.id
             );
             members.push(...deptStaff.slice(0, 2));
         });
 
         return {
-            region,
+            region: officialRegion,
             president: bureauHead,
             members
         };
@@ -773,7 +817,8 @@ export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
         const allRegionalStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
 
         regions.forEach(region => {
-            const regionalStaff = allRegionalStaff.filter(s => s.Region === region);
+            const officialRegion = getOfficialRegion(region);
+            const regionalStaff = allRegionalStaff.filter(s => getOfficialRegion(s.Region || "") === officialRegion);
             const president = regionalStaff.find(m =>
                 m.poste?.toLowerCase().includes('membre du bureau') ||
                 m.poste?.toLowerCase().includes('président') ||
@@ -782,7 +827,7 @@ export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
             ) || null;
 
             committees.push({
-                region,
+                region: officialRegion,
                 president,
                 members: regionalStaff.filter(m => m.id !== president?.id).slice(0, 10)
             });

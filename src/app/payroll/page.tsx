@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2, Landmark, Download } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2, Landmark, Download, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -112,6 +112,8 @@ export default function PayrollPage() {
   const [directions, setDirections] = useState<Direction[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [cnpsFilter, setCnpsFilter] = useState("all");
+  const [bankFilter, setBankFilter] = useState("all");
 
   // State for the date selection dialog
   const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
@@ -132,7 +134,7 @@ export default function PayrollPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [printStats, setPrintStats] = useState({ total: 0, print: 0, pdf: 0 });
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [isPending, startTransition] = useTransition();
+
 
   // Fetch print stats when period changes or after a new print
   useEffect(() => {
@@ -324,24 +326,48 @@ export default function PayrollPage() {
     }
   };
 
+  const uniqueBanks = useMemo(() => {
+    const banksMap = new Map<string, string>(); // UpperCase -> Original
+    employees.forEach(emp => {
+      if (emp.banque && emp.banque.trim() !== '') {
+        const trimmed = emp.banque.trim();
+        const upper = trimmed.toUpperCase();
+        if (!banksMap.has(upper)) {
+          banksMap.set(upper, trimmed);
+        }
+      }
+    });
+    return Array.from(banksMap.entries()).map(([upper, original]) => ({
+      value: upper,
+      label: original
+    })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [employees]);
+
   const filteredEmployees = useMemo(() => {
-    const filtered = employees.filter(employee => {
+    return employees.filter(employee => {
       const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(debouncedSearchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
-      return matchesSearchTerm && matchesDepartment && matchesStatus;
+      const matchesCnps = cnpsFilter === 'all' || 
+        (cnpsFilter === 'declared' && !!employee.CNPS) || 
+        (cnpsFilter === 'undeclared' && !employee.CNPS);
+      const matchesBank = bankFilter === 'all' || 
+        (bankFilter === 'none' && (!employee.banque || employee.banque.trim() === '')) ||
+        (employee.banque !== undefined && employee.banque.trim().toUpperCase() === bankFilter);
+      return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesBank;
     });
+  }, [employees, debouncedSearchTerm, departmentFilter, statusFilter, cnpsFilter, bankFilter]);
 
-    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
-      setCurrentPage(1);
-    }
-    return filtered;
-
-  }, [employees, searchTerm, departmentFilter, statusFilter, currentPage, itemsPerPage]);
+  // Reset page to 1 when filters or page size changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm, departmentFilter, statusFilter, cnpsFilter, bankFilter, itemsPerPage]);
 
   const paginatedEmployees = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
+    const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+    const safePage = Math.min(currentPage, Math.max(1, totalPages));
+    const startIndex = (safePage - 1) * itemsPerPage;
     return filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredEmployees, currentPage, itemsPerPage]);
 
@@ -350,6 +376,11 @@ export default function PayrollPage() {
   const totalPayroll = useMemo(() => {
     if (!canViewSalaries) return 0;
     return filteredEmployees.reduce((acc, emp) => acc + (emp.netSalary || 0), 0);
+  }, [filteredEmployees, canViewSalaries]);
+
+  const totalGrossPayroll = useMemo(() => {
+    if (!canViewSalaries) return 0;
+    return filteredEmployees.reduce((acc, emp) => acc + (emp.grossSalary || 0), 0);
   }, [filteredEmployees, canViewSalaries]);
 
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
@@ -441,13 +472,30 @@ export default function PayrollPage() {
                     <Landmark className="h-16 w-16 rotate-12" />
                 </div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400">Masse Salariale (Filtrée)</CardTitle>
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400">Masse Salariale Net (Filtrée)</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? <Skeleton className="h-8 w-32 bg-slate-700" /> : (
                     <div className="text-2xl font-black">{formatCurrency(totalPayroll)}</div>
                   )}
                   <p className="text-[10px] text-slate-500 font-bold mt-1">
+                    Basé sur les {filteredEmployees.length} employés affichés
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-white/10 shadow-xl bg-gradient-to-br from-indigo-950 to-slate-900 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Coins className="h-16 w-16 rotate-12" />
+                </div>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Masse Salariale Brut (Filtrée)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? <Skeleton className="h-8 w-32 bg-indigo-900/50" /> : (
+                    <div className="text-2xl font-black">{formatCurrency(totalGrossPayroll)}</div>
+                  )}
+                  <p className="text-[10px] text-indigo-500/70 font-bold mt-1">
                     Basé sur les {filteredEmployees.length} employés affichés
                   </p>
                 </CardContent>
@@ -491,10 +539,10 @@ export default function PayrollPage() {
                     placeholder="Rechercher par nom, matricule..."
                     className="pl-10"
                     value={searchTerm}
-                    onChange={(val) => startTransition(() => {
+                    onChange={(val) => {
                       setSearchTerm(val);
                       setDebouncedSearchTerm(val);
-                    })}
+                    }}
                   />
                 </div>
                 <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
@@ -516,6 +564,30 @@ export default function PayrollPage() {
                     <SelectItem value="En congé">En congé</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={cnpsFilter} onValueChange={setCnpsFilter}>
+                  <SelectTrigger className="flex-1 min-w-[180px]">
+                    <SelectValue placeholder="Filtrer par CNPS" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les régimes (CNPS)</SelectItem>
+                    <SelectItem value="declared">Déclarés CNPS</SelectItem>
+                    <SelectItem value="undeclared">Non déclarés CNPS</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={bankFilter} onValueChange={setBankFilter}>
+                  <SelectTrigger className="flex-1 min-w-[180px]">
+                    <SelectValue placeholder="Filtrer par banque" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les banques</SelectItem>
+                    <SelectItem value="none">Non spécifié / Trésor</SelectItem>
+                    {uniqueBanks.map(bank => (
+                      <SelectItem key={bank.value} value={bank.value}>
+                        {bank.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="mb-4 text-sm text-muted-foreground">
@@ -531,6 +603,7 @@ export default function PayrollPage() {
                       <TableHead className="font-black uppercase text-[10px] tracking-wider">Employé</TableHead>
                       <TableHead className="font-black uppercase text-[10px] tracking-wider">Poste</TableHead>
                       <TableHead className="font-black uppercase text-[10px] tracking-wider">Date d'embauche</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Banque</TableHead>
                       {canViewSalaries && <TableHead className="text-right font-black uppercase text-[10px] tracking-wider">Salaire Net</TableHead>}
                       <TableHead className="sr-only">Actions</TableHead>
                     </TableRow>
@@ -543,6 +616,7 @@ export default function PayrollPage() {
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                           {canViewSalaries && <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>}
                           <TableCell><Skeleton className="h-8 w-8 rounded-md ml-auto" /></TableCell>
                         </TableRow>
@@ -557,6 +631,7 @@ export default function PayrollPage() {
                           </TableCell>
                           <TableCell className="font-medium text-muted-foreground">{employee.poste}</TableCell>
                           <TableCell className="text-sm">{employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</TableCell>
+                          <TableCell className="text-xs font-semibold text-muted-foreground uppercase">{employee.banque || "TRÉSOR PUBLIC"}</TableCell>
                           {canViewSalaries && <TableCell className="text-right font-mono font-bold text-primary">{formatCurrency(employee.netSalary)}</TableCell>}
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -644,11 +719,11 @@ export default function PayrollPage() {
                 <PaginationControls
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  onPageChange={(page) => startTransition(() => setCurrentPage(page))}
+                  onPageChange={(page) => setCurrentPage(page)}
                   itemsPerPage={itemsPerPage}
                   onItemsPerPageChange={setItemsPerPage}
                   totalItems={filteredEmployees.length}
-                  isPending={isPending}
+                  isPending={false}
                 />
               </CardFooter>
             )}

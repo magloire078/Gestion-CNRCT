@@ -26,6 +26,7 @@ import { CreatableSelect } from "@/components/ui/creatable-select";
 import { Upload, Plus, Trash2 as TrashIcon, ChevronRight, ChevronLeft, MapPin as PinIcon, ShieldCheck } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { getOfficialRegion, getOfficialDepartment, getOfficialSubPrefecture } from "@/lib/normalization-utils";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
@@ -143,9 +144,21 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
     }
   }, [isOpen]);
 
-  const departments = useMemo(() => selectedRegion && divisions[selectedRegion] ? Object.keys(divisions[selectedRegion]) : [], [selectedRegion]);
-  const subPrefectures = useMemo(() => selectedRegion && selectedDepartment && divisions[selectedRegion]?.[selectedDepartment] ? Object.keys(divisions[selectedRegion][selectedDepartment]) : [], [selectedRegion, selectedDepartment]);
-  const villages = useMemo(() => selectedRegion && selectedDepartment && selectedSubPrefecture && divisions[selectedRegion]?.[selectedDepartment]?.[selectedSubPrefecture] ? divisions[selectedRegion][selectedDepartment][selectedSubPrefecture] : [], [selectedRegion, selectedDepartment, selectedSubPrefecture]);
+  const departments = useMemo(() => {
+    const officialRegion = getOfficialRegion(selectedRegion);
+    return officialRegion && divisions[officialRegion] ? Object.keys(divisions[officialRegion]) : [];
+  }, [selectedRegion]);
+  const subPrefectures = useMemo(() => {
+    const officialRegion = getOfficialRegion(selectedRegion);
+    const officialDept = getOfficialDepartment(officialRegion, selectedDepartment);
+    return officialRegion && officialDept && divisions[officialRegion]?.[officialDept] ? Object.keys(divisions[officialRegion][officialDept]) : [];
+  }, [selectedRegion, selectedDepartment]);
+  const villages = useMemo(() => {
+    const officialRegion = getOfficialRegion(selectedRegion);
+    const officialDept = getOfficialDepartment(officialRegion, selectedDepartment);
+    const officialSP = getOfficialSubPrefecture(officialRegion, officialDept, selectedSubPrefecture);
+    return officialRegion && officialDept && officialSP && divisions[officialRegion]?.[officialDept]?.[officialSP] ? divisions[officialRegion][officialDept][officialSP] : [];
+  }, [selectedRegion, selectedDepartment, selectedSubPrefecture]);
 
   const resetForm = () => {
     setFirstName(""); setLastName(""); setTitle(""); setRole("Chef de Village"); setAdditionalRoles([]); setCnrctAffiliation("Aucune"); setSexe(""); setPhone(""); setContact("");

@@ -43,6 +43,7 @@ export const employeeSchema = z.object({
     dateEmbauche: z.string().optional(),
     Date_Depart: z.string().optional(),
     Date_Immatriculation: z.string().optional(),
+    Date_Cessation_CNPS: z.string().optional(),
     Num_Decision: z.string().optional(),
 
     // Payroll Info

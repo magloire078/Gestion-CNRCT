@@ -33,8 +33,14 @@ export const getOfficialRegion = (input: string): string => {
         "agboville": "Agnéby-Tiassa",
         "zanzan": "Gontougo",
         "regiondesponts": "Grands-Ponts",
-        "districtautonomedabidjan": "Abidjan",
-        "districtautonomedeyamoussoukro": "Yamoussoukro"
+        "districtautomedabidjan": "Abidjan",
+        "districtautomedeyamoussoukro": "Yamoussoukro",
+        "guenon": "Guémon",
+        "guenons": "Guémon",
+        "lagune": "Abidjan",
+        "lagunes": "Abidjan",
+        "agnebitiassa": "Agnéby-Tiassa",
+        "agnebi": "Agnéby-Tiassa"
     };
     
     if (overrides[normalizedInput]) return overrides[normalizedInput];
@@ -256,6 +262,23 @@ const villageMap: Record<string, { r: string; d: string; sp: string }> = {};
  * Attempts to find the full administrative hierarchy for a village name.
  */
 export const findHierarchyByName = (name: string) => {
-    const norm = normalizeString(name);
-    return villageMap[norm] || null;
+    if (!name) return null;
+    
+    // 1. Clean parenthetical parts: "Bouna (GROUWA)" -> "Bouna"
+    const cleaned = name.replace(/\([^)]*\)/g, "").trim();
+    let norm = normalizeString(cleaned);
+    if (villageMap[norm]) return villageMap[norm];
+
+    // 2. If still not found, try to normalize the original name
+    norm = normalizeString(name);
+    if (villageMap[norm]) return villageMap[norm];
+
+    // 3. Try parenthetical content: "Debremou (Dabou)" -> try "Dabou"
+    const match = name.match(/\(([^)]+)\)/);
+    if (match && match[1]) {
+        const parentheticalNorm = normalizeString(match[1]);
+        if (villageMap[parentheticalNorm]) return villageMap[parentheticalNorm];
+    }
+
+    return null;
 };

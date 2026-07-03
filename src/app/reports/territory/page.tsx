@@ -194,7 +194,7 @@ export default function TerritoryReportPage() {
     }
 
     return (
-        <PermissionGuard permission="page:reports:view">
+        <PermissionGuard permission="page:reports:territory:view">
             <div className="flex flex-col gap-4 pb-10">
                 {/* Header Area */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 print:hidden">

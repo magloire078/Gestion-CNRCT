@@ -226,12 +226,15 @@ export default function VillagesPage() {
 
     const departments = useMemo(() => {
         if (selectedRegion === "all") return [];
-        return Object.keys(divisions[selectedRegion] || {}).sort();
+        const officialRegion = getOfficialRegion(selectedRegion);
+        return Object.keys(divisions[officialRegion] || {}).sort();
     }, [selectedRegion]);
 
     const communes = useMemo(() => {
         if (selectedRegion === "all" || selectedDepartment === "all") return [];
-        return Object.keys(divisions[selectedRegion]?.[selectedDepartment] || {}).sort();
+        const officialRegion = getOfficialRegion(selectedRegion);
+        const officialDept = getOfficialDepartment(officialRegion, selectedDepartment);
+        return Object.keys(divisions[officialRegion]?.[officialDept] || {}).sort();
     }, [selectedRegion, selectedDepartment]);
 
     const cantons = useMemo(() => {
@@ -364,10 +367,13 @@ export default function VillagesPage() {
             if (selectedCommune !== "all") {
                 spCount = 1;
             } else {
-                spCount = Object.keys(divisions[selectedRegion]?.[selectedDepartment] || {}).length;
+                const officialRegion = getOfficialRegion(selectedRegion);
+                const officialDept = getOfficialDepartment(officialRegion, selectedDepartment);
+                spCount = Object.keys(divisions[officialRegion]?.[officialDept] || {}).length;
             }
         } else {
-            const depts = divisions[selectedRegion] || {};
+            const officialRegion = getOfficialRegion(selectedRegion);
+            const depts = divisions[officialRegion] || {};
             deptCount = Object.keys(depts).length;
             Object.values(depts).forEach(sps => {
                 spCount += Object.keys(sps).length;
@@ -662,7 +668,7 @@ export default function VillagesPage() {
                                         useWindowScroll
                                         data={filteredVillages}
                                         components={{
-                                            Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: "100%", borderCollapse: "collapse" }} className="w-full caption-bottom text-base md:text-sm" />,
+                                            Table: ({ style, ...props }) => <table {...props} {...(style ? { style } : {})} className="w-full border-collapse caption-bottom text-base md:text-sm" />,
                                             TableHead: forwardRef((props, ref) => <thead {...props} ref={ref as any} className="[&_tr]:border-b bg-slate-50/50" />),
                                             TableRow: (props) => <tr {...props} className="group hover:bg-slate-50/50 border-slate-50 transition-colors border-b cursor-pointer" />,
                                             TableBody: forwardRef((props, ref) => <tbody {...props} ref={ref as any} className="[&_tr:last-child]:border-0" />),

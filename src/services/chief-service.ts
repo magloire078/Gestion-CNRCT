@@ -155,13 +155,34 @@ export function subscribeToChiefs(
 }
 
 export async function getChiefs(): Promise<Chief[]> {
-    await initializeDefaultChiefs();
-    const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc")));
-    const chiefs = snapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-    } as Chief));
-    return sortChiefs(chiefs);
+    try {
+        await initializeDefaultChiefs();
+        const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc")));
+        const chiefs = snapshot.docs.map((doc: any) => ({
+            id: doc.id,
+            ...doc.data()
+        } as Chief));
+        const sorted = sortChiefs(chiefs);
+
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('cnrct_cached_chiefs', JSON.stringify(sorted));
+            } catch (e) {
+                console.warn('[ChiefService] Failed to save chiefs to localStorage:', e);
+            }
+        }
+        return sorted;
+    } catch (error) {
+        console.error('[ChiefService] getChiefs failed:', error);
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('cnrct_cached_chiefs');
+            if (cached) {
+                console.warn('[ChiefService] Returning cached chiefs from localStorage due to query failure');
+                return JSON.parse(cached);
+            }
+        }
+        throw error;
+    }
 }
 
 export async function getChief(id: string): Promise<Chief | null> {
@@ -283,6 +304,13 @@ async function syncChiefToEmployee(chiefId: string, updateData: any) {
         if (updateData.subPrefecture !== undefined) empUpdateData.subPrefecture = updateData.subPrefecture;
         if (updateData.village !== undefined) empUpdateData.Village = updateData.village;
         if (updateData.photoUrl !== undefined) empUpdateData.photoUrl = updateData.photoUrl;
+        if (updateData.status !== undefined) {
+            if (updateData.status === 'décédé') {
+                empUpdateData.status = 'Décédé';
+            } else if (updateData.status === 'actif' || updateData.status === 'a_vie') {
+                empUpdateData.status = 'Actif';
+            }
+        }
 
         if (Object.keys(empUpdateData).length > 0) {
             for (const docSnap of snapshot.docs) {
@@ -296,6 +324,10 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
     const chiefDocRef = doc(db, 'chiefs', id);
     const now = new Date().toISOString();
     const updateData: { [key: string]: any } = { ...chiefData };
+
+    if (updateData.status === 'décédé') {
+        updateData.cnrctAffiliation = 'Aucune';
+    }
 
     if (photoFile) {
         try {

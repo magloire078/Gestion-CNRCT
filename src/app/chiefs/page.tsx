@@ -626,7 +626,7 @@ function ChiefsPageContent() {
                     useWindowScroll
                     data={filteredChiefs}
                     components={{
-                        Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: "100%", borderCollapse: "collapse" }} className="w-full caption-bottom text-base md:text-sm" />,
+                        Table: ({ style, ...props }) => <table {...props} {...(style ? { style } : {})} className="w-full border-collapse caption-bottom text-base md:text-sm" />,
                         TableHead: forwardRef((props, ref) => <thead {...props} ref={ref as any} className="[&_tr]:border-b bg-slate-50/50" />),
                         TableRow: (props) => <tr {...props} className="group hover:bg-slate-50/50 border-slate-50 transition-colors border-b" />,
                         TableBody: forwardRef((props, ref) => <tbody {...props} ref={ref as any} className="[&_tr:last-child]:border-0" />),
@@ -683,15 +683,17 @@ function ChiefsPageContent() {
                                     <DropdownMenuContent align="end" className="w-48 rounded-lg shadow-2xl border-slate-100">
                                         <DropdownMenuLabel className="text-base md:text-sm font-black text-slate-400 uppercase px-3 py-2">Commanderies</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem asChild className="rounded-lg m-1 cursor-pointer">
-                                            <Link href={`/chiefs/${chief.id}`} className="flex items-center">
-                                                <Eye className="mr-2 h-4 w-4 text-blue-500" /> Dossier Individuel
-                                            </Link>
+                                        <DropdownMenuItem 
+                                            onSelect={() => router.push(`/chiefs/${chief.id}`)} 
+                                            className="rounded-lg m-1 cursor-pointer flex items-center"
+                                        >
+                                            <Eye className="mr-2 h-4 w-4 text-blue-500" /> Dossier Individuel
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem asChild className="rounded-lg m-1 cursor-pointer">
-                                            <Link href={`/chiefs/${chief.id}/edit`} className="flex items-center">
-                                                <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier la Fiche
-                                            </Link>
+                                        <DropdownMenuItem 
+                                            onSelect={() => router.push(`/chiefs/${chief.id}/edit`)} 
+                                            className="rounded-lg m-1 cursor-pointer flex items-center"
+                                        >
+                                            <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier la Fiche
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="rounded-lg m-1 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">

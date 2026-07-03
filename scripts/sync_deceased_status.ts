@@ -55,15 +55,23 @@ async function syncDeceasedStatus() {
             }
         }
 
-        // If a chief profile was found, update its status
+        // If a chief profile was found, update its status and affiliation
         if (chiefRef) {
             const chiefData = (await chiefRef.get()).data() as any;
+            const updates: any = {};
             if (chiefData.status !== 'décédé') {
-                console.log(`Mise à jour du statut pour le chef: ${chiefData.name} (Ancien statut: ${chiefData.status})`);
-                await chiefRef.update({ status: 'décédé' });
+                updates.status = 'décédé';
+            }
+            if (chiefData.cnrctAffiliation !== 'Aucune') {
+                updates.cnrctAffiliation = 'Aucune';
+            }
+
+            if (Object.keys(updates).length > 0) {
+                console.log(`Mise à jour pour le chef: ${chiefData.name} | Updates: ${JSON.stringify(updates)}`);
+                await chiefRef.update(updates);
                 updatedCount++;
             } else {
-                console.log(`Le chef ${chiefData.name} est déjà marqué comme décédé.`);
+                console.log(`Le chef ${chiefData.name} est déjà à jour (décédé & affiliation Aucune).`);
             }
         } else {
             console.log(`Aucun profil de chef trouvé pour l'employé: ${emp.name}`);

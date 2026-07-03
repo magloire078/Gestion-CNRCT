@@ -12,6 +12,7 @@ interface InstitutionalHeaderProps {
   showService?: boolean;
   settings?: OrganizationSettings | null;
   children?: React.ReactNode;
+  showDivider?: boolean;
 }
 
 export function InstitutionalHeader({ 
@@ -21,7 +22,8 @@ export function InstitutionalHeader({
   direction = "DFP",
   showService = true,
   settings: initialSettings,
-  children
+  children,
+  showDivider = true
 }: InstitutionalHeaderProps) {
   const [settings, setSettings] = useState<OrganizationSettings | null>(initialSettings || null);
 
@@ -34,7 +36,9 @@ export function InstitutionalHeader({
   }, [initialSettings]);
 
   return (
-    <div className="flex justify-between items-start border-b-2 border-slate-900 pb-5 mb-12 relative break-inside-avoid">
+    <div className={`flex justify-between items-start relative break-inside-avoid ${
+      showDivider ? "border-b-2 border-slate-900 pb-5 mb-12" : "pb-4 mb-6"
+    }`}>
       {/* Left Column: Local Institution Details */}
       <div className="flex flex-col items-center gap-0.5 text-slate-800 font-black uppercase text-[10px] leading-tight tracking-tighter w-[30%] text-center">
         <span className="text-sm">Chambre Nationale des Rois</span>
@@ -70,7 +74,7 @@ export function InstitutionalHeader({
 
       {/* Center Column: Title (Optional) */}
       {(title || children) && (
-        <div className="absolute left-1/2 -translate-x-1/2 text-center max-w-[35%] mt-4">
+        <div className="absolute left-1/2 -translate-x-1/2 text-center max-w-[35%] mt-10">
           {children ? children : (
             <>
               <h1 className="text-2xl font-black text-slate-900 tracking-tighter uppercase leading-tight italic">

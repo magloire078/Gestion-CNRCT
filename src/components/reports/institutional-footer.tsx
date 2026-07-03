@@ -12,6 +12,9 @@ interface InstitutionalFooterProps {
   showSignatures?: boolean;
   leftSignatureTitle?: string;
   rightSignatureTitle?: string;
+  leftSignatureName?: string;
+  rightSignatureName?: string;
+  signatorySubtitle?: string;
 }
 
 export function InstitutionalFooter({ 
@@ -23,7 +26,10 @@ export function InstitutionalFooter({
   showVisa = true,
   showSignatures = false,
   leftSignatureTitle = "LE MÉDIATEUR EN CHARGE",
-  rightSignatureTitle = "LE SECRÉTAIRE GÉNÉRAL"
+  rightSignatureTitle = "LE SECRÉTAIRE GÉNÉRAL",
+  leftSignatureName,
+  rightSignatureName,
+  signatorySubtitle
 }: InstitutionalFooterProps) {
   const displayDate = date || new Date().toLocaleDateString('fr-FR');
 
@@ -33,20 +39,36 @@ export function InstitutionalFooter({
         {showSignatures ? (
           <>
             {/* Dual Signature Layout */}
-            <div className="flex-1 space-y-16">
+            <div className="flex-1 space-y-12">
               <div className="space-y-4">
-                <p className="text-sm font-black text-slate-900 leading-none italic uppercase underline underline-offset-4">{leftSignatureTitle}</p>
-                <div className="h-24" /> {/* Space for signature */}
-                <div className="h-1 w-40 bg-slate-900 rounded-full" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{leftSignatureTitle}</p>
+                <div className="h-20" /> {/* Space for signature */}
+                <div className="flex flex-col gap-2">
+                  <div className="h-1 w-40 bg-slate-900 rounded-full" />
+                  {leftSignatureName && (
+                    <p className="text-xl font-black text-slate-900 tracking-tighter uppercase italic">{leftSignatureName}</p>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="flex-1 text-right space-y-16">
+            <div className="flex-1 text-right space-y-12">
               <div className="space-y-4">
                 <p className="text-sm font-black text-slate-900 leading-none">Fait à {place}, le {displayDate}</p>
-                <p className="text-sm font-black text-slate-900 leading-none italic uppercase underline underline-offset-4 mt-1">{rightSignatureTitle}</p>
-                <div className="h-24" /> {/* Space for signature */}
-                <div className="h-1 w-40 bg-slate-900 rounded-full ml-auto" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">{rightSignatureTitle}</p>
+                <div className="h-20" /> {/* Space for signature */}
+                <div className="flex flex-col items-end gap-2">
+                  <div className="h-1 w-40 bg-slate-900 rounded-full" />
+                  {rightSignatureName && (
+                    <p className="text-xl font-black text-slate-900 tracking-tighter uppercase italic">{rightSignatureName}</p>
+                  )}
+                  {showCertification && (
+                    <div className="bg-[#006039] text-white px-5 py-2 rounded-xl flex items-center gap-3 shadow-md w-fit mt-1">
+                      <Shield className="h-4 w-4" />
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em]">Certifié par CNRCT Digital v2.5</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </>
@@ -69,6 +91,9 @@ export function InstitutionalFooter({
               <div className="space-y-1 text-right">
                 <p className="text-sm font-black text-slate-900 leading-none">Fait à {place}, le {displayDate}</p>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{signatoryTitle}</p>
+                {signatorySubtitle && (
+                  <p className="text-[9px] font-bold text-slate-400 italic mt-1">{signatorySubtitle}</p>
+                )}
               </div>
               
               <div className="pt-12 flex flex-col items-center md:items-end gap-3">

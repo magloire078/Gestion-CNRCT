@@ -21,13 +21,14 @@ interface DisaOfficialReportProps {
     onAfterPrint?: () => void;
 }
 
-const monthLabels = [
-    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+const shortMonthLabels = [
+    "Jan.", "Fév.", "Mar.", "Avr.", "Mai", "Jun.",
+    "Jul.", "Aoû.", "Sep.", "Oct.", "Nov.", "Déc."
 ];
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR').format(amount);
+const formatCurrency = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null || isNaN(amount)) return "0";
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(amount));
 };
 
 export function DisaOfficialReport({
@@ -52,6 +53,7 @@ export function DisaOfficialReport({
                     settings={organizationSettings}
                     service="Direction des Finances et du Patrimoine"
                     direction="DFP"
+                    showDivider={false}
                 >
                     <div className="flex flex-col items-center">
                         <div className="flex items-center justify-center gap-4">
@@ -76,51 +78,51 @@ export function DisaOfficialReport({
                 </InstitutionalHeader>
 
                 {/* Table DISA */}
-                <div className="mt-4 border-2 border-slate-900 rounded-xl overflow-hidden shadow-2xl print:shadow-none">
-                    <table className="w-full text-[8.5px] border-collapse bg-white table-fixed">
+                <div className="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow-sm print:shadow-none">
+                    <table className="w-full text-[8px] border-collapse bg-white table-fixed">
                         <thead>
-                            <tr className="bg-slate-900 text-white">
-                                <th className="w-[35px] font-black text-center uppercase border-r border-slate-800 p-3">N°</th>
-                                <th className="w-[55px] font-black text-center uppercase border-r border-slate-800 p-3">Mat.</th>
-                                <th className="w-[220px] text-left pl-4 font-black uppercase border-r border-slate-800 p-3">Nom et Prénoms</th>
-                                {monthLabels.map((m, i) => (
-                                    <th key={`header-print-month-${i}`} className="font-black text-center uppercase border-r border-slate-800 p-1 text-[8px]">
-                                        {m.substring(0, 3)}.
+                            <tr className="bg-slate-50 text-slate-800 border-b border-slate-350">
+                                <th className="w-[35px] font-bold text-center uppercase border-r border-slate-200 p-2 text-slate-800">N°</th>
+                                <th className="w-[45px] font-bold text-center uppercase border-r border-slate-200 p-2 text-slate-800">Mat.</th>
+                                <th className="w-[200px] text-left pl-4 font-bold uppercase border-r border-slate-200 p-2 text-slate-800">Nom et Prénoms</th>
+                                {shortMonthLabels.map((m, i) => (
+                                    <th key={`header-print-month-${i}`} className="font-bold text-center uppercase border-r border-slate-200 p-1 text-[7.5px] text-slate-700">
+                                        {m}
                                     </th>
                                 ))}
-                                <th className="w-[70px] font-black text-center uppercase border-r border-slate-800 p-3">Gratif.</th>
-                                <th className="w-[85px] font-black text-center uppercase border-r border-slate-800 p-3 bg-slate-800">Tot Brut</th>
-                                <th className="w-[80px] font-black text-center uppercase p-3 bg-slate-700">CNPS</th>
+                                <th className="w-[50px] font-bold text-center uppercase border-r border-slate-200 p-2 text-slate-800">Gratif.</th>
+                                <th className="w-[60px] font-bold text-center uppercase border-r border-slate-200 p-2 text-slate-800 bg-slate-100/50">Tot Brut</th>
+                                <th className="w-[55px] font-bold text-center uppercase p-2 text-slate-800 bg-slate-100/50">CNPS</th>
                             </tr>
                         </thead>
                         <tbody>
                             {reportData.map((row, index) => (
-                                <tr key={`print-row-${row.matricule}`} className="text-slate-900 even:bg-slate-50/50 border-b border-slate-100 last:border-0">
-                                    <td className="text-center font-bold border-r border-slate-100 p-2">{index + 1}</td>
-                                    <td className="text-center font-mono border-r border-slate-100 p-2 text-slate-500 text-[8px]">{row.matricule}</td>
-                                    <td className="whitespace-nowrap text-left pl-4 font-bold border-r border-slate-100 overflow-hidden text-clip p-2">{row.name}</td>
+                                <tr key={`print-row-${row.matricule}`} className="text-slate-900 even:bg-slate-50/30 border-b border-slate-200 last:border-0">
+                                    <td className="text-center font-bold border-r border-slate-200 p-2">{index + 1}</td>
+                                    <td className="text-center font-mono border-r border-slate-200 p-2 text-slate-500 text-[7.5px]">{row.matricule}</td>
+                                    <td className="whitespace-nowrap text-left pl-4 font-semibold border-r border-slate-200 overflow-hidden text-clip p-2">{row.name}</td>
                                     {row.monthlySalaries.map((salary, i) => (
-                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="text-right font-mono border-r border-slate-100 tracking-tighter tabular-nums p-2 text-[8px] text-slate-600">
+                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="text-right font-mono border-r border-slate-200 tracking-tighter tabular-nums px-1 py-2 text-[7.5px] text-slate-650">
                                             {formatCurrency(salary)}
                                         </td>
                                     ))}
-                                    <td className="text-right font-mono border-r border-slate-100 tracking-tighter tabular-nums p-2">{formatCurrency(row.gratification)}</td>
-                                    <td className="text-right font-black font-mono border-r border-slate-100 tracking-tighter tabular-nums p-2 bg-slate-50/80 text-slate-900">{formatCurrency(row.totalBrut)}</td>
-                                    <td className="text-right font-black font-mono tracking-tighter tabular-nums p-2 text-slate-900 bg-slate-100/50">{formatCurrency(row.totalCNPS)}</td>
+                                    <td className="text-right font-mono border-r border-slate-200 tracking-tighter tabular-nums px-1 py-2 text-[7.5px] text-slate-650">{formatCurrency(row.gratification)}</td>
+                                    <td className="text-right font-semibold font-mono border-r border-slate-200 tracking-tighter tabular-nums px-2 py-2 bg-slate-50/50 text-slate-800 text-[7.5px]">{formatCurrency(row.totalBrut)}</td>
+                                    <td className="text-right font-semibold font-mono tracking-tighter tabular-nums px-2 py-2 text-slate-800 bg-slate-50/50 text-[7.5px]">{formatCurrency(row.totalCNPS)}</td>
                                 </tr>
                             ))}
                             
                             {/* Total Line */}
-                            <tr className="font-black bg-slate-900 text-white">
-                                <td colSpan={3} className="py-4 px-6 text-right border-r border-slate-800 text-[11px] uppercase tracking-[0.2em] italic">Totalisation Générale</td>
+                            <tr className="font-bold bg-slate-100 text-slate-900 border-t-2 border-slate-350 border-b-2 border-slate-350">
+                                <td colSpan={3} className="py-3 px-4 text-right border-r border-slate-200 text-[8px] uppercase tracking-wider italic font-bold text-slate-800">Totalisation Générale</td>
                                 {grandTotal.monthly.map((total, index) => (
-                                    <td key={`print-total-month-${index}`} className="py-4 px-1 text-right font-black border-r border-slate-800 text-[8px] tracking-tighter tabular-nums text-slate-400">
+                                    <td key={`print-total-month-${index}`} className="py-3 px-1 text-right font-bold border-r border-slate-200 text-[7.5px] tracking-tighter tabular-nums text-slate-850">
                                         {formatCurrency(total)}
                                     </td>
                                 ))}
-                                <td className="py-4 px-1 text-right font-black border-r border-slate-800 text-[8px] tracking-tighter tabular-nums text-slate-400">{formatCurrency(grandTotal.gratification)}</td>
-                                <td className="py-4 px-2 text-right font-black border-r border-slate-800 text-[10px] tracking-tighter tabular-nums text-white bg-slate-800">{formatCurrency(grandTotal.brut)}</td>
-                                <td className="py-4 px-2 text-right font-black text-[11px] tracking-tighter tabular-nums text-white bg-slate-700">{formatCurrency(grandTotal.cnps)}</td>
+                                <td className="py-3 px-1 text-right font-bold border-r border-slate-200 text-[7.5px] tracking-tighter tabular-nums text-slate-850">{formatCurrency(grandTotal.gratification)}</td>
+                                <td className="py-3 px-2 text-right font-bold border-r border-slate-200 text-[7.5px] tracking-tighter tabular-nums text-slate-900 bg-slate-200/50">{formatCurrency(grandTotal.brut)}</td>
+                                <td className="py-3 px-2 text-right font-bold text-[7.5px] tracking-tighter tabular-nums text-slate-900 bg-slate-200/50">{formatCurrency(grandTotal.cnps)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -128,8 +130,11 @@ export function DisaOfficialReport({
 
                 {/* Unified Institutional Footer */}
                 <InstitutionalFooter 
-                    signatoryTitle="LE SECRÉTAIRE GÉNÉRAL"
-                    signatoryName="KOUASSI KOUAME"
+                    showSignatures={false}
+                    showVisa={false}
+                    signatoryTitle="LE DIRECTEUR DES FINANCES ET DU PATRIMOINE"
+                    signatoryName="KASSI Lucien De la Roch N'Douba"
+                    signatorySubtitle="Signature et Cachet"
                     showCertification={true}
                 />
 

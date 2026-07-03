@@ -71,6 +71,7 @@ import { PermissionGuard } from "@/components/auth/permission-guard";
 import { getEmployee } from "@/services/employee-service";
 import { ConflictStatsCards } from "@/components/conflicts/conflict-stats-cards";
 import { ConflictDetailSheet } from "@/components/conflicts/conflict-detail-sheet";
+import { getOfficialRegion } from "@/lib/normalization-utils";
 
 const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
     ssr: false,
@@ -270,7 +271,7 @@ export default function ConflictsPage() {
             
             const conflictYear = conflict.reportedDate.split('-')[0];
             const matchesYear = selectedYear === "Tous" || conflictYear === selectedYear;
-            const matchesRegion = selectedRegion === "Tous" || conflict.region === selectedRegion;
+            const matchesRegion = selectedRegion === "Tous" || getOfficialRegion(conflict.region || "") === getOfficialRegion(selectedRegion);
             const matchesType = selectedConflictType === "Tous" || conflict.type === selectedConflictType;
             
             return matchesSearch && matchesYear && matchesRegion && matchesType;

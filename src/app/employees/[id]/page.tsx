@@ -51,7 +51,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { differenceInYears, parseISO } from "date-fns";
+import { differenceInYears, parseISO, lastDayOfMonth } from "date-fns";
 import {
     PlusCircle,
     Receipt,
@@ -134,6 +134,24 @@ export default function EmployeeDetailPage() {
     const [promotionRemplaceId, setPromotionRemplaceId] = useState<string>("none");
     const [isPromoting, setIsPromoting] = useState(false);
 
+    // Payslip Generation Dialog state
+    const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
+    const [generationMode, setGenerationMode] = useState<'monthly' | 'period'>('monthly');
+    const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+    const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
+    const [endYear, setEndYear] = useState<string>(new Date().getFullYear().toString());
+    const [endMonth, setEndMonth] = useState<string>((new Date().getMonth() + 1).toString());
+
+    const years = useMemo(() => Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString()), []);
+    const months = useMemo(() => [
+        { value: "1", label: "Janvier" }, { value: "2", label: "Février" },
+        { value: "3", label: "Mars" }, { value: "4", label: "Avril" },
+        { value: "5", label: "Mai" }, { value: "6", label: "Juin" },
+        { value: "7", label: "Juillet" }, { value: "8", label: "Août" },
+        { value: "9", label: "Septembre" }, { value: "10", label: "Octobre" },
+        { value: "11", label: "Novembre" }, { value: "12", label: "Décembre" },
+    ], []);
+
     const employeeId = params.id as string;
 
     useEffect(() => {
@@ -212,6 +230,24 @@ export default function EmployeeDetailPage() {
                 description: "Impossible de supprimer l'employé."
             });
         }
+    };
+
+    const handleNavigateToPayslip = () => {
+        const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+        const lastDay = lastDayOfMonth(selectedDate);
+        const formattedDate = lastDay.toISOString().split('T')[0]; // YYYY-MM-DD
+
+        setIsDateDialogOpen(false);
+        
+        setTimeout(() => {
+            let url = `/payroll/${employeeId}?payslipDate=${formattedDate}`;
+            if (generationMode === 'period') {
+                const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, 1);
+                const lastDayEnd = lastDayOfMonth(endDate);
+                url += `&endDate=${lastDayEnd.toISOString().split('T')[0]}`;
+            }
+            router.push(url);
+        }, 100);
     };
 
     const deptName = units?.departments.find(d => d.id === employee?.departmentId)?.name;
@@ -415,6 +451,11 @@ export default function EmployeeDetailPage() {
                                     <DropdownMenuItem className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold">
                                         <FileText className="h-4 w-4 text-emerald-400" /> Générer Attestation
                                     </DropdownMenuItem>
+                                    {canViewSalary && (
+                                        <DropdownMenuItem onClick={() => setIsDateDialogOpen(true)} className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold">
+                                            <Banknote className="h-4 w-4 text-blue-400" /> Bulletin de Paie
+                                        </DropdownMenuItem>
+                                    )}
                                     {isRegionalMember && canEdit && (
                                         <DropdownMenuItem onClick={handleOpenPromotion} className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold text-amber-500 focus:bg-amber-500/10">
                                             <Award className="h-4 w-4" /> Promouvoir au Directoire
@@ -808,6 +849,92 @@ export default function EmployeeDetailPage() {
                         <Button variant="outline" onClick={() => setIsPromotionDialogOpen(false)} disabled={isPromoting} className="rounded-xl h-10 font-black uppercase tracking-widest text-[9px]">Annuler</Button>
                         <Button onClick={handlePromote} disabled={isPromoting} className="rounded-xl h-10 font-black uppercase tracking-widest text-[9px] bg-amber-500 hover:bg-amber-600 text-white">
                             {isPromoting ? "En cours..." : "Confirmer"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
+                <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-slate-50/50 border-slate-200 shadow-xl">
+                    <DialogHeader className="px-6 py-5 bg-white border-b border-slate-100 shrink-0">
+                        <DialogTitle className="text-xl font-semibold text-slate-800">Choisir la Période du Bulletin</DialogTitle>
+                        <DialogDescription className="text-sm text-slate-500 mt-1.5">
+                            Sélectionnez le mois et l'année pour générer le bulletin de paie de <span className="font-medium text-slate-700">{employee.name}</span>.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-5 px-6 py-6">
+                        <div className="grid gap-2">
+                            <Label className="text-slate-700 font-medium">Mode de génération</Label>
+                            <Select value={generationMode} onValueChange={(v: any) => setGenerationMode(v)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="monthly">Bulletin Unique (Mensuel)</SelectItem>
+                                    <SelectItem value="period">Période Personnalisée</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="year" className="text-slate-700 font-medium">Année</Label>
+                                <Select value={year} onValueChange={setYear}>
+                                    <SelectTrigger id="year"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="max-h-[200px]">
+                                        {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="month" className="text-slate-700 font-medium">{generationMode === 'monthly' ? 'Mois' : 'Mois de début'}</Label>
+                                <Select value={month} onValueChange={setMonth}>
+                                    <SelectTrigger id="month"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="max-h-[200px]">
+                                        {months.map(m => (
+                                            <SelectItem key={m.value} value={m.value}>
+                                                {m.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {generationMode === 'period' && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="endYear" className="text-slate-700 font-medium">Année de fin</Label>
+                                    <Select value={endYear} onValueChange={setEndYear}>
+                                        <SelectTrigger id="endYear"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="max-h-[200px]">
+                                            {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="endMonth" className="text-slate-700 font-medium">Mois de fin</Label>
+                                    <Select value={endMonth} onValueChange={setEndMonth}>
+                                        <SelectTrigger id="endMonth"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="max-h-[200px]">
+                                            {months.map(m => {
+                                                const isBeforeStart = parseInt(endYear) < parseInt(year) || (parseInt(endYear) === parseInt(year) && parseInt(m.value) < parseInt(month));
+                                                return (
+                                                    <SelectItem key={m.value} value={m.value} disabled={isBeforeStart}>
+                                                        {m.label}
+                                                    </SelectItem>
+                                                );
+                                            })}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter className="px-6 py-4 bg-white border-t border-slate-100 shrink-0 flex gap-2 sm:justify-between">
+                        <Button variant="outline" className="px-6 border-slate-200" onClick={() => setIsDateDialogOpen(false)}>Annuler</Button>
+                        <Button className="px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={handleNavigateToPayslip}>
+                            Générer
                         </Button>
                     </DialogFooter>
                 </DialogContent>

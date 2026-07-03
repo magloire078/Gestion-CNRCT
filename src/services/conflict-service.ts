@@ -28,11 +28,32 @@ export function subscribeToConflicts(
 }
 
 export async function getConflicts(): Promise<Conflict[]> {
-    const snapshot = await getDocs(query(conflictsCollection, orderBy("reportedDate", "desc")));
-    return snapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-    } as Conflict));
+    try {
+        const snapshot = await getDocs(query(conflictsCollection, orderBy("reportedDate", "desc")));
+        const data = snapshot.docs.map((doc: any) => ({
+            id: doc.id,
+            ...doc.data()
+        } as Conflict));
+
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('cnrct_cached_conflicts', JSON.stringify(data));
+            } catch (e) {
+                console.warn('[ConflictService] Failed to save conflicts to localStorage:', e);
+            }
+        }
+        return data;
+    } catch (error) {
+        console.error('[ConflictService] getConflicts failed:', error);
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('cnrct_cached_conflicts');
+            if (cached) {
+                console.warn('[ConflictService] Returning cached conflicts from localStorage due to query failure');
+                return JSON.parse(cached);
+            }
+        }
+        throw error;
+    }
 }
 
 export async function getConflict(id: string): Promise<Conflict | null> {

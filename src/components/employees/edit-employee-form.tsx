@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { getOfficialRegion, getOfficialDepartment } from "@/lib/normalization-utils";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VillageCombobox } from "@/components/chiefs/village-combobox";
@@ -233,6 +234,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
                       <SelectItem value="Actif" className="font-bold py-3 uppercase text-[9px] tracking-widest text-emerald-600">Actif</SelectItem>
                       <SelectItem value="En congé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-blue-600">En congé</SelectItem>
+                      <SelectItem value="Licencié" className="font-bold py-3 uppercase text-[9px] tracking-widest text-rose-600">Licencié</SelectItem>
                       <SelectItem value="Remplacé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-rose-600">Remplacé</SelectItem>
                       <SelectItem value="Retraité" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-500">Retraité</SelectItem>
                       <SelectItem value="Décédé" className="font-bold py-3 uppercase text-[9px] tracking-widest">Décédé</SelectItem>
@@ -300,16 +302,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Label htmlFor="Lieu_Naissance" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Lieu de naissance</Label>
                       <Input id="Lieu_Naissance" value={formData.Lieu_Naissance || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="sousPrefecture" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Sous-préfecture</Label>
-                      <Input id="sousPrefecture" value={formData.sousPrefecture || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
-                    </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="village" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Village</Label>
-                      <Input id="village" value={formData.village || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
-                    </div>
                   </CardContent>
                 </Card>
 
@@ -335,7 +328,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Select value={formData.Departement || ''} onValueChange={(val) => { handleSelectChange('Departement', val); handleSelectChange('subPrefecture', ''); handleSelectChange('Village', ''); }} disabled={!formData.Region}>
                         <SelectTrigger id="Departement" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
                         <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
-                          {Object.keys(divisions[formData.Region || ""] || {}).sort().map(d => (
+                          {Object.keys(divisions[getOfficialRegion(formData.Region || "")] || {}).sort().map(d => (
                             <SelectItem key={d} value={d} className="font-bold py-3 uppercase text-[9px] tracking-widest">{d}</SelectItem>
                           ))}
                         </SelectContent>
@@ -346,7 +339,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Select value={formData.subPrefecture || ''} onValueChange={(val) => { handleSelectChange('subPrefecture', val); handleSelectChange('Village', ''); }} disabled={!formData.Departement}>
                         <SelectTrigger id="subPrefecture" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
                         <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
-                          {Object.keys(divisions[formData.Region || ""]?.[formData.Departement || ""] || {}).sort().map(sp => (
+                          {Object.keys(divisions[getOfficialRegion(formData.Region || "")]?.[getOfficialDepartment(formData.Region || "", formData.Departement || "")] || {}).sort().map(sp => (
                             <SelectItem key={sp} value={sp} className="font-bold py-3 uppercase text-[9px] tracking-widest">{sp}</SelectItem>
                           ))}
                         </SelectContent>

@@ -23,6 +23,7 @@ import {
   ShieldHalf,
   Network,
   Archive,
+  Mail,
   Wallet,
   FileClock,
   DatabaseBackup,
@@ -154,6 +155,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
       { href: "/management/supplies", label: "Validation Fournitures", icon: ShieldCheck, permission: "management:supplies:validate" },
       { href: "/procurement", label: "Marchés & Prestataires", icon: HandshakeIcon, permission: "page:procurement:view" },
       { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
+      { href: "/mails", label: "Gestion des Courriers", icon: Mail, permission: "page:mails:view" },
     ]
   },
   {

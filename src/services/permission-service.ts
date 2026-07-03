@@ -156,6 +156,26 @@ export async function syncDefaultPermissionsIfMissing(roleId: string): Promise<v
 export function mapPermissionToCrud(permission: string): { resourceId: string, action: CrudAction } | null {
     if (!permission || typeof permission !== 'string') return null;
     
+    // Custom mappings for reports and directory
+    if (permission === 'page:disa:view' || permission === 'page:reports:disa:view') {
+        return { resourceId: 'report-disa', action: 'read' };
+    }
+    if (permission === 'page:nominative:view' || permission === 'page:reports:nominative:view') {
+        return { resourceId: 'report-nominative', action: 'read' };
+    }
+    if (permission === 'page:territory:view' || permission === 'page:reports:territory:view') {
+        return { resourceId: 'report-territory', action: 'read' };
+    }
+    if (permission === 'page:it-technical:view' || permission === 'page:reports:it-technical:view') {
+        return { resourceId: 'report-it-technical', action: 'read' };
+    }
+    if (permission === 'page:reports:view') {
+        return { resourceId: 'dashboard', action: 'read' };
+    }
+    if (permission === 'page:directory:view') {
+        return { resourceId: 'employees', action: 'read' };
+    }
+
     const parts = permission.split(':');
     if (parts.length < 2) return null;
     

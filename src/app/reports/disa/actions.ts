@@ -3,7 +3,7 @@ import { getEmployees } from "@/services/employee-service";
 import { getOrganizationSettings } from "@/services/organization-service";
 import type { Employe, OrganizationSettings, EmployeeEvent } from "@/lib/data";
 import { getEmployeeHistory } from "@/services/employee-history-service";
-import { parseISO, getYear, isValid, isBefore, isEqual, differenceInYears, lastDayOfMonth } from 'date-fns';
+import { parseISO, getYear, isValid, isBefore, isEqual, differenceInYears, lastDayOfMonth, startOfMonth, isAfter } from 'date-fns';
 
 export interface DisaRow {
   matricule: string;
@@ -93,12 +93,29 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
     ]);
 
     const employeesForYear = allEmployees.filter(e => {
-      // Filtrage par statut CNPS actif
-      if (e.CNPS !== true) return false;
+      const parsedImmatriculation = e.Date_Immatriculation ? parseISO(e.Date_Immatriculation) : null;
+      const dateImmatriculation = parsedImmatriculation && isValid(parsedImmatriculation) ? startOfMonth(parsedImmatriculation) : null;
+
+      const parsedCessation = e.Date_Cessation_CNPS ? parseISO(e.Date_Cessation_CNPS) : null;
+      const dateCessation = parsedCessation && isValid(parsedCessation) ? parsedCessation : null;
+
+      // They must have been registered for CNPS at some point
+      const hasCnpsRegistration = e.CNPS || (!!dateImmatriculation && !!dateCessation);
+      if (!hasCnpsRegistration) return false;
+
+      // The active range [Immatriculation, Cessation] must overlap with the reportYear
+      const startOfYearDate = new Date(reportYear, 0, 1);
+      const endOfYearDate = new Date(reportYear, 11, 31);
+
+      const isAfterCessation = dateCessation && isBefore(dateCessation, startOfYearDate);
+      const isBeforeImmatriculation = dateImmatriculation && isBefore(endOfYearDate, dateImmatriculation);
+
+      if (isAfterCessation || isBeforeImmatriculation) return false;
 
       if (!e.dateEmbauche || !isValid(parseISO(e.dateEmbauche))) return false;
       const hireYear = getYear(parseISO(e.dateEmbauche));
-      if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
+      const hasDeparted = e.status !== 'Actif' && e.status !== 'En congé';
+      if (hasDeparted && e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
         const departureYear = getYear(parseISO(e.Date_Depart));
         return hireYear <= reportYear && departureYear >= reportYear;
       }
@@ -123,13 +140,20 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
         // Detailed logging for debugging
         console.log(`Processing DISA for: ${employee.lastName} ${employee.firstName} (${employee.matricule})`);
 
+        const parsedImmatriculation = employee.Date_Immatriculation ? parseISO(employee.Date_Immatriculation) : null;
+        const dateImmatriculation = parsedImmatriculation && isValid(parsedImmatriculation) ? startOfMonth(parsedImmatriculation) : null;
+
+        const parsedCessation = employee.Date_Cessation_CNPS ? parseISO(employee.Date_Cessation_CNPS) : null;
+        const dateCessation = parsedCessation && isValid(parsedCessation) ? parsedCessation : null;
+
         const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
         if (employee.dateEmbauche && (!hireDate || !isValid(hireDate))) {
           console.warn(`Invalid hire date for ${employee.matricule}: ${employee.dateEmbauche}`);
         }
 
-        const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
-        if (employee.Date_Depart && (!departureDate || !isValid(departureDate))) {
+        const hasDeparted = employee.status !== 'Actif' && employee.status !== 'En congé';
+        const departureDate = (hasDeparted && employee.Date_Depart) ? parseISO(employee.Date_Depart) : null;
+        if (hasDeparted && employee.Date_Depart && (!departureDate || !isValid(departureDate))) {
           console.warn(`Invalid departure date for ${employee.matricule}: ${employee.Date_Depart}`);
         }
 
@@ -143,7 +167,12 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
         let gratification = 0;
         const isPresentInDecember = !departureDate || !isBefore(departureDate, dateForGratification);
 
-        if (isPresentInDecember) {
+        const startOfDec = startOfMonth(dateForGratification);
+        const isCNPSActiveForDec = (employee.CNPS || (!!dateImmatriculation && !!dateCessation)) &&
+          (!dateImmatriculation || !isAfter(dateImmatriculation, startOfDec)) &&
+          (!dateCessation || isBefore(startOfDec, dateCessation));
+
+        if (isPresentInDecember && isCNPSActiveForDec) {
           const primeAncienneteDec = calculatePrimeAnciennete(baseSalaryDec, hireDate, dateForGratification);
           const brutImposableDec = calculateBrutSalary(baseSalaryDec, primeAncienneteDec, salaryStructureDec);
           gratification = isNaN(brutImposableDec) ? 0 : brutImposableDec;
@@ -165,24 +194,31 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
           
           const validBrut = isNaN(brutImposable) ? 0 : brutImposable;
           
-          if (employee.CNPS === true) {
+          const startOfPayslipMonth = startOfMonth(dateForPayslip);
+          const isCNPSActiveForMonth = (employee.CNPS || (!!dateImmatriculation && !!dateCessation)) &&
+            (!dateImmatriculation || !isAfter(dateImmatriculation, startOfPayslipMonth)) &&
+            (!dateCessation || isBefore(startOfPayslipMonth, dateCessation));
+
+          if (isCNPSActiveForMonth) {
             totalCNPS += validBrut * 0.063;
           }
 
-          monthlySalaries.push(Math.round(validBrut));
+          monthlySalaries.push(isCNPSActiveForMonth ? Math.round(validBrut) : 0);
         }
 
         const totalMonthlyBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
         const totalBrut = totalMonthlyBrut + gratification;
 
-        if (employee.CNPS === true) {
+
+
+        if (isCNPSActiveForDec) {
           totalCNPS += gratification * 0.063;
         }
 
         reportRows.push({
           matricule: employee.matricule || 'N/A',
           name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
-          cnpsStatus: employee.CNPS || false,
+          cnpsStatus: employee.CNPS || (!!dateImmatriculation && !!dateCessation),
           monthlySalaries,
           gratification,
           totalBrut: Math.round(totalBrut),

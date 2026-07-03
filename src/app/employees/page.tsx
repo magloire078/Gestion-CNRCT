@@ -658,7 +658,10 @@ export default function EmployeesPage() {
                             <SelectItem value="all" className="font-medium">Tous les statuts</SelectItem>
                             <SelectItem value="Actif" className="font-medium text-emerald-600">Actif</SelectItem>
                             <SelectItem value="En congé" className="font-medium text-blue-600">En congé</SelectItem>
+                            <SelectItem value="Licencié" className="font-medium text-rose-600">Licencié</SelectItem>
+                            <SelectItem value="Remplacé" className="font-medium text-rose-600">Remplacé</SelectItem>
                             <SelectItem value="Retraité" className="font-medium text-slate-500">Retraité</SelectItem>
+                            <SelectItem value="Décédé" className="font-medium text-slate-400">Décédé</SelectItem>
                           </SelectContent>
                         </Select>
 
@@ -870,7 +873,7 @@ export default function EmployeesPage() {
                                     </span>
                                     {isGeoTab ? (
                                       <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate max-w-[200px]">
-                                        {[employee.sousPrefecture || employee.subPrefecture, employee.village || employee.Village].filter(Boolean).join(' - ')}
+                                        {[employee.subPrefecture || employee.sousPrefecture, employee.Village || employee.village].filter(Boolean).join(' - ')}
                                       </span>
                                     ) : (
                                       <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.poste}</span>
@@ -908,15 +911,17 @@ export default function EmployeesPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
                                       <DropdownMenuLabel className="px-3 py-2 font-black uppercase text-sm md:text-xs tracking-[0.2em] text-slate-400">Actions Dossier</DropdownMenuLabel>
-                                      <DropdownMenuItem asChild className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer">
-                                        <Link href={`/employees/${employee.id}`}>
-                                          <Eye className="mr-2 h-4 w-4 text-blue-500" /> Profil Complet
-                                        </Link>
+                                      <DropdownMenuItem 
+                                        onSelect={() => router.push(`/employees/${employee.id}`)} 
+                                        className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer"
+                                      >
+                                        <Eye className="mr-2 h-4 w-4 text-blue-500" /> Profil Complet
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem asChild className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer">
-                                        <Link href={`/employees/${employee.id}/edit`}>
-                                          <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier Données
-                                        </Link>
+                                      <DropdownMenuItem 
+                                        onSelect={() => router.push(`/employees/${employee.id}/edit`)} 
+                                        className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer"
+                                      >
+                                        <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier Données
                                       </DropdownMenuItem>
                                       <DropdownMenuItem 
                                         onSelect={() => setTimeout(() => setDeleteTarget(employee), 50)} 

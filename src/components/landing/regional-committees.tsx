@@ -8,8 +8,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Loader2, Users, ArrowRight, ShieldCheck } from "lucide-react";
+import { MapPin, Search, Loader2, Users, ArrowRight, ShieldCheck, ShieldAlert, CheckCircle2 } from "lucide-react";
 import type { RegionalCommittee } from "@/services/employee-service";
+import type { Conflict } from "@/lib/data";
 import { getInitials, cleanRegionName } from "./landing-utils";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -22,6 +23,7 @@ interface RegionalCommitteesProps {
   setSearchQuery: (query: string) => void;
   selectedRegionIndex: number;
   setSelectedRegionIndex: (index: number) => void;
+  conflicts?: Conflict[];
 }
 
 export function RegionalCommittees({
@@ -30,7 +32,8 @@ export function RegionalCommittees({
   searchQuery,
   setSearchQuery,
   selectedRegionIndex,
-  setSelectedRegionIndex
+  setSelectedRegionIndex,
+  conflicts = []
 }: RegionalCommitteesProps) {
   const { canSeeGovernanceStatus } = usePermissions();
   const showStatus = canSeeGovernanceStatus();
@@ -77,7 +80,7 @@ export function RegionalCommittees({
                 />
               </div>
 
-              <ScrollArea className="h-[550px] pr-4 rounded-2xl border border-primary/5 bg-white/50 p-2">
+              <ScrollArea className="h-[720px] pr-4 rounded-2xl border border-primary/5 bg-white/50 p-2">
                 <div className="space-y-1.5">
                   {filteredCommittees.map((committee, index) => {
                     const isSelected = index === selectedRegionIndex;
@@ -105,12 +108,12 @@ export function RegionalCommittees({
             {/* Right: Region Details */}
             <div className="lg:col-span-2 animate-in fade-in slide-in-from-right-8 duration-700">
               {!selected ? (
-                <div className="flex flex-col items-center justify-center min-h-[600px] text-muted-foreground bg-muted/20 rounded-2xl border-2 border-dashed border-primary/10">
+                <div className="flex flex-col items-center justify-center min-h-[800px] text-muted-foreground bg-muted/20 rounded-2xl border-2 border-dashed border-primary/10">
                   <MapPin className="h-12 w-12 mb-4 opacity-10" />
                   <p className="font-light italic">Aucune région ne correspond à votre recherche</p>
                 </div>
               ) : (
-                <Card className="border-none shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] bg-white overflow-hidden rounded-2xl min-h-[600px] flex flex-col group/card">
+                <Card className="border-none shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] bg-white overflow-hidden rounded-2xl min-h-[800px] flex flex-col group/card">
                   {/* Card Header with Region Banner */}
                   <div className="h-48 bg-slate-900 relative flex items-center px-12 overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-10 mix-blend-luminosity" />
@@ -118,11 +121,9 @@ export function RegionalCommittees({
                     <div className="relative z-10">
                       <Badge className="bg-amber-500 text-white border-none mb-3 px-3 uppercase text-[9px] tracking-[0.2em] font-black">Region</Badge>
                       <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-2">{cleanRegionName(selected.region)}</h3>
-                      {divisions[selected.region] && (
-                        <p className="text-slate-300 text-sm font-medium tracking-wide">
-                          {Object.keys(divisions[selected.region]).join(' • ')}
-                        </p>
-                      )}
+                      <p className="text-slate-300 text-sm font-medium tracking-wide">
+                        Couverture territoriale et médiation
+                      </p>
                     </div>
                     <Users className="absolute right-[-20px] bottom-[-20px] w-64 h-64 text-white opacity-5 pointer-events-none group-hover/card:scale-110 transition-transform duration-1000" />
                   </div>
@@ -248,51 +249,63 @@ export function RegionalCommittees({
                                       </p>
                                     </div>
                                   )}
-
-                                  {selected.pastMembers && selected.pastMembers.length > 0 && (
-                                    <div className="pt-4 mt-6 border-t border-primary/5">
-                                      <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Anciens Représentants</h5>
-                                      <div className="space-y-4 opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
-                                        {selected.pastMembers.map((member, mIdx) => (
-                                          <div key={`past-${mIdx}`} className="group/item flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-black text-slate-400 shadow-sm overflow-hidden relative">
-                                              {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') ? (
-                                                <Image src={member.photoUrl} alt={member.name} fill className="object-cover" sizes="40px" />
-                                              ) : (
-                                                getInitials(member.name || '')
-                                              )}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                              <p className="text-sm font-bold text-slate-700 leading-tight mb-0.5">{member.name}</p>
-                                              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                                                <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">{member.poste}</p>
-                                                {member.status && (
-                                                  <>
-                                                    <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                                                    <Badge 
-                                                      className="bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent text-slate-500"
-                                                    >
-                                                      {member.status}
-                                                    </Badge>
-                                                  </>
-                                                )}
-                                              </div>
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
                                 </div>
                               </ScrollArea>
                             </div>
                           </div>
 
-                          <div className="mt-12 pt-8 border-t border-primary/5 flex items-center justify-between">
+                          {/* Conflict Stats by Department */}
+                          {divisions[selected.region] && (
+                            <div className="mt-8 pt-8 border-t border-primary/5">
+                              <div className="flex items-center gap-3 mb-6">
+                                <ShieldCheck className="h-6 w-6 text-[#006039]" />
+                                <div>
+                                  <h4 className="text-lg font-black text-[#1a1a1a]">Situation Sécuritaire & Conflits</h4>
+                                  <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Répartition par département</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {Object.keys(divisions[selected.region]).map(dept => {
+                                  const regionConflicts = conflicts.filter(c => cleanRegionName(c.region || '') === cleanRegionName(selected.region));
+                                  const deptConflicts = regionConflicts.filter(c => (c.district || '').toLowerCase().includes(dept.toLowerCase()));
+                                  const resolved = deptConflicts.filter(c => c.status === 'Résolu').length;
+                                  const ongoing = deptConflicts.filter(c => c.status !== 'Résolu' && c.status !== 'Classé sans suite').length;
+                                  
+                                  return (
+                                    <div key={dept} className="flex flex-col gap-3 p-4 rounded-2xl bg-[#fafaf8] border border-primary/5 hover:border-primary/10 transition-colors">
+                                      <h5 className="font-bold text-sm text-[#1a1a1a] flex items-center gap-2">
+                                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                                        {dept}
+                                      </h5>
+                                      <div className="flex flex-wrap gap-2">
+                                        {ongoing > 0 && (
+                                          <Badge variant="destructive" className="bg-red-50 text-red-600 border-red-100 hover:bg-red-100 font-bold text-[10px] gap-1 px-2">
+                                            <ShieldAlert className="h-3 w-3" />
+                                            {ongoing} En cours
+                                          </Badge>
+                                        )}
+                                        {resolved > 0 && (
+                                          <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100 font-bold text-[10px] gap-1 px-2 border">
+                                            <CheckCircle2 className="h-3 w-3" />
+                                            {resolved} Résolu{resolved > 1 ? 's' : ''}
+                                          </Badge>
+                                        )}
+                                        {ongoing === 0 && resolved === 0 && (
+                                          <span className="text-[10px] text-muted-foreground italic bg-white px-2 py-1 rounded-md border border-slate-100">Aucun conflit signalé</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mt-8 pt-8 border-t border-primary/5 flex items-center justify-between">
                             <div className="flex -space-x-3 overflow-hidden">
                               {activeMembers.slice(0, 5).map((m, i) => (
                                 <Avatar key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-white">
-                                  <AvatarImage src={m.photoUrl} />
+                                  <AvatarImage src={m.photoUrl || undefined} />
                                   <AvatarFallback className="bg-muted text-[8px] font-bold">{getInitials(m.name || '')}</AvatarFallback>
                                 </Avatar>
                               ))}

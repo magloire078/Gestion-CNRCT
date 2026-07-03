@@ -34,6 +34,7 @@ import { ConflictHeatmap } from "@/components/charts/conflict-heatmap";
 import { subscribeToConflicts } from "@/services/conflict-service";
 import type { Conflict } from "@/types/common";
 import { IVORIAN_REGIONS } from "@/constants/regions";
+import { getOfficialRegion } from "@/lib/normalization-utils";
 import { 
     Select, 
     SelectContent, 
@@ -120,7 +121,7 @@ export default function ConflictAnalyticsPage() {
     const filteredConflicts = useMemo(() => {
         if (!allConflicts) return [];
         return allConflicts.filter(c => {
-            const matchesRegion = selectedRegion === "Tous" || c.region === selectedRegion;
+            const matchesRegion = selectedRegion === "Tous" || getOfficialRegion(c.region || "") === getOfficialRegion(selectedRegion);
             const matchesYear = selectedYear === "Tous" || c.reportedDate.startsWith(selectedYear);
             const matchesType = selectedType === "Tous" || c.type === selectedType;
             return matchesRegion && matchesYear && matchesType;

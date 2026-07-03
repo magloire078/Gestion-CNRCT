@@ -82,8 +82,8 @@ export function EmployeeOfficialReport({
             case 'sexe': return emp.sexe || '---';
             case 'Departement': return (emp as any).Departement || (emp as any).departement || '---';
             case 'Region': return (emp as any).Region || (emp as any).region || '---';
-            case 'subPrefecture': return (emp as any).sousPrefecture || (emp as any).subPrefecture || '---';
-            case 'Village': return (emp as any).village || (emp as any).Village || '---';
+            case 'subPrefecture': return (emp as any).subPrefecture || (emp as any).sousPrefecture || '---';
+            case 'Village': return (emp as any).Village || (emp as any).village || '---';
             default: return (emp as any)[key] || '---';
         }
     };

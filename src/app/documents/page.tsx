@@ -66,6 +66,8 @@ export default function DocumentGeneratorPage() {
 
   const prefillContent = (employee: Employe, type: string) => {
     let content = '';
+    const todayStr = new Date().toISOString().split('T')[0];
+
     if (type === 'Attestation de Virement') {
         content = `Nom: ${employee.name || ''}
 Matricule: ${employee.matricule || ''}
@@ -75,10 +77,54 @@ Banque: ${employee.banque || ''}
 Salaire de base: ${employee.baseSalary || 0}
 Decision: n°024/CNRCT/DIR/P. du 01 Août 2017
 `;
+    } else if (type === 'Attestation Irrevocable de Virement de Salaire') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Numero Compte: ${employee.numeroCompte || ''}
+Banque: ${employee.banque || ''}
+Salaire de base: ${employee.baseSalary || 0}
+Decision: ${employee.Num_Decision || 'n°024/CNRCT/DIR/P. du 01 Août 2017'}
+`;
+    } else if (type === 'Attestation de Presence Effective au Poste') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Date d embauche: ${employee.dateEmbauche || todayStr}
+Date d observation: ${todayStr}
+`;
+    } else if (type === 'Certificat de Travail') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Date d embauche: ${employee.dateEmbauche || ''}
+Date de depart: ${employee.Date_Depart || ''}
+`;
+    } else if (type === 'Certificat de Prise de Service') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Date d embauche: ${employee.dateEmbauche || todayStr}
+Decision de nomination: ${employee.Num_Decision || ''}
+`;
+    } else if (type === 'Certificat de Cessation de Service') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Date de depart: ${employee.Date_Depart || todayStr}
+Motif: Fin de contrat / convenance personnelle
+`;
+    } else if (type === 'Certificat de Cessation Definitive de Service') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Date de depart: ${employee.Date_Depart || todayStr}
+Motif: Retraite / Fin de mandat
+`;
     } else if (type === 'Employment Contract') {
       content = `Nom: ${employee.name || ''}
 Poste: ${employee.poste || ''}
-Date d embauche: ${employee.dateEmbauche || new Date().toISOString().split('T')[0]}
+Date d embauche: ${employee.dateEmbauche || todayStr}
 Lieu de naissance: ${employee.Lieu_Naissance || ''}
 Salaire de base: ${employee.baseSalary || 0}
 `;
@@ -91,12 +137,37 @@ Destination: Abidjan
 Objet Mission: Accompagner le 5ème Vice-Président du Directoire de la CNRCT...
 Moyen Transport: Véhicule CNRCT
 Immatriculation: D 22 009
-Date Depart: Mardi 12 août 2025
-Date Retour: Samedi 16 août 2025
+Date Depart: ${todayStr}
+Date Retour: ${todayStr}
 `;
-    }
-    else {
-        content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nPoste: ${employee.poste}\nDépartement: ${employee.departmentId}\n`;
+    } else if (type === 'Decision de Cessation Definitive de Service') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Date de Cessation: ${employee.Date_Depart || todayStr}
+Motif: Retraite / Fin de mandat
+Decision Numero: 054/CNRCT/DIR/P.
+`;
+    } else if (type === 'Decision d Octroi de Conge Annuel') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Date Debut Conge: ${todayStr}
+Date Fin Conge: ${todayStr}
+Nombre Jours: 30
+Decision Numero: 012/CNRCT/DIR/P.
+`;
+    } else if (type === 'Decision d Octroi de Conge de Maternite') {
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Date Debut Conge: ${todayStr}
+Date Fin Conge: ${todayStr}
+Nombre Semaines: 14
+Decision Numero: 015/CNRCT/DIR/P.
+`;
+    } else {
+        content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nPoste: ${employee.poste}\nDépartement: ${employee.departmentId || ''}\n`;
     }
     setDocumentContent(content);
   }
@@ -191,9 +262,7 @@ Date Retour: Samedi 16 août 2025
     }
   };
   
-  const formattedDocument = state.document
-    ? state.document.split('\n').map((line, index) => <span key={index}>{line}</span>)
-    : null;
+  const formattedDocument = state.document || null;
 
   return (
     <PermissionGuard permission="page:documents:view">
@@ -215,9 +284,24 @@ Date Retour: Samedi 16 août 2025
                         <SelectValue placeholder="Sélectionnez un type de document..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Attestation de Virement">Attestation de Virement</SelectItem>
+                        {/* Certificats */}
+                        <SelectItem value="Certificat de Travail">Certificat de Travail</SelectItem>
+                        <SelectItem value="Certificat de Prise de Service">Certificat de Prise de Service</SelectItem>
+                        <SelectItem value="Certificat de Cessation de Service">Certificat de Cessation de Service</SelectItem>
+                        <SelectItem value="Certificat de Cessation Definitive de Service">Certificat de Cessation Définitive de Service</SelectItem>
+
+                        {/* Attestations */}
+                        <SelectItem value="Attestation Irrevocable de Virement de Salaire">Attestation Irrévocable de Virement de Salaire</SelectItem>
+                        <SelectItem value="Attestation de Presence Effective au Poste">Attestation de Présence Effective au Poste</SelectItem>
+                        <SelectItem value="Attestation de Virement">Attestation de Virement Simple</SelectItem>
                         <SelectItem value="Employment Contract">Contrat de travail</SelectItem>
                         <SelectItem value="Ordre de Mission">Ordre de Mission</SelectItem>
+
+                        {/* Décisions */}
+                        <SelectItem value="Decision de Cessation Definitive de Service">Décision de Cessation Définitive de Service</SelectItem>
+                        <SelectItem value="Decision d Octroi de Conge Annuel">Décision d'Octroi de Congé Annuel</SelectItem>
+                        <SelectItem value="Decision d Octroi de Conge de Maternite">Décision d'Octroi de Congé de Maternité</SelectItem>
+
                         <SelectItem value="Company Policy">Politique d'entreprise</SelectItem>
                         <SelectItem value="Warning Letter">Lettre d'avertissement</SelectItem>
                         <SelectItem value="Termination Letter">Lettre de licenciement</SelectItem>

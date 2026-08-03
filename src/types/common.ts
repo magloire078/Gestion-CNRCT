@@ -160,4 +160,15 @@ export interface NewsItem {
     viewCount: number;
     eventDate?: string; // Optionnel, pour les évènements spécifiques
 }
-
+export interface GeneratedDocument {
+    id: string;
+    documentType: string;
+    documentNumber: string;
+    employeeId: string;
+    employeeName: string;
+    content: string;
+    generatedText: string;
+    generatedBy: string;
+    generatedByName: string;
+    createdAt: string; // ISO format
+}

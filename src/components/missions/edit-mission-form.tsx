@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -41,8 +41,10 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Mission, MissionParticipant, Employe } from "@/lib/data";
 import { subscribeToEmployees } from "@/services/employee-service";
+import { getLatestNumeroOrdre, incrementOrderNumberString } from "@/services/mission-service";
 import { cn } from "@/lib/utils";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Switch } from "@/components/ui/switch";
 
 interface EditMissionFormProps {
     mission: Mission;
@@ -58,8 +60,10 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
     const [endDate, setEndDate] = useState<Date | undefined>(mission.endDate ? parseISO(mission.endDate) : undefined);
     const [status, setStatus] = useState<Mission['status']>(mission.status);
     const [participants, setParticipants] = useState<MissionParticipant[]>(mission.participants || []);
+    const [isRegularisation, setIsRegularisation] = useState(mission.isRegularisation || false);
     
     const [employees, setEmployees] = useState<Employe[]>([]);
+    const [latestNumeroOrdre, setLatestNumeroOrdre] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("general");
 
@@ -70,21 +74,69 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         return () => unsubscribe();
     }, []);
 
+    // Fetch the latest global numeroOrdre and pre-fill empty participant references on mount
+    useEffect(() => {
+        async function initOrdreNumbers() {
+            let lastNum = await getLatestNumeroOrdre();
+            setLatestNumeroOrdre(lastNum);
+            
+            setParticipants(prevParticipants => {
+                let hasEmpty = false;
+                const updated = prevParticipants.map((p) => {
+                    if (!p.numeroOrdre || p.numeroOrdre.trim() === "") {
+                        hasEmpty = true;
+                        const nextNum = incrementOrderNumberString(lastNum || "000", 1);
+                        lastNum = nextNum;
+                        return { ...p, numeroOrdre: nextNum };
+                    } else {
+                        lastNum = p.numeroOrdre;
+                        return p;
+                    }
+                });
+                return hasEmpty ? updated : prevParticipants;
+            });
+        }
+        initOrdreNumbers();
+    }, []);
+
+    const employeeOptions = useMemo(() => {
+        return [...employees]
+            .map(emp => {
+                const label = emp.lastName && emp.firstName 
+                    ? `${emp.lastName.toUpperCase()} ${emp.firstName}` 
+                    : emp.name;
+                return { value: emp.id, label };
+            })
+            .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+    }, [employees]);
+
     const handleAddParticipant = (employeeId: string) => {
         const emp = employees.find(e => e.id === employeeId);
         if (!emp) return;
         
         if (participants.find(p => p.employeeId === employeeId)) return;
 
+        // Auto-determine next numeroOrdre for this new participant
+        let baseNum = latestNumeroOrdre || "000";
+        if (participants.length > 0) {
+            const lastPart = participants[participants.length - 1];
+            if (lastPart.numeroOrdre && lastPart.numeroOrdre.trim() !== "") {
+                baseNum = lastPart.numeroOrdre;
+            }
+        }
+        const nextNum = incrementOrderNumberString(baseNum, 1);
+
         const newParticipant: MissionParticipant = {
             employeeId: emp.id,
             employeeName: emp.name,
             moyenTransport: 'Véhicule CNRCT',
+            numeroOrdre: nextNum,
             coutTransport: 0,
             coutHebergement: 0,
             totalIndemnites: 0
         };
         setParticipants([...participants, newParticipant]);
+        setLatestNumeroOrdre(nextNum);
     };
 
     const handleRemoveParticipant = (index: number) => {
@@ -94,8 +146,24 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
     const handleUpdateParticipant = (index: number, updates: Partial<MissionParticipant>) => {
         const newParticipants = [...participants];
         newParticipants[index] = { ...newParticipants[index], ...updates };
+        
+        // If numeroOrdre was edited, cascade increments to all subsequent participants
+        if ('numeroOrdre' in updates) {
+            let lastNum = updates.numeroOrdre || "";
+            for (let j = index + 1; j < newParticipants.length; j++) {
+                if (lastNum && lastNum.trim() !== "") {
+                    const nextNum = incrementOrderNumberString(lastNum, 1);
+                    newParticipants[j] = { ...newParticipants[j], numeroOrdre: nextNum };
+                    lastNum = nextNum;
+                } else {
+                    newParticipants[j] = { ...newParticipants[j], numeroOrdre: "" };
+                }
+            }
+        }
+        
         setParticipants(newParticipants);
     };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -108,7 +176,8 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                 startDate: startDate ? format(startDate, "yyyy-MM-dd") : mission.startDate,
                 endDate: endDate ? format(endDate, "yyyy-MM-dd") : mission.endDate,
                 status,
-                participants
+                participants,
+                isRegularisation
             });
         } catch (err) {
             console.error(err);
@@ -277,6 +346,19 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                     </Select>
                                 </CardContent>
                             </Card>
+
+                            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl">
+                                <CardHeader className="p-5 border-b border-white/10 bg-slate-900/5">
+                                    <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
+                                        <Settings className="h-5 w-5 text-emerald-500" />
+                                        Régularisation
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-5 flex items-center justify-between">
+                                    <Label htmlFor="isRegularisation" className="text-xs font-bold text-slate-700">Mission de Régularisation</Label>
+                                    <Switch id="isRegularisation" checked={isRegularisation} onCheckedChange={setIsRegularisation} />
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
                 </TabsContent>
@@ -290,7 +372,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                     <CardDescription className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Gérez le personnel assigné à cette mission</CardDescription>
                                 </div>
                                 <SearchableSelect
-                                    items={employees.map(emp => ({ value: emp.id, label: emp.name }))}
+                                    items={employeeOptions}
                                     onValueChange={handleAddParticipant}
                                     placeholder="ADJOINDRE UN AGENT..."
                                     searchPlaceholder="NOM OU ID AGENT..."

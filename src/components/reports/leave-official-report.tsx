@@ -18,6 +18,8 @@ interface LeaveOfficialReportProps {
     isPrinting: boolean;
     onAfterPrint?: () => void;
     calculateWorkingDaysInPeriod: (leave: Leave) => number;
+    employeeName?: string;
+    employeeBalance?: number;
 }
 
 export function LeaveOfficialReport({ 
@@ -27,9 +29,30 @@ export function LeaveOfficialReport({
     totalDaysInPeriod,
     isPrinting,
     onAfterPrint,
-    calculateWorkingDaysInPeriod
+    calculateWorkingDaysInPeriod,
+    employeeName,
+    employeeBalance
 }: LeaveOfficialReportProps) {
     if (!logos && isPrinting) return null;
+    
+    const coverTitle = employeeName 
+        ? "FICHE INDIVIDUELLE DES CONGÉS ET ABSENCES" 
+        : "RAPPORT MENSUEL DES CONGÉS ET ABSENCES";
+        
+    const coverSubtitle = employeeName 
+        ? `AGENT : ${employeeName.toUpperCase()} | PÉRIODE : ${selectedPeriodText.toUpperCase()}` 
+        : `PÉRIODE : ${selectedPeriodText.toUpperCase()}`;
+
+    const reportStats = [
+        { label: "Total Demandes", value: leaves.length, icon: FileText },
+        { label: "Total Jours", value: totalDaysInPeriod, icon: Calendar },
+        { label: "Approuvés", value: leaves.filter(l => l.status === 'Approuvé').length, icon: UserCheck },
+        ...(employeeName ? [
+            { label: "Solde Restant", value: employeeBalance !== undefined ? `${employeeBalance} j` : "30 j", icon: Clock }
+        ] : [
+            { label: "En attente", value: leaves.filter(l => l.status === 'En attente').length, icon: Clock }
+        ])
+    ];
     
     return (
         <InstitutionalReportWrapper 
@@ -40,17 +63,12 @@ export function LeaveOfficialReport({
             <div className="bg-white text-black w-full font-sans">
                 {/* --- PAGE DE GARDE --- */}
                 <InstitutionalCover 
-                    title="RAPPORT MENSUEL DES CONGÉS ET ABSENCES"
-                    subtitle={`PÉRIODE : ${selectedPeriodText.toUpperCase()}`}
+                    title={coverTitle}
+                    subtitle={coverSubtitle}
                     direction="DAARH"
                     service="Direction des Affaires Administratives et des Ressources Humaines"
                     reference={`RH-CONGES-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000) + 1000}`}
-                    stats={[
-                        { label: "Total Demandes", value: leaves.length, icon: FileText },
-                        { label: "Total Jours", value: totalDaysInPeriod, icon: Calendar },
-                        { label: "Approuvés", value: leaves.filter(l => l.status === 'Approuvé').length, icon: UserCheck },
-                        { label: "En attente", value: leaves.filter(l => l.status === 'En attente').length, icon: Clock }
-                    ]}
+                    stats={reportStats}
                     settings={logos}
                     orientation="portrait"
                 />
@@ -58,7 +76,7 @@ export function LeaveOfficialReport({
                 {/* --- PAGE DE DONNÉES --- */}
                 <div className="print-page min-h-screen p-12">
                     <InstitutionalHeader 
-                        title="Récapitulatif Mensuel des Congés"
+                        title={employeeName ? `Fiche Individuelle des Congés - ${employeeName}` : "Récapitulatif Mensuel des Congés"}
                         period={selectedPeriodText}
                         direction="DAARH"
                         service="Direction des Affaires Administratives et des Ressources Humaines"
@@ -89,11 +107,23 @@ export function LeaveOfficialReport({
                             <div className="text-3xl font-black text-blue-700 leading-none">{leaves.filter(l => l.status === 'Approuvé').length}</div>
                         </div>
                         <div className="border-2 border-amber-100 p-6 rounded-2xl bg-amber-50/20 break-inside-avoid shadow-sm">
-                            <div className="flex items-center gap-2 text-amber-500 mb-2">
-                                <Clock className="h-4 w-4" />
-                                <span className="text-[11px] font-black uppercase tracking-widest">En attente</span>
-                            </div>
-                            <div className="text-3xl font-black text-amber-700 leading-none">{leaves.filter(l => l.status === 'En attente').length}</div>
+                            {employeeName ? (
+                                <>
+                                    <div className="flex items-center gap-2 text-emerald-600 mb-2">
+                                        <Clock className="h-4 w-4" />
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-emerald-500">Solde Restant</span>
+                                    </div>
+                                    <div className="text-3xl font-black text-emerald-700 leading-none">{employeeBalance ?? 30} j</div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-2 text-amber-500 mb-2">
+                                        <Clock className="h-4 w-4" />
+                                        <span className="text-[11px] font-black uppercase tracking-widest">En attente</span>
+                                    </div>
+                                    <div className="text-3xl font-black text-amber-700 leading-none">{leaves.filter(l => l.status === 'En attente').length}</div>
+                                </>
+                            )}
                         </div>
                     </div>
 

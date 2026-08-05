@@ -90,7 +90,8 @@ import {
     CreditCard,
     MoreVertical,
     Eye,
-    EyeOff
+    EyeOff,
+    AlertTriangle
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -253,6 +254,36 @@ export default function EmployeeDetailPage() {
     const deptName = units?.departments.find(d => d.id === employee?.departmentId)?.name;
     const directionName = units?.directions.find(d => d.id === employee?.directionId)?.name;
     const serviceName = units?.services.find(s => s.id === employee?.serviceId)?.name;
+    const isGarde = deptName === "Garde Républicaine";
+    const rotationStatus = useMemo(() => {
+        if (!isGarde || !employee?.Date_Depart) return null;
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const departDate = new Date(employee.Date_Depart);
+        departDate.setHours(0, 0, 0, 0);
+        
+        const diffTime = departDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+            return {
+                status: 'expired',
+                label: 'Rotation échue',
+                description: `La période de détachement de 6 mois de ce militaire a expiré le ${formatDate(employee.Date_Depart)}. Une rotation/relève est requise.`,
+            };
+        } else if (diffDays <= 30) {
+            return {
+                status: 'warning',
+                label: 'Rotation proche',
+                description: `La période de détachement de ce militaire se termine dans ${diffDays} jour(s) (le ${formatDate(employee.Date_Depart)}). Veuillez planifier sa relève.`,
+            };
+        }
+        return {
+            status: 'ok',
+            label: 'Détachement actif',
+            description: `Détachement militaire en cours. Rotation prévue le ${formatDate(employee.Date_Depart)}.`,
+        };
+    }, [isGarde, employee?.Date_Depart, formatDate]);
 
     if (loading) {
         return (
@@ -290,8 +321,8 @@ export default function EmployeeDetailPage() {
     const displayBrut = (employee.Salaire_Brut && employee.Salaire_Brut > 0) ? employee.Salaire_Brut : calculatedBrut;
     const displayNet = (employee.Salaire_Net && employee.Salaire_Net > 0) ? employee.Salaire_Net : displayBrut;
 
-    const isActive = employee.status === "Actif";
     const isRegionalMember = employee.poste?.toLowerCase().includes("comité régional") || employee.poste?.toLowerCase().includes("comite regional");
+    const isActive = employee.status === "Actif";
 
     const handleOpenPromotion = async () => {
         setIsPromotionDialogOpen(true);
@@ -391,9 +422,17 @@ export default function EmployeeDetailPage() {
                                 <span className="text-slate-400 font-medium tracking-tight normal-case">{employee.firstName}</span>
                             </h1>
                         </div>
-                        <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl backdrop-blur-md">
-                            <Briefcase className="h-4 w-4 text-amber-500" />
-                            <span className="text-sm md:text-base text-slate-300 font-black uppercase tracking-[0.1em]">{employee.poste}</span>
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl backdrop-blur-md">
+                                <Briefcase className="h-4 w-4 text-amber-500" />
+                                <span className="text-sm md:text-base text-slate-300 font-black uppercase tracking-[0.1em]">{employee.poste}</span>
+                            </div>
+                            {employee.grade && (
+                                <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl backdrop-blur-md">
+                                    <Award className="h-4 w-4 text-blue-400" />
+                                    <span className="text-sm md:text-base text-slate-300 font-black uppercase tracking-[0.1em]">{employee.grade}</span>
+                                </div>
+                            )}
                         </div>
                         
                         <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1 pt-1 border-t border-white/5 mt-1">
@@ -477,6 +516,28 @@ export default function EmployeeDetailPage() {
                 </div>
             </div>
 
+            {/* Alert Rotation Garde Républicaine */}
+            {rotationStatus && (
+                <div className={cn(
+                    "p-4 rounded-2xl border flex items-start gap-3 mt-4",
+                    rotationStatus.status === 'expired' && "bg-rose-50 border-rose-200 text-rose-800",
+                    rotationStatus.status === 'warning' && "bg-amber-50 border-amber-200 text-amber-800",
+                    rotationStatus.status === 'ok' && "bg-blue-50 border-blue-200 text-blue-800"
+                )}>
+                    {rotationStatus.status === 'expired' && <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />}
+                    {rotationStatus.status === 'warning' && <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />}
+                    {rotationStatus.status === 'ok' && <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />}
+                    <div>
+                        <h4 className="text-xs font-black uppercase tracking-wider mb-1">
+                            {rotationStatus.label} (Garde Républicaine)
+                        </h4>
+                        <p className="text-xs font-medium">
+                            {rotationStatus.description}
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Content Tabs */}
             <Tabs 
                 defaultValue="info" 
@@ -554,13 +615,23 @@ export default function EmployeeDetailPage() {
                         </CardHeader>
                         <CardContent className="p-3 pt-1 space-y-3 relative z-10">
                             <div className="space-y-1">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Hiérarchie / Grade</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Hiérarchie / Catégorie</span>
                                 <div className="bg-white/5 border border-white/10 p-2 rounded-xl">
                                     <span className="text-lg font-black text-blue-400 uppercase tracking-tighter">
                                         {employee.categorie || "AGENT GÉNÉRAL"}
                                     </span>
                                 </div>
                             </div>
+                            {employee.grade && (
+                                <div className="space-y-1">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Grade Militaire / Rang</span>
+                                    <div className="bg-white/5 border border-white/10 p-2 rounded-xl">
+                                        <span className="text-lg font-black text-amber-400 uppercase tracking-tighter">
+                                            {employee.grade}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                             <div className="p-2 bg-amber-500/10 rounded-xl border border-amber-500/20 flex items-center gap-2">
                                 <div className="h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center text-slate-900 font-black text-xs">!</div>
                                 <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest leading-relaxed">Agent habilité à manipuler des ressources stratégiques.</p>

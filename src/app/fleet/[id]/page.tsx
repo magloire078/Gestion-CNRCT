@@ -75,11 +75,12 @@ export default function VehicleDetailPage() {
         );
     }
 
-    const statusColors = {
+    const statusColors: Record<Fleet['status'], string> = {
         'Disponible': 'bg-emerald-100 text-emerald-800 border-emerald-200',
         'En mission': 'bg-blue-100 text-blue-800 border-blue-200',
         'En maintenance': 'bg-amber-100 text-amber-800 border-amber-200',
         'Hors service': 'bg-rose-100 text-rose-800 border-rose-200',
+        'Réformé': 'bg-slate-100 text-slate-800 border-slate-200',
     };
 
     return (
@@ -227,7 +228,7 @@ export default function VehicleDetailPage() {
                                 </TabsList>
 
                                 <TabsContent value="info" className="pt-8 space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                                         <div className="space-y-6">
                                             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
                                                 <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
@@ -237,39 +238,52 @@ export default function VehicleDetailPage() {
                                             </div>
                                             <div className="space-y-4">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Constructeur</span>
-                                                    <span className="text-sm font-black text-slate-800 tracking-tight">{vehicle.makeModel.split(' ')[0]}</span>
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Constructeur / Marque</span>
+                                                    <span className="text-sm font-black text-slate-800 tracking-tight">{vehicle.make || vehicle.makeModel.split(' ')[0]}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Immatriculation</span>
-                                                    <span className="text-sm font-black text-blue-600 tracking-wider font-mono">{vehicle.plate}</span>
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Type / Modèle</span>
+                                                    <span className="text-sm font-black text-slate-800 tracking-tight">{vehicle.modelType || vehicle.makeModel.split(' ').slice(1).join(' ') || "Standard"}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Millésime</span>
-                                                    <span className="text-sm font-black text-slate-800 tracking-tight">2021 (Phase 2)</span>
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Immatriculation Actuelle</span>
+                                                    <span className="text-sm font-black text-blue-600 tracking-wider font-mono uppercase">{vehicle.plate}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Immatriculation Initiale</span>
+                                                    <span className="text-sm font-black text-slate-700 font-mono uppercase">{vehicle.initialPlate || "Aucune"}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Numéro de Châssis</span>
+                                                    <span className="text-sm font-black text-slate-800 tracking-wider font-mono">{vehicle.chassisNumber || "Non renseigné"}</span>
                                                 </div>
                                             </div>
                                         </div>
-
+ 
                                         <div className="space-y-6">
                                             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
                                                 <div className="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
                                                     <UserCog className="h-4 w-4" />
                                                 </div>
-                                                <h3 className="font-black uppercase tracking-widest text-xs text-slate-500">Affectation</h3>
+                                                <h3 className="font-black uppercase tracking-widest text-xs text-slate-500">Affectation & Origine</h3>
                                             </div>
                                             <div className="space-y-4">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Utilisateur Actuel</span>
-                                                    <span className="text-sm font-black text-slate-800 tracking-tight uppercase leading-none">{vehicle.assignedTo || "Pool CG"}</span>
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Affectation / Utilisateur</span>
+                                                    <span className="text-sm font-black text-slate-800 tracking-tight uppercase leading-none">{vehicle.assignedTo || "Non affecté"}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Service</span>
-                                                    <span className="text-xs font-black text-slate-500 tracking-widest uppercase">Moyens Généraux</span>
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase">Tutelle administrative</span>
+                                                    <span className="text-sm font-black text-slate-700 tracking-tight uppercase">{vehicle.tutelle || "CNRCT"}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-[11px] font-bold text-slate-400 uppercase">Mise en service</span>
-                                                    <span className="text-sm font-black text-slate-800 tracking-tight">05 Janv. 2022</span>
+                                                    <span className="text-sm font-black text-slate-800 tracking-tight">
+                                                        {vehicle.dateMiseService ? (() => {
+                                                            const parts = vehicle.dateMiseService.split('-');
+                                                            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : vehicle.dateMiseService;
+                                                        })() : "Non renseignée"}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>

@@ -257,32 +257,37 @@ export default function EmployeeDetailPage() {
     const isGarde = deptName === "Garde Républicaine";
     const rotationStatus = useMemo(() => {
         if (!isGarde || !employee?.Date_Depart) return null;
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        const departDate = new Date(employee.Date_Depart);
-        departDate.setHours(0, 0, 0, 0);
-        
-        const diffTime = departDate.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays < 0) {
+        try {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const departDate = parseISO(employee.Date_Depart);
+            if (isNaN(departDate.getTime())) return null;
+            departDate.setHours(0, 0, 0, 0);
+            
+            const diffTime = departDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                return {
+                    status: 'expired',
+                    label: 'Rotation échue',
+                    description: `La période de détachement de 6 mois de ce militaire a expiré le ${formatDate(employee.Date_Depart)}. Une rotation/relève est requise.`,
+                };
+            } else if (diffDays <= 30) {
+                return {
+                    status: 'warning',
+                    label: 'Rotation proche',
+                    description: `La période de détachement de ce militaire se termine dans ${diffDays} jour(s) (le ${formatDate(employee.Date_Depart)}). Veuillez planifier sa relève.`,
+                };
+            }
             return {
-                status: 'expired',
-                label: 'Rotation échue',
-                description: `La période de détachement de 6 mois de ce militaire a expiré le ${formatDate(employee.Date_Depart)}. Une rotation/relève est requise.`,
+                status: 'ok',
+                label: 'Détachement actif',
+                description: `Détachement militaire en cours. Rotation prévue le ${formatDate(employee.Date_Depart)}.`,
             };
-        } else if (diffDays <= 30) {
-            return {
-                status: 'warning',
-                label: 'Rotation proche',
-                description: `La période de détachement de ce militaire se termine dans ${diffDays} jour(s) (le ${formatDate(employee.Date_Depart)}). Veuillez planifier sa relève.`,
-            };
+        } catch {
+            return null;
         }
-        return {
-            status: 'ok',
-            label: 'Détachement actif',
-            description: `Détachement militaire en cours. Rotation prévue le ${formatDate(employee.Date_Depart)}.`,
-        };
     }, [isGarde, employee?.Date_Depart, formatDate]);
 
     if (loading) {
@@ -682,7 +687,15 @@ export default function EmployeeDetailPage() {
                             <div className="p-2 bg-blue-50 border border-blue-100 rounded-xl">
                                 <span className="text-[8px] font-black text-blue-400 uppercase tracking-[0.2em] block mb-0.5">Calcul Automatique</span>
                                 <p className="text-lg font-black text-blue-600 tracking-tighter">
-                                    {employee.dateEmbauche ? differenceInYears(new Date(), parseISO(employee.dateEmbauche)) : 0} ANS <span className="text-[10px] font-bold text-blue-400 ml-1">DE SERVICE</span>
+                                    {(() => {
+                                        if (!employee.dateEmbauche) return 0;
+                                        try {
+                                            const d = parseISO(employee.dateEmbauche);
+                                            return !isNaN(d.getTime()) ? Math.max(0, differenceInYears(new Date(), d)) : 0;
+                                        } catch {
+                                            return 0;
+                                        }
+                                    })()} ANS <span className="text-[10px] font-bold text-blue-400 ml-1">DE SERVICE</span>
                                 </p>
                             </div>
                             <div className="space-y-0">

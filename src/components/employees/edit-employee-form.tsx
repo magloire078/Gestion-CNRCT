@@ -87,6 +87,30 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     fetchMetadata();
   }, [toast]);
 
+  const isGardeOrGendarme = useMemo(() => {
+    const deptName = departmentList.find(d => d.id === formData.departmentId)?.name;
+    return deptName === "Garde Républicaine" || deptName === "Gendarmes";
+  }, [formData.departmentId, departmentList]);
+
+  const militaryRanks = [
+    "Soldat de 2ème classe",
+    "Soldat de 1ère classe",
+    "Caporal",
+    "Caporal-Chef",
+    "Gendarme",
+    "Sergent",
+    "Sergent-Chef",
+    "Maréchal des Logis (MDL)",
+    "Maréchal des Logis-Chef (MDL-Chef)",
+    "Adjudant",
+    "Adjudant-Chef",
+    "Adjudant-Chef Major",
+    "Aspirant",
+    "Sous-Lieutenant",
+    "Lieutenant",
+    "Capitaine"
+  ];
+
   const filteredDirections = useMemo(() => {
     if (!formData.departmentId) return [];
     return directionList.filter(d => d.departmentId === formData.departmentId);
@@ -104,7 +128,27 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [id]: value };
+      
+      // Auto calculate Date_Depart if department is Garde Républicaine and dateEmbauche changes
+      if (id === 'dateEmbauche') {
+        const isGarde = departmentList.find(d => d.id === prev.departmentId)?.name === "Garde Républicaine";
+        if (isGarde && value) {
+          try {
+            const start = new Date(value);
+            if (!isNaN(start.getTime())) {
+              start.setMonth(start.getMonth() + 6);
+              newData.Date_Depart = start.toISOString().split('T')[0];
+            }
+          } catch (e) {
+            console.error("Invalid dateEmbauche for Garde:", e);
+          }
+        }
+      }
+      
+      return newData;
+    });
   };
 
   const handleSelectChange = (id: keyof Employe, value: any) => {
@@ -113,6 +157,20 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       if (id === 'departmentId') {
         newData.directionId = undefined;
         newData.serviceId = undefined;
+        
+        // Auto calculate Date_Depart if changing to Garde Républicaine and dateEmbauche exists
+        const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
+        if (isGarde && prev.dateEmbauche) {
+          try {
+            const start = new Date(prev.dateEmbauche);
+            if (!isNaN(start.getTime())) {
+              start.setMonth(start.getMonth() + 6);
+              newData.Date_Depart = start.toISOString().split('T')[0];
+            }
+          } catch (e) {
+            console.error("Invalid dateEmbauche for Garde:", e);
+          }
+        }
       } else if (id === 'directionId') {
         newData.serviceId = undefined;
       }
@@ -369,6 +427,21 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <DebouncedInput id="poste" value={formData.poste || ''} onChange={(val) => handleValueChange('poste', val as string)} className="h-12 rounded-xl border-slate-200 bg-white font-black uppercase text-blue-600 shadow-sm" />
                     </div>
                     <div className="space-y-3">
+                      <Label htmlFor="grade" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Grade / Rang</Label>
+                      {isGardeOrGendarme ? (
+                        <Select value={formData.grade || ''} onValueChange={(val) => handleSelectChange('grade', val)}>
+                          <SelectTrigger id="grade" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm text-slate-700 shadow-sm">
+                            <SelectValue placeholder="Sélectionner le grade..." />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                            {militaryRanks.map(r => <SelectItem key={r} value={r} className="font-bold py-3 uppercase text-[9px] tracking-widest">{r}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input id="grade" value={formData.grade || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-bold text-slate-700" placeholder="EX: Sergent, MDL-Chef, Capitaine..." />
+                      )}
+                    </div>
+                    <div className="space-y-3">
                       <Label htmlFor="dateEmbauche" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Date d'engagement</Label>
                       <Input id="dateEmbauche" type="date" value={formData.dateEmbauche || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-bold" />
                     </div>
@@ -380,6 +453,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Label htmlFor="Num_Decision" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Référence Acte Administratif</Label>
                       <Input id="Num_Decision" value={formData.Num_Decision || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-mono font-bold" placeholder="DEC-..." />
                     </div>
+
+                    {departmentList.find(d => d.id === formData.departmentId)?.name === "Garde Républicaine" && (
+                      <div className="md:col-span-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-800 italic leading-relaxed">
+                        Note : Pour les militaires de la Garde Républicaine (personnel subalterne), la rotation s'effectue tous les 6 mois. La date de départ est pré-remplie automatiquement à 6 mois après la date d'engagement.
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 

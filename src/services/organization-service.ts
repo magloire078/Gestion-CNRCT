@@ -20,8 +20,8 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
             mainLogoUrl: defaultMainLogoUrl,
             secondaryLogoUrl: defaultSecondaryLogoUrl,
             faviconUrl: defaultMainLogoUrl,
-            globalSignatoryName: "NANAN AHOUA KOUASSI III",
-            globalSignatoryTitle: "Directeur de l'Observatoire National, CNRCT",
+            globalSignatoryName: "FATOGOMA YEO",
+            globalSignatoryTitle: "Préfet",
             showRegionalSignatories: true
         };
     }
@@ -46,8 +46,8 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
                 mainLogoUrl,
                 secondaryLogoUrl,
                 faviconUrl: data.faviconUrl || mainLogoUrl || '',
-                globalSignatoryName: data.globalSignatoryName || "NANAN AHOUA KOUASSI III",
-                globalSignatoryTitle: data.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT",
+                globalSignatoryName: data.globalSignatoryName || "FATOGOMA YEO",
+                globalSignatoryTitle: data.globalSignatoryTitle || "Préfet",
                 showRegionalSignatories: data.showRegionalSignatories !== undefined ? data.showRegionalSignatories : true
             };
         }
@@ -61,8 +61,8 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         mainLogoUrl: defaultMainLogoUrl,
         secondaryLogoUrl: defaultSecondaryLogoUrl,
         faviconUrl: defaultMainLogoUrl, // Use main logo as default favicon
-        globalSignatoryName: "NANAN AHOUA KOUASSI III",
-        globalSignatoryTitle: "Directeur de l'Observatoire National, CNRCT",
+        globalSignatoryName: "FATOGOMA YEO",
+        globalSignatoryTitle: "Préfet",
         showRegionalSignatories: true
     };
 }

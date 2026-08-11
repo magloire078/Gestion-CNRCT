@@ -59,6 +59,7 @@ const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outli
   'En mission': 'secondary',
   'En maintenance': 'outline',
   'Hors service': 'destructive',
+  'Réformé': 'destructive',
 };
 
 export default function FleetPage() {
@@ -181,7 +182,7 @@ export default function FleetPage() {
             <div className="flex items-center gap-3">
               <div className="h-14 w-1 flex-shrink-0 bg-slate-900 rounded-full" />
               <div>
-                <h1 className="text-5xl font-black uppercase tracking-tighter text-slate-900">
+                <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter text-slate-900">
                   Gestion Flotte
                 </h1>
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mt-1 pl-1">
@@ -194,11 +195,11 @@ export default function FleetPage() {
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Flux de données temps réel actif</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <Button
               onClick={handlePrint}
               variant="outline"
-              className="h-14 px-6 rounded-[1.5rem] border-slate-200 bg-white/50 backdrop-blur-md font-black uppercase tracking-widest text-[11px] hover:bg-slate-100 active:scale-95 transition-all text-slate-600"
+              className="h-14 px-6 rounded-[1.5rem] border-slate-200 bg-white/50 backdrop-blur-md font-black uppercase tracking-widest text-[11px] hover:bg-slate-100 active:scale-95 transition-all text-slate-600 w-full sm:w-auto justify-center"
             >
               <Printer className="mr-3 h-5 w-5 text-blue-500" />
               Rapport Officiel
@@ -206,14 +207,14 @@ export default function FleetPage() {
             <Button
               onClick={handleExportXlsx}
               variant="outline"
-              className="h-14 px-6 rounded-[1.5rem] border-slate-200 bg-white/50 backdrop-blur-md font-black uppercase tracking-widest text-[11px] hover:bg-slate-100 active:scale-95 transition-all text-slate-600"
+              className="h-14 px-6 rounded-[1.5rem] border-slate-200 bg-white/50 backdrop-blur-md font-black uppercase tracking-widest text-[11px] hover:bg-slate-100 active:scale-95 transition-all text-slate-600 w-full sm:w-auto justify-center"
             >
               <Download className="mr-3 h-5 w-5 text-emerald-500" />
               Exporter Excel
             </Button>
             <Button
               onClick={() => setIsAddSheetOpen(true)}
-              className="h-14 px-5 rounded-[1.5rem] bg-slate-900 shadow-2xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
+              className="h-14 px-5 rounded-[1.5rem] bg-slate-900 shadow-2xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10 w-full sm:w-auto justify-center"
             >
               <PlusCircle className="mr-3 h-5 w-5 text-emerald-400" />
               Intégrer Véhicule
@@ -249,6 +250,7 @@ export default function FleetPage() {
                     <SelectItem value="En mission" className="font-bold py-3 uppercase text-[9px] tracking-widest text-blue-600">En mission</SelectItem>
                     <SelectItem value="En maintenance" className="font-bold py-3 uppercase text-[9px] tracking-widest text-orange-600">Maintenance</SelectItem>
                     <SelectItem value="Hors service" className="font-bold py-3 uppercase text-[9px] tracking-widest text-rose-600">Hors service</SelectItem>
+                    <SelectItem value="Réformé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-500">Réformé</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -295,11 +297,17 @@ export default function FleetPage() {
                           {((currentPage - 1) * itemsPerPage + index + 1).toString().padStart(2, '0')}
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col">
+                          <div className="flex flex-col text-left">
                             <span className="font-black text-slate-900 uppercase tracking-tight text-sm group-hover:text-blue-600 transition-all">
                               {vehicle.plate}
                             </span>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Certifié CNRCT</span>
+                            {vehicle.initialPlate ? (
+                              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">
+                                Initiale: {vehicle.initialPlate}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Certifié CNRCT</span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="font-bold text-slate-700 uppercase tracking-tight">{vehicle.makeModel}</TableCell>
@@ -361,9 +369,14 @@ export default function FleetPage() {
                         <Badge variant={statusVariantMap[vehicle.status]} className="font-black text-[9px] uppercase tracking-widest rounded-md px-2 py-0.5 border-none shadow-sm">
                           {vehicle.status}
                         </Badge>
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{vehicle.plate}</span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{vehicle.plate}</span>
+                          {vehicle.initialPlate && (
+                            <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wide">Init: {vehicle.initialPlate}</span>
+                          )}
+                        </div>
                       </div>
-                      <CardTitle className="text-lg font-black text-slate-900 uppercase tracking-tight mt-2">
+                      <CardTitle className="text-lg font-black text-slate-900 uppercase tracking-tight mt-2 text-left">
                         {vehicle.makeModel}
                       </CardTitle>
                     </CardHeader>

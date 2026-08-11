@@ -65,6 +65,7 @@ export type Employe = {
     dateConge?: string;
     anciennete?: string; // e.g., "5 ans 3 mois"
     categorie?: string;
+    grade?: string;
     emploi?: string; // can be same as 'poste'
     parts?: number; // for tax calculation
     paymentLocation?: string;

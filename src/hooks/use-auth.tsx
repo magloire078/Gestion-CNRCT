@@ -68,10 +68,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Timeout safety: Force loading to false after 7 seconds if somehow stuck
+    // Timeout safety: Force loading to false after 15 seconds if somehow stuck
     const timeoutId = setTimeout(() => {
       if (isMounted && loading) {
         console.warn("[Auth] Initialization timeout (15s) - proceeding with local state to avoid blocking UI.");
+        
+        // Notify the user about possible tracking prevention / cookie block
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            variant: "destructive",
+            title: "Problème de connexion de session",
+            description: "Votre navigateur (Brave/Edge) ou bloqueur de pub semble restreindre l'accès à Firestore/Auth. Veuillez autoriser les cookies et le stockage tiers pour ce site pour pouvoir enregistrer vos modifications.",
+            duration: 12000,
+          });
+        }).catch(console.error);
+
         // Try to proceed with whatever state we have
         setLoading(false);
       }

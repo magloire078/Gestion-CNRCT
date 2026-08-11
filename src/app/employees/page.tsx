@@ -865,6 +865,21 @@ export default function EmployeesPage() {
                                   <div className="flex flex-col">
                                     <span className="font-black text-slate-900 uppercase tracking-tight text-base md:text-sm group-hover:text-blue-600 transition-colors flex items-center gap-2">
                                       <span>{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</span>
+                                      {employee.calculatedGroup === 'garde-republicaine' && employee.Date_Depart && (
+                                        (() => {
+                                          const now = new Date();
+                                          now.setHours(0, 0, 0, 0);
+                                          const depDate = new Date(employee.Date_Depart);
+                                          depDate.setHours(0, 0, 0, 0);
+                                          const diffDays = Math.ceil((depDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                                          if (diffDays < 0) {
+                                            return <Badge className="bg-rose-100 hover:bg-rose-200 text-rose-800 border-none px-1.5 py-0 h-4 text-[9px] font-black uppercase tracking-wider">Relève Échue</Badge>;
+                                          } else if (diffDays <= 30) {
+                                            return <Badge className="bg-amber-100 hover:bg-amber-200 text-amber-800 border-none px-1.5 py-0 h-4 text-[9px] font-black uppercase tracking-wider">Relève Proche</Badge>;
+                                          }
+                                          return null;
+                                        })()
+                                      )}
                                       {isGeoTab && statusFilter === 'all' && employee.status && employee.status !== 'Actif' && (
                                           <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="px-1.5 py-0 h-4 text-[9px]">
                                             {employee.status === 'Licencié' ? 'Remplacé' : employee.status}

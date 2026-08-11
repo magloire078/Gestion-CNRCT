@@ -19,5 +19,11 @@ export type Fleet = {
     makeModel: string;
     assignedTo: string;
     maintenanceDue: string; // YYYY-MM-DD
-    status: 'Disponible' | 'En mission' | 'En maintenance' | 'Hors service';
+    status: 'Disponible' | 'En mission' | 'En maintenance' | 'Hors service' | 'Réformé';
+    initialPlate?: string; // Immatriculation initiale
+    chassisNumber?: string; // Numéro de châssis
+    make?: string; // Marque
+    modelType?: string; // Type / Modèle
+    dateMiseService?: string; // Date de mise en service (YYYY-MM-DD)
+    tutelle?: string; // Tutelle
 };

@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,6 +42,63 @@ export default function MissionReportPage() {
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const { settings } = useSettings();
+
+  const [allMissions, setAllMissions] = useState<Mission[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    getMissions()
+      .then(setAllMissions)
+      .catch(console.error)
+      .finally(() => setStatsLoading(false));
+  }, []);
+
+  const yearlyStats = useMemo(() => {
+    const yearsMap = new Map<string, { count: number; totalCost: number }>();
+    allMissions.forEach(m => {
+        try {
+            const y = parseISO(m.startDate).getFullYear().toString();
+            const cost = calculateMissionCost(m);
+            const current = yearsMap.get(y) || { count: 0, totalCost: 0 };
+            yearsMap.set(y, { count: current.count + 1, totalCost: current.totalCost + cost });
+        } catch (e) {
+            console.error(e);
+        }
+    });
+    return Array.from(yearsMap.entries()).map(([year, data]) => ({
+        year,
+        count: data.count,
+        totalCost: data.totalCost
+    })).sort((a, b) => b.year.localeCompare(a.year));
+  }, [allMissions]);
+
+  const monthlyStats = useMemo(() => {
+    const monthly = Array.from({ length: 12 }, (_, i) => {
+        const monthLabel = format(new Date(2000, i, 1), 'MMMM', { locale: fr });
+        return {
+            monthLabel: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
+            monthIndex: i,
+            count: 0,
+            totalCost: 0
+        };
+    });
+    
+    allMissions.forEach(m => {
+        try {
+            const date = parseISO(m.startDate);
+            const y = date.getFullYear().toString();
+            if (y === year) {
+                const monthIdx = date.getMonth();
+                const cost = calculateMissionCost(m);
+                monthly[monthIdx].count += 1;
+                monthly[monthIdx].totalCost += cost;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+    return monthly;
+  }, [allMissions, year]);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: format(new Date(2000, i, 1), 'MMMM', { locale: fr }) }));
@@ -178,7 +236,97 @@ export default function MissionReportPage() {
             </CardContent>
           </Card>
         </div>
-        
+
+        {/* Statistics Dashboard Section */}
+        {!isPrinting && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-500">
+            {/* Yearly Stats Card */}
+            <Card className="border-none bg-white/40 backdrop-blur-md rounded-xl shadow-xl border border-white/20 overflow-hidden">
+              <CardHeader className="pb-3 bg-slate-900/[0.02] border-b border-slate-100">
+                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statistiques Annuelles</CardTitle>
+                <CardDescription className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
+                  Volume et budget des missions par année
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                {statsLoading ? (
+                  <div className="flex justify-center items-center h-48">
+                    <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                  </div>
+                ) : yearlyStats.length > 0 ? (
+                  <Table>
+                    <TableHeader className="bg-slate-50/30">
+                      <TableRow className="border-b border-slate-100 hover:bg-transparent">
+                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500">Année</TableHead>
+                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Nbre Missions</TableHead>
+                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500 text-right">Budget global</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {yearlyStats.map(stat => (
+                        <TableRow key={stat.year} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                          <TableCell className="py-3 px-4 font-black text-xs text-slate-900">{stat.year}</TableCell>
+                          <TableCell className="py-3 px-4 text-center font-bold text-xs text-slate-700">{stat.count}</TableCell>
+                          <TableCell className="py-3 px-4 text-right font-black text-xs text-slate-900">{formatCurrency(stat.totalCost)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-xs text-slate-400 uppercase tracking-[0.1em] font-bold">Aucune mission enregistrée</div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Monthly Stats Card */}
+            <Card className="border-none bg-white/40 backdrop-blur-md rounded-xl shadow-xl border border-white/20 overflow-hidden">
+              <CardHeader className="pb-3 bg-slate-900/[0.02] border-b border-slate-100">
+                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statistiques Mensuelles (Année {year})</CardTitle>
+                <CardDescription className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
+                  Volume et budget des missions par mois
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0 max-h-[300px] overflow-y-auto">
+                {statsLoading ? (
+                  <div className="flex justify-center items-center h-48">
+                    <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader className="bg-slate-50/30 sticky top-0 bg-white z-10">
+                      <TableRow className="border-b border-slate-100 hover:bg-transparent">
+                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500">Mois</TableHead>
+                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Nbre Missions</TableHead>
+                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500 text-right">Budget global</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {monthlyStats.map(stat => (
+                        <TableRow key={stat.monthIndex} className={cn(
+                          "border-b border-slate-50 hover:bg-slate-50/50 transition-colors",
+                          stat.count > 0 ? "bg-blue-50/20" : ""
+                        )}>
+                          <TableCell className="py-3 px-4 font-bold text-xs text-slate-700">{stat.monthLabel}</TableCell>
+                          <TableCell className="py-3 px-4 text-center font-black text-xs text-slate-900">
+                            {stat.count > 0 ? (
+                              <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-black">
+                                {stat.count}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-right font-black text-xs text-slate-900">{formatCurrency(stat.totalCost)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {reportData && (
           <Card className={`border-none bg-white rounded-xl shadow-2xl overflow-hidden ${isPrinting ? 'shadow-none' : ''}`}>
             <CardHeader className="p-5 border-b border-slate-50">

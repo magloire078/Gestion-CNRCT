@@ -24,7 +24,7 @@ import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { getOrganizationSettings } from "@/services/organization-service";
 import type { OrganizationSettings, MissionParticipant } from "@/lib/data";
-import { GroupMissionRequestPrint, IndividualMissionSlipPrint } from "@/components/missions/mission-print-templates";
+import { GroupMissionRequestPrint, IndividualMissionSlipPrint, CollectiveMissionOrderPrint, GroupedIndividualMissionsPrint } from "@/components/missions/mission-print-templates";
 
 export default function MissionDetailPage() {
     const { id } = useParams() as { id: string };
@@ -35,7 +35,9 @@ export default function MissionDetailPage() {
     
     const [logos, setLogos] = useState<OrganizationSettings | null>(null);
     const [showGroupPrint, setShowGroupPrint] = useState(false);
+    const [showCollectivePrint, setShowCollectivePrint] = useState(false);
     const [showIndividualPrint, setShowIndividualPrint] = useState(false);
+    const [showGroupedIndividualPrint, setShowGroupedIndividualPrint] = useState(false);
     const [selectedParticipant, setSelectedParticipant] = useState<MissionParticipant | null>(null);
 
     const canEdit = hasPermission('page:missions:view');
@@ -149,10 +151,24 @@ export default function MissionDetailPage() {
                         <div className="flex items-center gap-3">
                             <Button 
                                 variant="outline" 
+                                onClick={() => setShowCollectivePrint(true)}
+                                className="h-12 px-6 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all"
+                            >
+                                <Printer className="mr-2 h-4 w-4 text-purple-500" /> Ordre Collectif
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setShowGroupedIndividualPrint(true)}
+                                className="h-12 px-6 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all"
+                            >
+                                <Printer className="mr-2 h-4 w-4 text-emerald-500" /> Impression Groupée
+                            </Button>
+                            <Button 
+                                variant="outline" 
                                 onClick={() => setShowGroupPrint(true)}
                                 className="h-12 px-6 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all"
                             >
-                                <Printer className="mr-2 h-4 w-4 text-blue-500" /> Imprimer Rapport
+                                <Printer className="mr-2 h-4 w-4 text-blue-500" /> Demande d'Ordre
                             </Button>
                             {canEdit && (
                                 <Button 
@@ -291,7 +307,7 @@ export default function MissionDetailPage() {
                                                         <p className="font-black uppercase text-xs tracking-tight text-slate-900">{p.employeeName}</p>
                                                         <div className="flex items-center gap-3 mt-1.5">
                                                             <div className="bg-slate-100 px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest text-slate-500 uppercase">
-                                                                {p.numeroOrdre || "No-00"}
+                                                                {p.numeroOrdre?.trim() || (mission.numeroMission ? (mission.participants?.length > 1 ? `N° ${mission.numeroMission}-${i + 1}` : `N° ${mission.numeroMission}`) : "No-00")}
                                                             </div>
                                                             <span className="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
                                                                 <Car className="h-3 w-3" /> {p.moyenTransport}
@@ -475,6 +491,14 @@ export default function MissionDetailPage() {
                 />
             )}
 
+            {showCollectivePrint && mission && logos && (
+                <CollectiveMissionOrderPrint 
+                    mission={mission} 
+                    logos={logos} 
+                    onCloseAction={() => setShowCollectivePrint(false)} 
+                />
+            )}
+
             {showIndividualPrint && mission && logos && selectedParticipant && (
                 <IndividualMissionSlipPrint 
                     mission={mission} 
@@ -484,6 +508,14 @@ export default function MissionDetailPage() {
                         setShowIndividualPrint(false);
                         setSelectedParticipant(null);
                     }} 
+                />
+            )}
+
+            {showGroupedIndividualPrint && mission && logos && (
+                <GroupedIndividualMissionsPrint
+                    mission={mission}
+                    logos={logos}
+                    onCloseAction={() => setShowGroupedIndividualPrint(false)}
                 />
             )}
         </div>

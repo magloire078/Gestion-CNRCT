@@ -85,7 +85,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                 const updated = prevParticipants.map((p) => {
                     if (!p.numeroOrdre || p.numeroOrdre.trim() === "") {
                         hasEmpty = true;
-                        const nextNum = incrementOrderNumberString(lastNum || "000", 1);
+                        const nextNum = incrementOrderNumberString(lastNum || mission.numeroMission || "000", 1);
                         lastNum = nextNum;
                         return { ...p, numeroOrdre: nextNum };
                     } else {
@@ -97,7 +97,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
             });
         }
         initOrdreNumbers();
-    }, []);
+    }, [mission.numeroMission]);
 
     const employeeOptions = useMemo(() => {
         return [...employees]
@@ -117,7 +117,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         if (participants.find(p => p.employeeId === employeeId)) return;
 
         // Auto-determine next numeroOrdre for this new participant
-        let baseNum = latestNumeroOrdre || "000";
+        let baseNum = latestNumeroOrdre || mission.numeroMission || "000";
         if (participants.length > 0) {
             const lastPart = participants[participants.length - 1];
             if (lastPart.numeroOrdre && lastPart.numeroOrdre.trim() !== "") {

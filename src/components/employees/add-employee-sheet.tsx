@@ -76,6 +76,8 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState(`https://placehold.co/100x100.png`);
   const [skills, setSkills] = useState("");
+  const [grade, setGrade] = useState("");
+  const [dateEmbauche, setDateEmbauche] = useState("");
   const [dateDepart, setDateDepart] = useState("");
 
   const [region, setRegion] = useState("");
@@ -124,6 +126,30 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     return directionList.filter(d => d.departmentId === departmentId);
   }, [departmentId, directionList]);
 
+  const isGardeOrGendarme = useMemo(() => {
+    const deptName = departmentList.find(d => d.id === departmentId)?.name;
+    return deptName === "Garde Républicaine" || deptName === "Gendarmes";
+  }, [departmentId, departmentList]);
+
+  const militaryRanks = [
+    "Soldat de 2ème classe",
+    "Soldat de 1ère classe",
+    "Caporal",
+    "Caporal-Chef",
+    "Gendarme",
+    "Sergent",
+    "Sergent-Chef",
+    "Maréchal des Logis (MDL)",
+    "Maréchal des Logis-Chef (MDL-Chef)",
+    "Adjudant",
+    "Adjudant-Chef",
+    "Adjudant-Chef Major",
+    "Aspirant",
+    "Sous-Lieutenant",
+    "Lieutenant",
+    "Capitaine"
+  ];
+
   const filteredServices = useMemo(() => {
     if (directionId) {
       return serviceList.filter(s => s.directionId === directionId);
@@ -150,6 +176,8 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     setPhotoFile(null);
     setPhotoPreview(`https://placehold.co/100x100.png`);
     setError("");
+    setGrade("");
+    setDateEmbauche("");
     setDateDepart("");
     setRegion("");
     setDepartement("");
@@ -206,6 +234,8 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
         name: `${lastName} ${firstName}`.trim(),
         skills: skillsArray,
         sexe: sexe as Employe['sexe'],
+        grade: grade || undefined,
+        dateEmbauche: dateEmbauche || undefined,
         Date_Depart: dateDepart,
         Region: region,
         Departement: departement,
@@ -325,10 +355,37 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         <Label htmlFor="poste" className="text-slate-700 font-medium">Intitulé du Poste</Label>
                         <Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} required className="h-11 rounded-lg border-slate-200" />
                       </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="grade" className="text-slate-700 font-medium">Grade / Rang</Label>
+                        {isGardeOrGendarme ? (
+                          <Select value={grade} onValueChange={setGrade}>
+                            <SelectTrigger id="grade" className="h-11 rounded-lg border-slate-200 bg-white font-medium text-slate-700">
+                              <SelectValue placeholder="Sélectionner le grade..." />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg">
+                              {militaryRanks.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input id="grade" value={grade} onChange={(e) => setGrade(e.target.value)} className="h-11 rounded-lg border-slate-200" placeholder="EX: Sergent, MDL-Chef, Capitaine..." />
+                        )}
+                      </div>
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label className="text-slate-700 font-medium">Département Parent</Label>
-                          <Select value={departmentId} onValueChange={(value) => { setDepartmentId(value); setDirectionId(''); setServiceId(''); }} required>
+                          <Select value={departmentId} onValueChange={(value) => { 
+                            setDepartmentId(value); 
+                            setDirectionId(''); 
+                            setServiceId(''); 
+                            
+                            // Auto calculate dateDepart if changing to Garde Républicaine
+                            const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
+                            if (isGarde && dateEmbauche) {
+                              const start = new Date(dateEmbauche);
+                              start.setMonth(start.getMonth() + 6);
+                              setDateDepart(start.toISOString().split('T')[0]);
+                            }
+                          }} required>
                             <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
                             <SelectContent className="rounded-lg">
                               {departmentList.map(dep => (<SelectItem key={dep.id} value={dep.id}>{dep.name}</SelectItem>))}
@@ -439,6 +496,45 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                           <Input id="numDecision" value={numDecision} onChange={(e) => setNumDecision(e.target.value)} className="h-11 rounded-lg border-slate-200 bg-white" placeholder="EX: DEC-2024-..." />
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-2 gap-5">
+                        <div className="space-y-2">
+                          <Label htmlFor="dateEmbauche" className="text-slate-700 font-medium">Date d'engagement</Label>
+                          <Input 
+                            id="dateEmbauche" 
+                            type="date" 
+                            value={dateEmbauche} 
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setDateEmbauche(val);
+                              // Auto calculate dateDepart for Garde Républicaine
+                              const isGarde = departmentList.find(d => d.id === departmentId)?.name === "Garde Républicaine";
+                              if (isGarde && val) {
+                                const start = new Date(val);
+                                start.setMonth(start.getMonth() + 6);
+                                setDateDepart(start.toISOString().split('T')[0]);
+                              }
+                            }} 
+                            className="h-11 rounded-lg border-slate-200 bg-white" 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="dateDepart" className="text-slate-700 font-medium">Date de départ (Prévue)</Label>
+                          <Input 
+                            id="dateDepart" 
+                            type="date" 
+                            value={dateDepart} 
+                            onChange={(e) => setDateDepart(e.target.value)} 
+                            className="h-11 rounded-lg border-slate-200 bg-white text-rose-600 font-medium" 
+                          />
+                        </div>
+                      </div>
+
+                      {departmentList.find(d => d.id === departmentId)?.name === "Garde Républicaine" && (
+                        <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800 italic leading-relaxed">
+                          Note : Pour les militaires de la Garde Républicaine (personnel subalterne), la rotation s'effectue tous les 6 mois. La date de départ est pré-remplie automatiquement à 6 mois après la date d'engagement.
+                        </div>
+                      )}
 
                       <div className="p-5 bg-blue-50 border border-blue-100 rounded-xl relative overflow-hidden group">
                         <div className="flex items-center space-x-3 mb-4">

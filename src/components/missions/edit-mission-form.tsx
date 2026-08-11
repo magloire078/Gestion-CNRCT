@@ -38,10 +38,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Mission, MissionParticipant, Employe } from "@/lib/data";
+import type { Mission, MissionParticipant, Employe, Fleet } from "@/lib/data";
 import { subscribeToEmployees } from "@/services/employee-service";
 import { getLatestNumeroOrdre, incrementOrderNumberString } from "@/services/mission-service";
+import { getVehicles } from "@/services/fleet-service";
 import { cn } from "@/lib/utils";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Switch } from "@/components/ui/switch";
@@ -63,6 +63,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
     const [isRegularisation, setIsRegularisation] = useState(mission.isRegularisation || false);
     
     const [employees, setEmployees] = useState<Employe[]>([]);
+    const [fleetVehicles, setFleetVehicles] = useState<Fleet[]>([]);
     const [latestNumeroOrdre, setLatestNumeroOrdre] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("general");
@@ -71,6 +72,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         const unsubscribe = subscribeToEmployees((fetched) => {
             setEmployees(fetched);
         }, (err) => console.error(err));
+        getVehicles().then(setFleetVehicles).catch(console.error);
         return () => unsubscribe();
     }, []);
 
@@ -388,13 +390,14 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                             <TableHead className="py-6 px-12 font-black uppercase text-[10px] tracking-widest text-slate-500">Nom & Prénoms</TableHead>
                                             <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-500">Référence Ordre</TableHead>
                                             <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-500">Mode de Transport</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-500">Immatriculation</TableHead>
                                             <TableHead className="text-right px-12 font-black uppercase text-[10px] tracking-widest text-slate-500">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {participants.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={4} className="text-center py-10">
+                                                <TableCell colSpan={5} className="text-center py-10">
                                                     <div className="flex flex-col items-center gap-3">
                                                         <UserPlus className="h-10 w-10 text-slate-200" />
                                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Aucun membre d'équipage assigné</p>
@@ -422,7 +425,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                                     </TableCell>
                                                     <TableCell>
                                                         <Select value={p.moyenTransport} onValueChange={(v: any) => handleUpdateParticipant(i, { moyenTransport: v })}>
-                                                            <SelectTrigger className="h-10 w-48 rounded-lg border-slate-200 bg-white/50 font-bold text-[10px] tracking-widest transition-all focus:bg-white uppercase">
+                                                            <SelectTrigger className="h-10 w-44 rounded-lg border-slate-200 bg-white/50 font-bold text-[10px] tracking-widest transition-all focus:bg-white uppercase">
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent className="rounded-xl shadow-2xl">
@@ -430,6 +433,24 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                                                 <SelectItem value="Véhicule personnel" className="font-bold py-3 uppercase text-[9px] tracking-widest">Véhicule personnel</SelectItem>
                                                             </SelectContent>
                                                         </Select>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="relative">
+                                                            <Input 
+                                                                placeholder="Ex: D 22 009" 
+                                                                list={`fleet-plates-${i}`}
+                                                                className="h-10 w-36 rounded-lg border-slate-200 bg-white/50 font-bold text-[10px] tracking-widest transition-all focus:bg-white uppercase" 
+                                                                value={p.immatriculation || ""} 
+                                                                onChange={(e) => handleUpdateParticipant(i, { immatriculation: e.target.value })}
+                                                            />
+                                                            <datalist id={`fleet-plates-${i}`}>
+                                                                {fleetVehicles.map(v => (
+                                                                    <option key={v.plate} value={v.plate}>
+                                                                        {v.makeModel ? `${v.plate} (${v.makeModel})` : v.plate}
+                                                                    </option>
+                                                                ))}
+                                                            </datalist>
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell className="text-right px-12">
                                                         <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors" onClick={() => handleRemoveParticipant(i)}>

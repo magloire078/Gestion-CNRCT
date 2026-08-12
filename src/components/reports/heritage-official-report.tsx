@@ -93,11 +93,11 @@ export function HeritageOfficialReport({
                                 
                                 <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white uppercase font-black">
-                                            <th className="p-4 w-[180px] text-left border-r border-slate-700">Identité de l'Archive</th>
-                                            <th className="p-4 w-[140px] text-left border-r border-slate-700">Origine Géographique</th>
-                                            <th className="p-4 w-[140px] text-left border-r border-slate-700">Groupe Culturel</th>
-                                            <th className="p-4 text-left">Signification & Description Historique</th>
+                                        <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 uppercase font-black border-b-2 border-slate-900">
+                                            <th className="p-4 w-[180px] text-left border-r border-slate-400 text-slate-900 font-black">Identité de l'Archive</th>
+                                            <th className="p-4 w-[140px] text-left border-r border-slate-400 text-slate-900 font-black">Origine Géographique</th>
+                                            <th className="p-4 w-[140px] text-left border-r border-slate-400 text-slate-900 font-black">Groupe Culturel</th>
+                                            <th className="p-4 text-left text-slate-900 font-black">Signification & Description Historique</th>
                                         </tr>
                                     </thead>
                                     <tbody>

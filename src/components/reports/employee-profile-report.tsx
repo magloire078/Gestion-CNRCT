@@ -216,10 +216,10 @@ export function EmployeeProfileReport({
                             <div className="space-y-0 border-2 border-slate-900 rounded-xl overflow-hidden">
                                 <table className="w-full text-xs border-collapse">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white font-black uppercase text-[10px]">
-                                            <th className="p-3 text-left w-1/4 border-r border-slate-700">Date</th>
-                                            <th className="p-3 text-left w-1/4 border-r border-slate-700">Événement</th>
-                                            <th className="p-3 text-left">Détails / Observations</th>
+                                        <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 font-black uppercase text-[10px] border-b-2 border-slate-900">
+                                            <th className="p-3 text-left w-1/4 border-r border-slate-400 text-slate-900 font-black">Date</th>
+                                            <th className="p-3 text-left w-1/4 border-r border-slate-400 text-slate-900 font-black">Événement</th>
+                                            <th className="p-3 text-left text-slate-900 font-black">Détails / Observations</th>
                                         </tr>
                                     </thead>
                                     <tbody>

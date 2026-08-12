@@ -106,12 +106,12 @@ export function TechnicalOfficialReport({
 
                             <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                 <thead>
-                                    <tr className="bg-slate-900 text-white uppercase font-black">
-                                        <th className="p-4 text-left border-r border-slate-700 w-[40%]">Désignation du Matériel</th>
-                                        <th className="p-4 text-center border-r border-slate-700 w-[15%]">Stock Initial</th>
-                                        <th className="p-4 text-center border-r border-slate-700 w-[15%] bg-emerald-900/50">Entrées (+)</th>
-                                        <th className="p-4 text-center border-r border-slate-700 w-[15%] bg-rose-900/50">Sorties (-)</th>
-                                        <th className="p-4 text-center w-[15%] bg-slate-800">Stock Final</th>
+                                    <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 uppercase font-black border-b-2 border-slate-900">
+                                        <th className="p-4 text-left border-r border-slate-400 w-[40%] text-slate-900 font-black">Désignation du Matériel</th>
+                                        <th className="p-4 text-center border-r border-slate-400 w-[15%] text-slate-900 font-black">Stock Initial</th>
+                                        <th className="p-4 text-center border-r border-slate-400 w-[15%] bg-emerald-50 text-emerald-900 font-black">Entrées (+)</th>
+                                        <th className="p-4 text-center border-r border-slate-400 w-[15%] bg-rose-50 text-rose-900 font-black">Sorties (-)</th>
+                                        <th className="p-4 text-center w-[15%] bg-slate-200 text-slate-900 font-black">Stock Final</th>
                                     </tr>
                                 </thead>
                                 <tbody>

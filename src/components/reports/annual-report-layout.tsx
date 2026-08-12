@@ -93,12 +93,12 @@ export function AnnualReportLayout({ logos, conflicts, periodLabel, onAfterPrint
                     <div className="mt-4">
                         <table className="w-full border-collapse border-2 border-slate-900 text-[9px] leading-tight">
                             <thead>
-                                <tr className="bg-slate-900 text-white uppercase font-black text-center">
-                                    <th className="p-2 w-[30px] border-r border-slate-700">N°</th>
-                                    <th className="p-2 w-[110px] border-r border-slate-700 text-left">District / Région</th>
-                                    <th className="p-2 w-[90px] border-r border-slate-700 text-left">Localité</th>
-                                    <th className="p-2 border-r border-slate-700 text-left">Nature du Litige / Résumé</th>
-                                    <th className="p-2 w-[80px]">Statut</th>
+                                <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 uppercase font-black text-center border-b-2 border-slate-900">
+                                    <th className="p-2 w-[30px] border-r border-slate-400 text-slate-900 font-black">N°</th>
+                                    <th className="p-2 w-[110px] border-r border-slate-400 text-left text-slate-900 font-black">District / Région</th>
+                                    <th className="p-2 w-[90px] border-r border-slate-400 text-left text-slate-900 font-black">Localité</th>
+                                    <th className="p-2 border-r border-slate-400 text-left text-slate-900 font-black">Nature du Litige / Résumé</th>
+                                    <th className="p-2 w-[80px] text-slate-900 font-black">Statut</th>
                                 </tr>
                             </thead>
                             <tbody>

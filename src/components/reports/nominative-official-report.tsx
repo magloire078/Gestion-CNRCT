@@ -73,14 +73,14 @@ export function NominativeOfficialReport({
                 <div className="border-2 border-slate-900 rounded-xl overflow-hidden shadow-2xl print:shadow-none">
                     <table className="w-full text-[9px] border-collapse bg-white table-fixed">
                         <thead>
-                            <tr className="bg-slate-900 text-white">
-                                <th className="w-[80px] font-black text-center uppercase border-r border-slate-800 p-3">Année</th>
+                            <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 border-b-2 border-slate-900">
+                                <th className="w-[80px] font-black text-center uppercase border-r border-slate-400 p-3 text-slate-900">Année</th>
                                 {reportData.annualSalaries[0]?.months.map((m, i) => (
-                                    <th key={i} className="font-black text-center uppercase border-r border-slate-800 p-1 text-[8px]">
+                                    <th key={i} className="font-black text-center uppercase border-r border-slate-400 p-1 text-[8px] text-slate-900">
                                         {m.month.substring(0, 3)}.
                                     </th>
                                 ))}
-                                <th className="w-[100px] font-black text-center uppercase p-3 bg-slate-800">Total Annuel</th>
+                                <th className="w-[100px] font-black text-center uppercase p-3 bg-slate-200 text-slate-900">Total Annuel</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -101,11 +101,11 @@ export function NominativeOfficialReport({
                             ))}
                             
                             {/* Grand Total Line */}
-                            <tr className="font-black bg-slate-900 text-white">
-                                <td colSpan={13} className="py-4 px-6 text-right border-r border-slate-800 text-[11px] uppercase tracking-[0.2em] italic">
+                            <tr className="font-black bg-slate-100 print:bg-slate-100 text-slate-900 border-t-2 border-slate-900">
+                                <td colSpan={13} className="py-4 px-6 text-right border-r border-slate-400 text-[11px] uppercase tracking-[0.2em] italic text-slate-900">
                                     Total Général Cumulé
                                 </td>
-                                <td className="py-4 px-2 text-right font-black text-[11px] tracking-tighter tabular-nums text-white bg-slate-800">
+                                <td className="py-4 px-2 text-right font-black text-[11px] tracking-tighter tabular-nums text-slate-900 bg-slate-200">
                                     {formatCurrency(reportData.grandTotal)}
                                 </td>
                             </tr>

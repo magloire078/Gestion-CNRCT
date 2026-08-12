@@ -119,12 +119,12 @@ export function AssetOfficialReport({
 
                                             <table className="w-full border-collapse border-2 border-slate-900 text-[9px]">
                                                 <thead>
-                                                    <tr className="bg-slate-900 text-white uppercase font-black">
-                                                        <th className="p-3 text-left border-r border-slate-700 w-[25%]">Désignation de l'Actif</th>
-                                                        <th className="p-3 text-left border-r border-slate-700 w-[20%]">Localisation / Affectation</th>
-                                                        <th className="p-3 text-center border-r border-slate-700 w-[15%]">État / Statut</th>
-                                                        <th className="p-3 text-center border-r border-slate-700 w-[20%]">Identification (Tag)</th>
-                                                        <th className="p-3 text-right w-[20%]">Date Acquisition</th>
+                                                    <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 uppercase font-black border-b-2 border-slate-900">
+                                                        <th className="p-3 text-left border-r border-slate-400 w-[25%] text-slate-900 font-black">Désignation de l'Actif</th>
+                                                        <th className="p-3 text-left border-r border-slate-400 w-[20%] text-slate-900 font-black">Localisation / Affectation</th>
+                                                        <th className="p-3 text-center border-r border-slate-400 w-[15%] text-slate-900 font-black">État / Statut</th>
+                                                        <th className="p-3 text-center border-r border-slate-400 w-[20%] text-slate-900 font-black">Identification (Tag)</th>
+                                                        <th className="p-3 text-right w-[20%] text-slate-900 font-black">Date Acquisition</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>

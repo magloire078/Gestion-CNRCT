@@ -96,12 +96,12 @@ export function MissionsOfficialReport({
                             
                             <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                 <thead>
-                                    <tr className="bg-slate-900 text-white uppercase font-black text-center">
-                                        <th className="p-4 w-[100px] border-r border-slate-700">Réf. Mission</th>
-                                        <th className="p-4 text-left border-r border-slate-700">Objet de la Mission & Localité</th>
-                                        <th className="p-4 w-[120px] border-r border-slate-700">Calendrier</th>
-                                        <th className="p-4 w-[80px] border-r border-slate-700">Effectif</th>
-                                        <th className="p-4 w-[150px] text-right">Impact Financier</th>
+                                    <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 uppercase font-black text-center border-b-2 border-slate-900">
+                                        <th className="p-4 w-[100px] border-r border-slate-400 text-slate-900 font-black">Réf. Mission</th>
+                                        <th className="p-4 text-left border-r border-slate-400 text-slate-900 font-black">Objet de la Mission & Localité</th>
+                                        <th className="p-4 w-[120px] border-r border-slate-400 text-slate-900 font-black">Calendrier</th>
+                                        <th className="p-4 w-[80px] border-r border-slate-400 text-slate-900 font-black">Effectif</th>
+                                        <th className="p-4 w-[150px] text-right text-slate-900 font-black">Impact Financier</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -149,9 +149,9 @@ export function MissionsOfficialReport({
                                             </td>
                                         </tr>
                                     ))}
-                                    <tr className="bg-slate-900 text-white font-black text-sm">
-                                        <td colSpan={4} className="p-6 text-right uppercase tracking-[.2em]">Total Engagements sur la Période :</td>
-                                        <td className="p-6 text-right text-xl tracking-tighter decoration-double underline decoration-[#006039] decoration-4 underline-offset-8">
+                                    <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 font-black text-sm border-t-2 border-slate-900">
+                                        <td colSpan={4} className="p-6 text-right uppercase tracking-[.2em] text-slate-900">Total Engagements sur la Période :</td>
+                                        <td className="p-6 text-right text-xl tracking-tighter decoration-double underline decoration-[#006039] decoration-4 underline-offset-8 text-slate-900">
                                             {formatCurrency(totalBudget)}
                                         </td>
                                     </tr>

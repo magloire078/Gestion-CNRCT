@@ -102,13 +102,13 @@ export function ConflictsOfficialReport({
                                 
                                 <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white uppercase font-black">
-                                            <th className="p-3 w-[40px] text-center border-r border-slate-700">N°</th>
-                                            <th className="p-3 w-[100px] text-center border-r border-slate-700">Date Sig.</th>
-                                            <th className="p-3 text-left border-r border-slate-700">Localité / District</th>
-                                            <th className="p-3 text-left border-r border-slate-700">Nature & Description Synthétique</th>
-                                            <th className="p-3 text-left border-r border-slate-700">Médiateur Assigné</th>
-                                            <th className="p-3 w-[140px] text-center">État d'Avancement</th>
+                                        <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 uppercase font-black border-b-2 border-slate-900">
+                                            <th className="p-3 w-[40px] text-center border-r border-slate-400 text-slate-900 font-black">N°</th>
+                                            <th className="p-3 w-[100px] text-center border-r border-slate-400 text-slate-900 font-black">Date Sig.</th>
+                                            <th className="p-3 text-left border-r border-slate-400 text-slate-900 font-black">Localité / District</th>
+                                            <th className="p-3 text-left border-r border-slate-400 text-slate-900 font-black">Nature & Description Synthétique</th>
+                                            <th className="p-3 text-left border-r border-slate-400 text-slate-900 font-black">Médiateur Assigné</th>
+                                            <th className="p-3 w-[140px] text-center text-slate-900 font-black">État d'Avancement</th>
                                         </tr>
                                     </thead>
                                     <tbody>

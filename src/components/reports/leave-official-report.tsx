@@ -130,14 +130,14 @@ export function LeaveOfficialReport({
                     {/* Data Table */}
                     <table className="w-full border-collapse border-2 border-slate-900 text-[10px] leading-tight shadow-sm">
                         <thead>
-                            <tr className="bg-slate-900 text-white uppercase font-black text-center border-b-2 border-slate-900">
-                                <th className="border border-slate-700 p-4 w-[40px]">N°</th>
-                                <th className="border border-slate-700 p-4 text-left">Employé</th>
-                                <th className="border border-slate-700 p-4">Type de Congé</th>
-                                <th className="border border-slate-700 p-4">Date Début</th>
-                                <th className="border border-slate-700 p-4">Date Fin</th>
-                                <th className="border border-slate-700 p-4 w-[60px]">Jours</th>
-                                <th className="border border-slate-700 p-4 w-[100px]">Statut</th>
+                            <tr className="bg-slate-100 print:bg-slate-100 text-slate-900 uppercase font-black text-center border-b-2 border-slate-900">
+                                <th className="border border-slate-400 p-4 w-[40px] text-slate-900 font-black">N°</th>
+                                <th className="border border-slate-400 p-4 text-left text-slate-900 font-black">Employé</th>
+                                <th className="border border-slate-400 p-4 text-slate-900 font-black">Type de Congé</th>
+                                <th className="border border-slate-400 p-4 text-slate-900 font-black">Date Début</th>
+                                <th className="border border-slate-400 p-4 text-slate-900 font-black">Date Fin</th>
+                                <th className="border border-slate-400 p-4 w-[60px] text-slate-900 font-black">Jours</th>
+                                <th className="border border-slate-400 p-4 w-[100px] text-slate-900 font-black">Statut</th>
                             </tr>
                         </thead>
                         <tbody>

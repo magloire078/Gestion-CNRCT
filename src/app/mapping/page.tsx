@@ -106,7 +106,13 @@ export default function MappingPage() {
   const filteredConflicts = useMemo(() => {
     if (!searchTerm) return conflicts;
     const lowercasedTerm = searchTerm.toLowerCase();
-    return conflicts.filter(c => c.village.toLowerCase().includes(lowercasedTerm));
+    return conflicts.filter(c => 
+      (c.village || '').toLowerCase().includes(lowercasedTerm) ||
+      (c.region || '').toLowerCase().includes(lowercasedTerm) ||
+      (c.district || '').toLowerCase().includes(lowercasedTerm) ||
+      (c.type || '').toLowerCase().includes(lowercasedTerm) ||
+      (c.description || '').toLowerCase().includes(lowercasedTerm)
+    );
   }, [conflicts, searchTerm]);
 
   return (
@@ -225,6 +231,7 @@ export default function MappingPage() {
                     heritage={heritageItems}
                     kingdoms={kingdomsData}
                     selectedId={selectedChiefId}
+                    initialActiveLayers={{ chiefs: true, conflicts: true, heritage: true, kingdoms: true }}
                     onMarkerClick={(id) => setSelectedChiefId(id)}
                     onAddPoint={(lat, lng) => {
                       toast({
@@ -249,17 +256,17 @@ export default function MappingPage() {
                   <div className="px-4 py-2 bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white/50 flex items-center gap-3">
                       <div className="flex items-center gap-2">
                           <div className="h-3 w-3 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Chefferies</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Chefferies ({chiefs.length})</span>
                       </div>
                       <div className="h-3 w-px bg-slate-200" />
                       <div className="flex items-center gap-2">
                           <div className="h-3 w-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Conflits</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Conflits ({conflicts.length})</span>
                       </div>
                       <div className="h-3 w-px bg-slate-200" />
                       <div className="flex items-center gap-2">
                           <div className="h-3 w-3 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Patrimoine</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Patrimoine ({heritageItems.length})</span>
                       </div>
                   </div>
               </div>

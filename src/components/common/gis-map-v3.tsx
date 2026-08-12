@@ -71,12 +71,12 @@ export function GISMap(props: GISMapProps) {
     const [mapReady, setMapReady] = useState(false);
     const instanceId = useMemo(() => `map-${Math.random().toString(36).substr(2, 9)}`, []);
     const [activeLayers, setActiveLayers] = useState(() => ({
-        chiefs: initialActiveLayers?.chiefs ?? (chiefs.length > 0 && conflicts.length === 0 && heritage.length === 0),
-        conflicts: initialActiveLayers?.conflicts ?? (conflicts.length > 0),
-        heritage: initialActiveLayers?.heritage ?? (heritage.length > 0 && conflicts.length === 0),
+        chiefs: initialActiveLayers?.chiefs ?? true,
+        conflicts: initialActiveLayers?.conflicts ?? true,
+        heritage: initialActiveLayers?.heritage ?? true,
         heatmap: initialActiveLayers?.heatmap ?? false,
         proximity: initialActiveLayers?.proximity ?? false,
-        kingdoms: initialActiveLayers?.kingdoms ?? (kingdoms.length > 0 && conflicts.length === 0 && chiefs.length === 0)
+        kingdoms: initialActiveLayers?.kingdoms ?? true
     }));
 
     // Initialisation de Leaflet (Browser only)
@@ -306,10 +306,18 @@ export function GISMap(props: GISMapProps) {
                     const jitterLng = (((hash * 17) % 100) - 50) * 0.003;
                     lat = REGION_COORDS[officialReg][0] + jitterLat;
                     lng = REGION_COORDS[officialReg][1] + jitterLng;
+                } else if (conflict.district && REGION_COORDS[getOfficialRegion(conflict.district)]) {
+                    const distReg = getOfficialRegion(conflict.district);
+                    const hash = (conflict.id || conflict.village || "c").split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    lat = REGION_COORDS[distReg][0] + ((((hash * 13) % 100) - 50) * 0.003);
+                    lng = REGION_COORDS[distReg][1] + ((((hash * 17) % 100) - 50) * 0.003);
+                } else {
+                    // Fallback to Yamoussoukro (central CI) with spread
+                    const hash = (conflict.id || conflict.village || "c").split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    lat = 6.8276 + ((((hash * 13) % 100) - 50) * 0.005);
+                    lng = -5.2893 + ((((hash * 17) % 100) - 50) * 0.005);
                 }
             }
-
-            if (!lat || !lng) return;
 
             const marker = L.marker([lat, lng], {
                 icon: createCustomIcon('conflict', { status: conflict.status })

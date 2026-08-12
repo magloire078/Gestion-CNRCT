@@ -16,6 +16,7 @@ import type { HeritageItem } from '@/types/heritage';
 import { heritageCategoryLabels } from '@/types/heritage';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { getOfficialRegion, REGION_COORDS } from '@/lib/normalization-utils';
 
 // --- Types ---
 interface GISMapProps {
@@ -29,6 +30,14 @@ interface GISMapProps {
     className?: string;
     showFilters?: boolean;
     height?: string;
+    initialActiveLayers?: Partial<{
+        chiefs: boolean;
+        conflicts: boolean;
+        heritage: boolean;
+        heatmap: boolean;
+        proximity: boolean;
+        kingdoms: boolean;
+    }>;
 }
 
 export function GISMap(props: GISMapProps) {
@@ -42,7 +51,8 @@ export function GISMap(props: GISMapProps) {
         onAddPoint,
         className,
         showFilters = true,
-        height = '800px'
+        height = '800px',
+        initialActiveLayers
     } = props;
 
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -60,14 +70,14 @@ export function GISMap(props: GISMapProps) {
     const [L, setL] = useState<any>(null);
     const [mapReady, setMapReady] = useState(false);
     const instanceId = useMemo(() => `map-${Math.random().toString(36).substr(2, 9)}`, []);
-    const [activeLayers, setActiveLayers] = useState({
-        chiefs: false,
-        conflicts: false,
-        heritage: false,
-        heatmap: false,
-        proximity: true,
-        kingdoms: true
-    });
+    const [activeLayers, setActiveLayers] = useState(() => ({
+        chiefs: initialActiveLayers?.chiefs ?? (chiefs.length > 0 && conflicts.length === 0 && heritage.length === 0),
+        conflicts: initialActiveLayers?.conflicts ?? (conflicts.length > 0),
+        heritage: initialActiveLayers?.heritage ?? (heritage.length > 0 && conflicts.length === 0),
+        heatmap: initialActiveLayers?.heatmap ?? false,
+        proximity: initialActiveLayers?.proximity ?? false,
+        kingdoms: initialActiveLayers?.kingdoms ?? (kingdoms.length > 0 && conflicts.length === 0 && chiefs.length === 0)
+    }));
 
     // Initialisation de Leaflet (Browser only)
     useEffect(() => {
@@ -275,8 +285,33 @@ export function GISMap(props: GISMapProps) {
 
         // Ajout des conflits
         conflicts.forEach(conflict => {
-            if (!conflict.latitude || !conflict.longitude) return;
-            const marker = L.marker([conflict.latitude, conflict.longitude], {
+            let lat = conflict.latitude;
+            let lng = conflict.longitude;
+
+            if (!lat || !lng) {
+                const officialReg = getOfficialRegion(conflict.region || "");
+                const matchingChief = chiefs.find(c => 
+                    c.village && conflict.village && 
+                    c.village.toLowerCase().trim() === conflict.village.toLowerCase().trim() && 
+                    c.latitude && c.longitude
+                );
+                if (matchingChief && matchingChief.latitude && matchingChief.longitude) {
+                    lat = matchingChief.latitude;
+                    lng = matchingChief.longitude;
+                } else if (officialReg && REGION_COORDS[officialReg]) {
+                    const hash = (conflict.id || conflict.village || conflict.description || "c")
+                        .split('')
+                        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    const jitterLat = (((hash * 13) % 100) - 50) * 0.003;
+                    const jitterLng = (((hash * 17) % 100) - 50) * 0.003;
+                    lat = REGION_COORDS[officialReg][0] + jitterLat;
+                    lng = REGION_COORDS[officialReg][1] + jitterLng;
+                }
+            }
+
+            if (!lat || !lng) return;
+
+            const marker = L.marker([lat, lng], {
                 icon: createCustomIcon('conflict', { status: conflict.status })
             });
 
@@ -315,7 +350,7 @@ export function GISMap(props: GISMapProps) {
             layers.conflicts.addLayer(marker);
 
             if (selectedId === conflict.id) {
-                map.flyTo([conflict.latitude, conflict.longitude], 13);
+                map.flyTo([lat, lng], 13);
             }
         });
 
@@ -408,28 +443,57 @@ export function GISMap(props: GISMapProps) {
             }
         });
 
-        // Visibilité initiale
-        if (activeLayers.chiefs) map.addLayer(layers.chiefs);
-        if (activeLayers.conflicts) map.addLayer(layers.conflicts);
-        if (activeLayers.heritage) map.addLayer(layers.heritage);
-        if (activeLayers.kingdoms) map.addLayer(layers.kingdoms);
-        if (activeLayers.proximity) map.addLayer(layers.proximity);
-
     }, [mapReady, chiefs, conflicts, heritage, kingdoms, selectedId, L]);
+
+    // Synchronisation dynamique des couches avec l'état actif
+    useEffect(() => {
+        if (!mapReady || !mapRef.current || !layersRef.current) return;
+        const map = mapRef.current;
+        const layers = layersRef.current;
+
+        const syncLayer = (key: string, isActive: boolean) => {
+            const layer = layers[key];
+            if (!layer) return;
+            if (isActive) {
+                if (!map.hasLayer(layer)) map.addLayer(layer);
+            } else {
+                if (map.hasLayer(layer)) map.removeLayer(layer);
+            }
+        };
+
+        syncLayer('chiefs', activeLayers.chiefs);
+        syncLayer('conflicts', activeLayers.conflicts);
+        syncLayer('heritage', activeLayers.heritage);
+        syncLayer('kingdoms', activeLayers.kingdoms);
+        syncLayer('proximity', activeLayers.proximity);
+    }, [activeLayers, mapReady]);
+
+    // Redimensionnement automatique de Leaflet lors des changements d'onglets ou de conteneur
+    useEffect(() => {
+        if (!mapReady || !mapContainerRef.current || !mapRef.current) return;
+        const map = mapRef.current;
+        
+        // Invalidation initiale après chargement
+        const timeout = setTimeout(() => {
+            map.invalidateSize();
+        }, 200);
+
+        const resizeObserver = new ResizeObserver(() => {
+            if (mapRef.current) {
+                mapRef.current.invalidateSize();
+            }
+        });
+        resizeObserver.observe(mapContainerRef.current);
+
+        return () => {
+            clearTimeout(timeout);
+            resizeObserver.disconnect();
+        };
+    }, [mapReady]);
 
     // Toggles
     const toggleLayer = (layer: keyof typeof activeLayers) => {
-        if (!mapRef.current || !layersRef.current[layer]) return;
-        const map = mapRef.current;
-        const target = layersRef.current[layer];
-
-        const newState = !activeLayers[layer];
-        if (newState) {
-            map.addLayer(target);
-        } else {
-            map.removeLayer(target);
-        }
-        setActiveLayers(prev => ({ ...prev, [layer]: newState }));
+        setActiveLayers(prev => ({ ...prev, [layer]: !prev[layer] }));
     };
 
     if (typeof window === 'undefined' || !isClient) {

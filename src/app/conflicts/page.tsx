@@ -635,6 +635,8 @@ export default function ConflictsPage() {
                                     chiefs={chiefs || []} 
                                     conflicts={filteredConflicts} 
                                     heritage={heritageItems || []}
+                                    initialActiveLayers={{ conflicts: true, chiefs: false, heritage: false, kingdoms: false }}
+                                    height="750px"
                                 />
                             </TabsContent>
                         </Tabs>

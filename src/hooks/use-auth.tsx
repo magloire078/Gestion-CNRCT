@@ -28,63 +28,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let isMounted = true;
-    let authDone = false;
-    let settingsDone = false;
 
-    const checkDone = () => {
-      if (isMounted && authDone && settingsDone) {
-        setLoading(false);
-      }
-    };
+    // Load organization settings in parallel without blocking auth
+    getOrganizationSettings()
+      .then(orgSettings => {
+        if (isMounted) {
+          setSettings(orgSettings);
+        }
+      })
+      .catch(err => {
+        console.warn("[Auth] Failed to load organization settings:", err);
+      });
 
     // Subscribe to auth state changes
     const unsubscribeAuth = onAuthStateChange((currentUser) => {
       if (isMounted) {
         setUser(currentUser);
-        authDone = true;
-        
-        // Settings can load in parallel or after auth
-        // We checkDone() here if settingsDone is already true or we can proceed without them
-        checkDone();
-
-        // Load organization settings only once
-        if (!settingsDone) {
-          getOrganizationSettings()
-            .then(orgSettings => {
-              if (isMounted) {
-                setSettings(orgSettings);
-                settingsDone = true;
-                checkDone();
-              }
-            })
-            .catch(err => {
-              console.warn("[Auth] Failed to load organization settings:", err);
-              if (isMounted) {
-                settingsDone = true; // Still mark as done to unblock app loading
-                checkDone();
-              }
-            });
-        }
+        setLoading(false);
       }
     });
 
-    // Timeout safety: Force loading to false after 15 seconds if somehow stuck
+    // Timeout safety: Force loading to false after 15 seconds only if auth state was never received
     const timeoutId = setTimeout(() => {
-      if (isMounted && loading) {
-        console.warn("[Auth] Initialization timeout (15s) - proceeding with local state to avoid blocking UI.");
-        
-        // Notify the user about possible tracking prevention / cookie block
-        import("@/hooks/use-toast").then(({ toast }) => {
-          toast({
-            variant: "destructive",
-            title: "Problème de connexion de session",
-            description: "Votre navigateur (Brave/Edge) ou bloqueur de pub semble restreindre l'accès à Firestore/Auth. Veuillez autoriser les cookies et le stockage tiers pour ce site pour pouvoir enregistrer vos modifications.",
-            duration: 12000,
-          });
-        }).catch(console.error);
-
-        // Try to proceed with whatever state we have
-        setLoading(false);
+      if (isMounted) {
+        setLoading(prevLoading => {
+          if (prevLoading) {
+            console.warn("[Auth] Initialization timeout (15s) - unblocking UI.");
+            import("@/hooks/use-toast").then(({ toast }) => {
+              toast({
+                variant: "destructive",
+                title: "Problème de connexion de session",
+                description: "Votre navigateur ou bloqueur de publicité semble restreindre l'accès à Firestore/Auth. Veuillez autoriser les cookies et le stockage tiers si vous rencontrez des difficultés.",
+                duration: 8000,
+              });
+            }).catch(console.error);
+            return false;
+          }
+          return false;
+        });
       }
     }, 15000);
 

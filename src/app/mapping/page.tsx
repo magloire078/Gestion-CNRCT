@@ -13,9 +13,11 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { getChiefs } from '@/services/chief-service';
 import { subscribeToConflicts, updateConflict } from '@/services/conflict-service';
+import { subscribeToPressConflicts } from '@/services/press-conflict-service';
 import { getAllHeritageItems } from '@/services/heritage-service';
 import type { Chief, Conflict } from '@/lib/data';
 import type { HeritageItem } from '@/types/heritage';
+import type { PressConflict } from '@/types/press-conflict';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -42,6 +44,7 @@ export default function MappingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [chiefs, setChiefs] = useState<Chief[]>([]);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [pressConflicts, setPressConflicts] = useState<PressConflict[]>([]);
   const [heritageItems, setHeritageItems] = useState<HeritageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -81,6 +84,15 @@ export default function MappingPage() {
       }
     );
 
+    const unsubPress = subscribeToPressConflicts(
+      (data) => {
+        if (isMounted) setPressConflicts(data);
+      },
+      (error) => {
+        console.error('Failed to load press conflicts for map', error);
+      }
+    );
+
     Promise.all([fetchChiefs(), fetchHeritage()]).finally(() => {
       if (isMounted) setLoading(false);
     });
@@ -88,6 +100,7 @@ export default function MappingPage() {
     return () => {
       isMounted = false;
       unsubConflicts();
+      unsubPress();
     }
   }, []);
 
@@ -228,10 +241,11 @@ export default function MappingPage() {
                   <GISMap 
                     chiefs={chiefs} 
                     conflicts={filteredConflicts}
+                    pressConflicts={pressConflicts}
                     heritage={heritageItems}
                     kingdoms={kingdomsData}
                     selectedId={selectedChiefId}
-                    initialActiveLayers={{ chiefs: true, conflicts: true, heritage: true, kingdoms: true }}
+                    initialActiveLayers={{ chiefs: true, conflicts: true, pressConflicts: true, heritage: true, kingdoms: true }}
                     onMarkerClick={(id) => setSelectedChiefId(id)}
                     onAddPoint={(lat, lng) => {
                       toast({
@@ -253,7 +267,7 @@ export default function MappingPage() {
               </div>
 
               <div className="absolute bottom-4 left-4 z-20 flex gap-4">
-                  <div className="px-4 py-2 bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white/50 flex items-center gap-3">
+                  <div className="px-4 py-2 bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white/50 flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-2">
                           <div className="h-3 w-3 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]" />
                           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Chefferies ({chiefs.length})</span>
@@ -261,7 +275,12 @@ export default function MappingPage() {
                       <div className="h-3 w-px bg-slate-200" />
                       <div className="flex items-center gap-2">
                           <div className="h-3 w-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Conflits ({conflicts.length})</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Conflits CNRCT ({conflicts.length})</span>
+                      </div>
+                      <div className="h-3 w-px bg-slate-200" />
+                      <div className="flex items-center gap-2">
+                          <div className="h-3 w-3 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Veille Presse ({pressConflicts.length})</span>
                       </div>
                       <div className="h-3 w-px bg-slate-200" />
                       <div className="flex items-center gap-2">

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { Chief, Conflict } from '@/lib/data';
 import type { HeritageItem } from '@/types/heritage';
+import type { PressConflict } from '@/types/press-conflict';
 import { heritageCategoryLabels } from '@/types/heritage';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -22,10 +23,11 @@ import { getOfficialRegion, REGION_COORDS } from '@/lib/normalization-utils';
 interface GISMapProps {
     chiefs?: Chief[];
     conflicts?: Conflict[];
+    pressConflicts?: PressConflict[];
     heritage?: HeritageItem[];
     kingdoms?: any[];
     selectedId?: string | null;
-    onMarkerClick?: (id: string, type: 'chief' | 'conflict' | 'heritage' | 'kingdom') => void;
+    onMarkerClick?: (id: string, type: 'chief' | 'conflict' | 'press-conflict' | 'heritage' | 'kingdom') => void;
     onAddPoint?: (lat: number, lng: number) => void;
     className?: string;
     showFilters?: boolean;
@@ -33,6 +35,7 @@ interface GISMapProps {
     initialActiveLayers?: Partial<{
         chiefs: boolean;
         conflicts: boolean;
+        pressConflicts: boolean;
         heritage: boolean;
         heatmap: boolean;
         proximity: boolean;
@@ -44,6 +47,7 @@ export function GISMap(props: GISMapProps) {
     const {
         chiefs = [],
         conflicts = [],
+        pressConflicts = [],
         heritage = [],
         kingdoms = [],
         selectedId,
@@ -60,6 +64,7 @@ export function GISMap(props: GISMapProps) {
     const layersRef = useRef<any>({
         chiefs: null,
         conflicts: null,
+        pressConflicts: null,
         heritage: null,
         kingdoms: null,
         heatmap: null,
@@ -73,6 +78,7 @@ export function GISMap(props: GISMapProps) {
     const [activeLayers, setActiveLayers] = useState(() => ({
         chiefs: initialActiveLayers?.chiefs ?? true,
         conflicts: initialActiveLayers?.conflicts ?? true,
+        pressConflicts: initialActiveLayers?.pressConflicts ?? true,
         heritage: initialActiveLayers?.heritage ?? true,
         heatmap: initialActiveLayers?.heatmap ?? false,
         proximity: initialActiveLayers?.proximity ?? false,
@@ -111,7 +117,7 @@ export function GISMap(props: GISMapProps) {
     }, []);
 
     // Création de l'icône personnalisée (Helper interne)
-    const createCustomIcon = useCallback((type: 'chief' | 'conflict' | 'heritage' | 'selected' | 'kingdom', options?: { category?: string, status?: string }) => {
+    const createCustomIcon = useCallback((type: 'chief' | 'conflict' | 'press-conflict' | 'heritage' | 'selected' | 'kingdom', options?: { category?: string, status?: string }) => {
         if (!L) return null;
 
         let color = 'bg-blue-600';
@@ -144,6 +150,9 @@ export function GISMap(props: GISMapProps) {
             };
             color = statusColors[options?.status || 'default'] || statusColors.default;
             iconSvg = '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/>';
+        } else if (type === 'press-conflict') {
+            color = 'bg-orange-500';
+            iconSvg = '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>';
         } else if (type === 'heritage') {
             const colors: Record<string, string> = {
                 ethnies: 'bg-amber-600',
@@ -183,15 +192,12 @@ export function GISMap(props: GISMapProps) {
 
         const container = mapContainerRef.current;
 
-        // Protection cruciale : si le conteneur a déjà un _leaflet_id, 
-        // c'est qu'une instance s'est déjà attachée (possible en StrictMode).
         if ((container as any)._leaflet_id) {
             console.warn("Leaflet: Container already has an ID, skipping double initialization");
             return;
         }
 
         try {
-            // Nettoyage agressif avant création
             container.innerHTML = '';
 
             const map = L.map(container, {
@@ -210,6 +216,7 @@ export function GISMap(props: GISMapProps) {
             // Groupes de marqueurs
             layersRef.current.chiefs = L.markerClusterGroup({ showCoverageOnHover: false });
             layersRef.current.conflicts = L.markerClusterGroup({ showCoverageOnHover: false });
+            layersRef.current.pressConflicts = L.markerClusterGroup({ showCoverageOnHover: false });
             layersRef.current.heritage = L.markerClusterGroup({ showCoverageOnHover: false });
             layersRef.current.kingdoms = L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 30 });
             layersRef.current.heatmap = L.layerGroup();
@@ -274,12 +281,18 @@ export function GISMap(props: GISMapProps) {
                 <a href="/chiefs/${chief.id}" class="block text-center bg-blue-600 text-white text-[10px] py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors">Voir dossier complet</a>
             `;
 
-            marker.bindPopup(popupContent);
+            marker.bindPopup(popupContent, {
+                autoPan: true,
+                autoPanPaddingTopLeft: L.point(30, 80),
+                autoPanPaddingBottomRight: L.point(30, 40),
+                keepInView: true,
+                offset: L.point(0, -10)
+            });
             marker.on('click', () => onMarkerClick?.(chief.id, 'chief'));
             layers.chiefs.addLayer(marker);
 
             if (selectedId === chief.id) {
-                map.flyTo([chief.latitude, chief.longitude], 12);
+                map.flyTo([chief.latitude + 0.006, chief.longitude], 12);
             }
         });
 
@@ -354,11 +367,85 @@ export function GISMap(props: GISMapProps) {
                 </div>
             `;
 
-            marker.bindPopup(popupContent);
+            marker.bindPopup(popupContent, {
+                autoPan: true,
+                autoPanPaddingTopLeft: L.point(30, 80),
+                autoPanPaddingBottomRight: L.point(30, 40),
+                keepInView: true,
+                offset: L.point(0, -10)
+            });
             layers.conflicts.addLayer(marker);
 
             if (selectedId === conflict.id) {
-                map.flyTo([lat, lng], 13);
+                map.flyTo([lat + 0.006, lng], 13);
+            }
+        });
+
+        // Ajout des faits de presse & veille
+        pressConflicts.forEach(pressItem => {
+            let lat: number | undefined;
+            let lng: number | undefined;
+
+            const officialReg = getOfficialRegion(pressItem.region || "");
+            const matchingChief = chiefs.find(c => 
+                c.village && pressItem.locality && 
+                c.village.toLowerCase().trim() === pressItem.locality.toLowerCase().trim() && 
+                c.latitude && c.longitude
+            );
+            if (matchingChief && matchingChief.latitude && matchingChief.longitude) {
+                lat = matchingChief.latitude;
+                lng = matchingChief.longitude;
+            } else if (officialReg && REGION_COORDS[officialReg]) {
+                const hash = (pressItem.id || pressItem.locality || pressItem.source || "p")
+                    .split('')
+                    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const jitterLat = (((hash * 19) % 100) - 50) * 0.0035;
+                const jitterLng = (((hash * 23) % 100) - 50) * 0.0035;
+                lat = REGION_COORDS[officialReg][0] + jitterLat;
+                lng = REGION_COORDS[officialReg][1] + jitterLng;
+            } else {
+                const hash = (pressItem.id || pressItem.locality || "p").split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                lat = 6.8276 + ((((hash * 19) % 100) - 50) * 0.005);
+                lng = -5.2893 + ((((hash * 23) % 100) - 50) * 0.005);
+            }
+
+            const marker = L.marker([lat, lng], {
+                icon: createCustomIcon('press-conflict', { status: pressItem.status })
+            });
+
+            const popupContent = document.createElement('div');
+            popupContent.className = 'p-4 min-w-[260px] font-sans';
+            popupContent.innerHTML = `
+                <div class="bg-orange-50 text-orange-900 border-orange-200 -m-4 p-4 mb-3 border-b-2 rounded-t-lg">
+                    <div class="flex items-center justify-between gap-2 mb-1">
+                        <span class="text-[9px] font-black uppercase tracking-[0.2em] bg-orange-200/80 px-2 py-0.5 rounded text-orange-950">📰 VEILLE PRESSE</span>
+                        <span class="text-[9px] font-bold text-orange-700">${pressItem.dateOfFacts}</span>
+                    </div>
+                    <h3 class="text-sm font-black text-slate-900 leading-tight uppercase mt-1">${pressItem.locality}</h3>
+                    <p class="text-[10px] font-bold text-orange-700 mt-0.5">${pressItem.source}</p>
+                </div>
+                <div class="space-y-2 mt-4">
+                    <p class="text-xs text-slate-700 leading-relaxed font-medium">"${pressItem.description.substring(0, 140)}${pressItem.description.length > 140 ? '...' : ''}"</p>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <span class="text-[9px] font-black text-slate-600 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wider">${pressItem.conflictType}</span>
+                        <span class="text-[9px] font-bold text-orange-600">${pressItem.status}</span>
+                    </div>
+                    <a href="/conflicts/press" class="block text-center bg-orange-500 hover:bg-orange-600 text-white text-[10px] py-1.5 rounded font-bold transition-colors mt-2">Voir tableau de veille</a>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent, {
+                autoPan: true,
+                autoPanPaddingTopLeft: L.point(30, 80),
+                autoPanPaddingBottomRight: L.point(30, 40),
+                keepInView: true,
+                offset: L.point(0, -10)
+            });
+            marker.on('click', () => onMarkerClick?.(pressItem.id, 'press-conflict'));
+            layers.pressConflicts.addLayer(marker);
+
+            if (selectedId === pressItem.id) {
+                map.flyTo([lat + 0.006, lng], 13);
             }
         });
 
@@ -451,7 +538,7 @@ export function GISMap(props: GISMapProps) {
             }
         });
 
-    }, [mapReady, chiefs, conflicts, heritage, kingdoms, selectedId, L]);
+    }, [mapReady, chiefs, conflicts, pressConflicts, heritage, kingdoms, selectedId, L]);
 
     // Synchronisation dynamique des couches avec l'état actif
     useEffect(() => {
@@ -471,6 +558,7 @@ export function GISMap(props: GISMapProps) {
 
         syncLayer('chiefs', activeLayers.chiefs);
         syncLayer('conflicts', activeLayers.conflicts);
+        syncLayer('pressConflicts', activeLayers.pressConflicts);
         syncLayer('heritage', activeLayers.heritage);
         syncLayer('kingdoms', activeLayers.kingdoms);
         syncLayer('proximity', activeLayers.proximity);
@@ -556,7 +644,7 @@ export function GISMap(props: GISMapProps) {
                         <button
                             onClick={() => toggleLayer('chiefs')}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all",
                                 activeLayers.chiefs ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "text-slate-400 hover:text-white"
                             )}
                         >
@@ -566,17 +654,27 @@ export function GISMap(props: GISMapProps) {
                         <button
                             onClick={() => toggleLayer('conflicts')}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all",
                                 activeLayers.conflicts ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30" : "text-slate-400 hover:text-white"
                             )}
                         >
                             <MapPin className="h-3.5 w-3.5" />
-                            Conflits
+                            Conflits CNRCT
+                        </button>
+                        <button
+                            onClick={() => toggleLayer('pressConflicts')}
+                            className={cn(
+                                "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all",
+                                activeLayers.pressConflicts ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30" : "text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+                            Veille Presse
                         </button>
                         <button
                             onClick={() => toggleLayer('heritage')}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all",
                                 activeLayers.heritage ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30" : "text-slate-400 hover:text-white"
                             )}
                         >
@@ -586,14 +684,13 @@ export function GISMap(props: GISMapProps) {
                         <button
                             onClick={() => toggleLayer('kingdoms')}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all",
                                 activeLayers.kingdoms ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30" : "text-slate-400 hover:text-white"
                             )}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/><path d="M12 2v2"/><path d="M8 2v2"/><path d="M16 2v2"/></svg>
                             Royaumes
                         </button>
-                        <div className="w-px h-6 bg-white/10 mx-1" />
                     </div>
                 </div>
             )}

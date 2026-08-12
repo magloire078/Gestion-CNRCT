@@ -40,6 +40,7 @@ import {
   History,
   Zap,
   HandshakeIcon,
+  Newspaper,
 } from "lucide-react";
 import React from "react";
 
@@ -107,8 +108,10 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
     icon: Scale,
     permission: "page:conflicts:view",
     subItems: [
-      { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
-      { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
+      { href: "/conflicts", label: "Conflits CNRCT", icon: Scale, permission: "page:conflicts:view" },
+      { href: "/conflicts/press", label: "Tableau de Veille (Presse)", icon: Newspaper, permission: "page:conflicts:view" },
+      { href: "/conflicts/press/mapping", label: "SIG - Veille Presse", icon: Globe, permission: "page:conflicts:view" },
+      { href: "/mapping", label: "SIG - Conflits Globaux", icon: MapIcon, permission: "page:mapping:view" },
     ]
   },
   {

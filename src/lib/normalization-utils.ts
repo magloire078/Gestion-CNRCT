@@ -19,11 +19,25 @@ export const normalizeString = (s: string): string => {
 export const getOfficialRegion = (input: string): string => {
     if (!input || input === "all" || input === "National") return input;
     
-    const normalizedInput = normalizeString(input);
+    // Remove common prefixes
+    let cleaned = input.toLowerCase()
+        .replace(/^district\s+autonome\s+(d'|de\s+l'|de\s+|d’)/i, "")
+        .replace(/^région\s+(du\s+|de\s+la\s+|de\s+l'|de\s+l’|des\s+|de\s+|d')/i, "")
+        .replace(/^region\s+(du\s+|de\s+la\s+|de\s+l'|de\s+l’|des\s+|de\s+|d')/i, "")
+        .trim();
+
+    const normalizedCleaned = normalizeString(cleaned);
     
     // Check in official list
     for (const official of IVORIAN_REGIONS) {
-        if (normalizeString(official) === normalizedInput) {
+        if (normalizeString(official) === normalizedCleaned) {
+            return official;
+        }
+    }
+
+    const normalizedInput = normalizeString(input);
+    for (const official of IVORIAN_REGIONS) {
+        if (normalizedInput.includes(normalizeString(official))) {
             return official;
         }
     }
@@ -43,6 +57,7 @@ export const getOfficialRegion = (input: string): string => {
         "agnebi": "Agnéby-Tiassa"
     };
     
+    if (overrides[normalizedCleaned]) return overrides[normalizedCleaned];
     if (overrides[normalizedInput]) return overrides[normalizedInput];
     
     return input; // Fallback to original if no match

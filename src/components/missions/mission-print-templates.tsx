@@ -321,8 +321,14 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
                 </p>
                 <p className="flex items-start">
                     <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Moyen de transport :</span>
-                    <span className="font-medium flex-1">{participant.moyenTransport || "Véhicule CNRCT"}{participant.immatriculation ? ` (N° Immatriculation : ${participant.immatriculation})` : ""}</span>
+                    <span className="font-medium flex-1">{participant.moyenTransport || "Véhicule CNRCT"}</span>
                 </p>
+                {participant.immatriculation && (
+                    <p className="flex items-start">
+                        <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Immatriculation :</span>
+                        <span className="font-medium flex-1">{participant.immatriculation}</span>
+                    </p>
+                )}
                 <p className="flex items-start">
                     <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Date de départ :</span>
                     <span className="font-medium flex-1">{formatDayDate(mission.startDate)}</span>
@@ -638,8 +644,14 @@ export function GroupedIndividualMissionsPrint({ mission, logos, onCloseAction }
                             </p>
                             <p className="flex items-start">
                                 <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Moyen de transport :</span>
-                                <span className="font-medium flex-1">{participant.moyenTransport || "Véhicule CNRCT"}{participant.immatriculation ? ` (N° Immatriculation : ${participant.immatriculation})` : ""}</span>
+                                <span className="font-medium flex-1">{participant.moyenTransport || "Véhicule CNRCT"}</span>
                             </p>
+                            {participant.immatriculation && (
+                                <p className="flex items-start">
+                                    <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Immatriculation :</span>
+                                    <span className="font-medium flex-1">{participant.immatriculation}</span>
+                                </p>
+                            )}
                             <p className="flex items-start">
                                 <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Date de départ :</span>
                                 <span className="font-medium flex-1">{formatDayDate(mission.startDate)}</span>

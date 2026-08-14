@@ -61,7 +61,12 @@ export function EditConflictSheet({ isOpen, onCloseAction, onUpdateConflictActio
             if (!canAssignMediator) return;
             try {
                 const employeesData = await getEmployeeDirectory();
-                setEmployees(employeesData.filter(e => e.status === 'Actif'));
+                setEmployees(employeesData.filter(e => 
+                    e.status === 'Actif' && 
+                    e.name && 
+                    !e.name.toUpperCase().includes('NON POURVU') && 
+                    !e.name.toUpperCase().includes('A POURVOIR')
+                ));
             } catch (error) {
                 console.error("Failed to fetch employees", error);
                 // Non-blocking error for UI

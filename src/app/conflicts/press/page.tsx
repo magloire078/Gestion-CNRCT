@@ -6,7 +6,7 @@ import {
     MoreHorizontal, Pencil, Eye, Trash2, 
     Printer, RefreshCw, Newspaper, Filter,
     Download, ShieldAlert, AlertTriangle, CheckCircle2,
-    Database, Sparkles, Globe
+    Database, Sparkles, Globe, BarChart3
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,7 @@ import { AddPressConflictSheet } from "@/components/press-conflicts/add-press-co
 import { EditPressConflictSheet } from "@/components/press-conflicts/edit-press-conflict-sheet";
 import { PressConflictDetailSheet } from "@/components/press-conflicts/press-conflict-detail-sheet";
 import { PressConflictPrintReport } from "@/components/press-conflicts/press-conflict-print-report";
+import { PressConflictSynthesisReport } from "@/components/press-conflicts/press-conflict-synthesis-report";
 
 export default function PressConflictsPage() {
     const [conflicts, setConflicts] = useState<PressConflict[] | null>(null);
@@ -82,6 +83,7 @@ export default function PressConflictsPage() {
     const [selectedStatus, setSelectedStatus] = useState<string>("Tous");
     const [selectedCategory, setSelectedCategory] = useState<string>("Tous");
 
+    const [isSynthesisOpen, setIsSynthesisOpen] = useState(false);
     const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
     const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
     const [editingConflict, setEditingConflict] = useState<PressConflict | null>(null);
@@ -285,7 +287,7 @@ export default function PressConflictsPage() {
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
                     {conflicts.length === 0 && (
                         <Button
                             variant="outline"
@@ -311,6 +313,16 @@ export default function PressConflictsPage() {
                             <Globe className="h-4 w-4 text-orange-600" />
                             Observatoire Cartographique
                         </Link>
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsSynthesisOpen(true)}
+                        disabled={filteredConflicts.length === 0}
+                        className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+                    >
+                        <BarChart3 className="h-4 w-4" />
+                        Rapport de Synthèse
                     </Button>
 
                     <Button
@@ -705,6 +717,13 @@ export default function PressConflictsPage() {
                     }
                 />
             )}
+
+            {/* Rapport de Synthèse Périodique */}
+            <PressConflictSynthesisReport 
+                isOpen={isSynthesisOpen}
+                onClose={() => setIsSynthesisOpen(false)}
+                conflicts={filteredConflicts}
+            />
         </div>
     );
 }

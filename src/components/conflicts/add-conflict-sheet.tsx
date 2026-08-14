@@ -104,7 +104,12 @@ export function AddConflictSheet({
           const [chiefs, employees] = await Promise.all([chiefsPromise, employeesPromise]);
           setAllChiefs(chiefs);
           if (canAssignMediator) {
-            setAllEmployees(employees.filter(e => e.status === 'Actif'));
+            setAllEmployees(employees.filter(e => 
+              e.status === 'Actif' && 
+              e.name && 
+              !e.name.toUpperCase().includes('NON POURVU') && 
+              !e.name.toUpperCase().includes('A POURVOIR')
+            ));
           }
         } catch (error) {
           console.error("Failed to fetch initial data:", error);

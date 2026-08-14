@@ -55,16 +55,16 @@ export function PressConflictPrintReport({
           <table className="w-full border-collapse border border-slate-300 text-[10px] leading-tight">
             <thead>
               <tr className="bg-slate-100 text-slate-800 font-bold text-center border-b border-slate-300">
-                <th className="border border-slate-300 p-1.5 w-8">N°</th>
-                <th className="border border-slate-300 p-1.5 w-20">Date des faits</th>
-                <th className="border border-slate-300 p-1.5 w-32">Source / Journal</th>
-                <th className="border border-slate-300 p-1.5 w-28">Région</th>
-                <th className="border border-slate-300 p-1.5 w-32">Localité</th>
-                <th className="border border-slate-300 p-1.5 w-20">Catégorie</th>
-                <th className="border border-slate-300 p-1.5 w-28">Type de conflit</th>
-                <th className="border border-slate-300 p-1.5 text-left">Description des faits</th>
-                <th className="border border-slate-300 p-1.5 w-24">Statut du suivi</th>
-                <th className="border border-slate-300 p-1.5 w-44 text-left">Observations</th>
+                <th className="border border-slate-300 p-1.5 w-[3%]">N°</th>
+                <th className="border border-slate-300 p-1.5 w-[7%]">Date des faits</th>
+                <th className="border border-slate-300 p-1.5 w-[10%]">Source / Journal</th>
+                <th className="border border-slate-300 p-1.5 w-[7%]">Région</th>
+                <th className="border border-slate-300 p-1.5 w-[9%]">Localité</th>
+                <th className="border border-slate-300 p-1.5 w-[5%]">Catégorie</th>
+                <th className="border border-slate-300 p-1.5 w-[8%]">Type de conflit</th>
+                <th className="border border-slate-300 p-1.5 w-[32%] text-left">Description des faits</th>
+                <th className="border border-slate-300 p-1.5 w-[7%]">Statut du suivi</th>
+                <th className="border border-slate-300 p-1.5 w-[12%] text-left">Observations</th>
               </tr>
             </thead>
             <tbody>

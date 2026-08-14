@@ -107,11 +107,18 @@ export function PressConflictDetailSheet({
               </div>
               <div className="col-span-2 pt-2 border-t">
                 <span className="text-xs text-muted-foreground block font-medium">Localisation</span>
-                <div className="flex items-center gap-1.5 mt-0.5 font-medium">
+                <div className="flex items-center gap-1.5 mt-0.5 font-medium flex-wrap">
                   <MapPin className="h-4 w-4 text-rose-500 shrink-0" />
                   <span>{conflict.locality}</span>
-                  <span className="text-muted-foreground text-xs">({conflict.region})</span>
+                  {conflict.subPrefecture && <span className="text-slate-500 font-normal"> (S/P {conflict.subPrefecture})</span>}
+                  {conflict.department && <span className="text-slate-500 font-normal">, Dép. {conflict.department}</span>}
+                  <span className="text-muted-foreground text-xs font-normal">({conflict.region})</span>
                 </div>
+                {(conflict.latitude !== undefined || conflict.longitude !== undefined) && (
+                  <div className="text-[11px] text-slate-400 mt-1 pl-5 font-mono">
+                    GPS : {conflict.latitude?.toFixed(6) || "N/A"}, {conflict.longitude?.toFixed(6) || "N/A"}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -42,6 +42,10 @@ export interface PressConflict {
   source: string; // Source / Journal
   region: string; // Région
   locality: string; // Localité
+  department?: string; // Département
+  subPrefecture?: string; // Sous-préfecture
+  latitude?: number; // Latitude
+  longitude?: number; // Longitude
   category: PressConflictCategory; // Catégorie
   conflictType: PressConflictType; // Type de conflit
   description: string; // Description des faits

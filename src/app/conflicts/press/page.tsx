@@ -6,7 +6,7 @@ import {
     MoreHorizontal, Pencil, Eye, Trash2, 
     Printer, RefreshCw, Newspaper, Filter,
     Download, ShieldAlert, AlertTriangle, CheckCircle2,
-    Database, Sparkles, Globe, BarChart3
+    Database, Sparkles, Globe, BarChart3, FileText, History
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -68,12 +68,13 @@ import {
     deletePressConflict, 
     seedInitialPressConflicts 
 } from "@/services/press-conflict-service";
-import { PressConflictStatsCards } from "@/components/press-conflicts/press-conflict-stats-cards";
 import { AddPressConflictSheet } from "@/components/press-conflicts/add-press-conflict-sheet";
 import { EditPressConflictSheet } from "@/components/press-conflicts/edit-press-conflict-sheet";
 import { PressConflictDetailSheet } from "@/components/press-conflicts/press-conflict-detail-sheet";
 import { PressConflictPrintReport } from "@/components/press-conflicts/press-conflict-print-report";
 import { PressConflictSynthesisReport } from "@/components/press-conflicts/press-conflict-synthesis-report";
+import { cn } from "@/lib/utils";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 export default function PressConflictsPage() {
     const [conflicts, setConflicts] = useState<PressConflict[] | null>(null);
@@ -124,7 +125,6 @@ export default function PressConflictsPage() {
         return () => unsubscribe();
     }, [toast]);
 
-    // Handle initial seeding
     const handleSeedData = async (force = false) => {
         try {
             setIsSeeding(true);
@@ -145,7 +145,6 @@ export default function PressConflictsPage() {
         }
     };
 
-    // Filtered data
     const filteredConflicts = useMemo(() => {
         if (!conflicts) return [];
         return conflicts.filter((c) => {
@@ -174,19 +173,16 @@ export default function PressConflictsPage() {
         });
     }, [conflicts, searchTerm, selectedRegion, selectedType, selectedStatus, selectedCategory]);
 
-    // Pagination
     const totalPages = Math.ceil(filteredConflicts.length / itemsPerPage) || 1;
     const paginatedConflicts = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
         return filteredConflicts.slice(start, start + itemsPerPage);
     }, [filteredConflicts, currentPage, itemsPerPage]);
 
-    // Reset pagination on filter change
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, selectedRegion, selectedType, selectedStatus, selectedCategory, itemsPerPage]);
 
-    // CRUD Handlers
     const handleAddConflict = async (conflictData: Omit<PressConflict, "id">) => {
         await addPressConflict(conflictData);
         toast({
@@ -250,480 +246,416 @@ export default function PressConflictsPage() {
         }
     };
 
+    const conflictStats = useMemo(() => {
+        const total = filteredConflicts.length;
+        if (total === 0) return { total: 0, resolved: 0, inProgress: 0, toFollow: 0 };
+        
+        const resolved = filteredConflicts.filter(c => c.status?.toLowerCase().includes('résolu')).length;
+        const inProgress = filteredConflicts.filter(c => c.status?.toLowerCase().includes('en cours')).length;
+        const toFollow = filteredConflicts.filter(c => c.status?.toLowerCase().includes('à suivre')).length;
+        
+        return { total, resolved, inProgress, toFollow };
+    }, [filteredConflicts]);
+
     if (conflicts === null) {
         return (
-            <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="p-6 space-y-6 max-w-7xl mx-auto h-[calc(100vh-6rem)]">
                 <div className="flex justify-between items-center">
                     <Skeleton className="h-8 w-64" />
                     <Skeleton className="h-10 w-36" />
                 </div>
-                <div className="grid grid-cols-4 gap-4">
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                </div>
-                <Skeleton className="h-[400px]" />
+                <Skeleton className="h-[400px] w-full" />
             </div>
         );
     }
 
     return (
-        <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5">
-                            Veille Indépendante & Terrain
-                        </Badge>
-                    </div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight mt-1 text-foreground flex items-center gap-2">
-                        <Newspaper className="h-7 w-7 text-primary" />
-                        Tableau de Veille : Conflits & Faits Signalés
-                    </h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Relevé systématique des différends, alertes et litiges parus dans la presse écrite ou rapportés du terrain.
-                    </p>
-                </div>
+        <PermissionGuard permission="page:conflicts:view">
+            <div className="flex flex-col gap-6 pb-4 h-[calc(100vh-6rem)] px-4 lg:px-5 pt-6">
+                
+                {isPrinting && (
+                    <PressConflictPrintReport
+                        conflicts={filteredConflicts}
+                        organizationSettings={settings}
+                        isPrinting={isPrinting}
+                        onAfterPrint={() => setIsPrinting(false)}
+                        filterSummary={
+                            selectedRegion !== "Tous" || selectedType !== "Tous"
+                                ? `${selectedRegion !== "Tous" ? `Région: ${selectedRegion}` : ""} ${
+                                      selectedType !== "Tous" ? `• Type: ${selectedType}` : ""
+                                  }`
+                                : undefined
+                        }
+                    />
+                )}
 
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
-                    {conflicts.length === 0 && (
-                        <Button
-                            variant="outline"
-                            onClick={() => handleSeedData(false)}
-                            disabled={isSeeding}
-                            className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
-                        >
-                            {isSeeding ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <Database className="h-4 w-4" />
-                            )}
-                            Initialiser les 41 fiches
-                        </Button>
-                    )}
-
-                    <Button
-                        variant="outline"
-                        asChild
-                        className="gap-2 border-orange-200 text-orange-700 hover:bg-orange-50 bg-orange-50/50"
-                    >
-                        <Link href="/conflicts/press/mapping">
-                            <Globe className="h-4 w-4 text-orange-600" />
-                            Observatoire Cartographique
-                        </Link>
-                    </Button>
-
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsSynthesisOpen(true)}
-                        disabled={filteredConflicts.length === 0}
-                        className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
-                    >
-                        <BarChart3 className="h-4 w-4" />
-                        Rapport de Synthèse
-                    </Button>
-
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsPrinting(true)}
-                        disabled={filteredConflicts.length === 0}
-                        className="gap-2"
-                    >
-                        <Printer className="h-4 w-4" />
-                        Imprimer le Tableau
-                    </Button>
-
-                    <Button
-                        onClick={() => setIsAddSheetOpen(true)}
-                        className="gap-2 shadow-sm"
-                    >
-                        <PlusCircle className="h-4 w-4" />
-                        Consigner un Fait
-                    </Button>
-                </div>
-            </div>
-
-            {/* Statistiques KPI */}
-            <PressConflictStatsCards conflicts={conflicts} />
-
-            {/* Barre de Filtres */}
-            <Card className="shadow-sm">
-                <CardContent className="p-4 space-y-3">
-                    <div className="flex flex-col md:flex-row gap-3 items-center">
-                        <div className="relative flex-1 w-full">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Rechercher par journal, localité, région, mot-clé dans les faits..."
-                                className="pl-9 bg-background"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="flex items-center gap-2 w-full md:w-auto">
-                            <Button
-                                variant={viewMode === "table" ? "default" : "outline"}
-                                size="icon"
-                                onClick={() => setViewMode("table")}
-                                title="Vue Tableau"
-                            >
-                                <List className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant={viewMode === "grid" ? "default" : "outline"}
-                                size="icon"
-                                onClick={() => setViewMode("grid")}
-                                title="Vue Cartes"
-                            >
-                                <LayoutGrid className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t">
-                        <div>
-                            <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                                <SelectTrigger className="h-9 text-xs">
-                                    <SelectValue placeholder="Région : Tous" />
-                                </SelectTrigger>
-                                <SelectContent className="max-h-60">
-                                    <SelectItem value="Tous">Toutes les Régions</SelectItem>
-                                    <SelectItem value="Abidjan">District d'Abidjan</SelectItem>
-                                    <SelectItem value="Yamoussoukro">District de Yamoussoukro</SelectItem>
-                                    {IVORIAN_REGIONS.map((r) => (
-                                        <SelectItem key={r} value={r}>
-                                            {r}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <Select value={selectedType} onValueChange={setSelectedType}>
-                                <SelectTrigger className="h-9 text-xs">
-                                    <SelectValue placeholder="Type : Tous" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Tous">Tous les Types</SelectItem>
-                                    {PRESS_CONFLICT_TYPES.map((t) => (
-                                        <SelectItem key={t} value={t}>
-                                            {t}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                                <SelectTrigger className="h-9 text-xs">
-                                    <SelectValue placeholder="Statut : Tous" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Tous">Tous les Statuts</SelectItem>
-                                    {PRESS_CONFLICT_STATUSES.map((st) => (
-                                        <SelectItem key={st} value={st}>
-                                            {st}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                <SelectTrigger className="h-9 text-xs">
-                                    <SelectValue placeholder="Catégorie : Tous" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Tous">Toutes les Catégories</SelectItem>
-                                    {PRESS_CONFLICT_CATEGORIES.map((cat) => (
-                                        <SelectItem key={cat} value={cat}>
-                                            {cat}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Vue Données */}
-            {filteredConflicts.length === 0 ? (
-                <Card className="border-dashed p-12 text-center">
-                    <div className="flex flex-col items-center justify-center space-y-3">
-                        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                            <Newspaper className="h-6 w-6" />
-                        </div>
-                        <h3 className="text-lg font-semibold">Aucun fait signalé correspondant</h3>
-                        <p className="text-sm text-muted-foreground max-w-md">
-                            Aucun enregistrement ne correspond à vos critères de recherche ou de filtre.
-                        </p>
-                        <div className="flex gap-3 pt-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    setSearchTerm("");
-                                    setSelectedRegion("Tous");
-                                    setSelectedType("Tous");
-                                    setSelectedStatus("Tous");
-                                    setSelectedCategory("Tous");
-                                }}
-                            >
-                                Réinitialiser les filtres
-                            </Button>
-                            {conflicts.length === 0 && (
-                                <Button onClick={() => handleSeedData(false)} disabled={isSeeding}>
-                                    {isSeeding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                    Charger les 41 données de veille
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                </Card>
-            ) : viewMode === "table" ? (
-                <Card className="shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <Table className="text-xs">
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="w-12 text-center font-bold">N°</TableHead>
-                                    <TableHead className="w-24">Date des faits</TableHead>
-                                    <TableHead className="w-40">Source / Journal</TableHead>
-                                    <TableHead className="w-44">Région & Localité</TableHead>
-                                    <TableHead className="w-28">Catégorie</TableHead>
-                                    <TableHead className="w-36">Type de conflit</TableHead>
-                                    <TableHead className="min-w-[280px]">Description des faits</TableHead>
-                                    <TableHead className="w-28 text-center">Statut du suivi</TableHead>
-                                    <TableHead className="w-40">Observations</TableHead>
-                                    <TableHead className="w-16 text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {paginatedConflicts.map((conflict, index) => (
-                                    <TableRow 
-                                        key={conflict.id}
-                                        className="hover:bg-muted/30 transition-colors cursor-pointer group"
-                                        onClick={() => {
-                                            setSelectedConflictForDetail(conflict);
-                                            setIsDetailSheetOpen(true);
-                                        }}
-                                    >
-                                        <TableCell className="text-center font-bold text-muted-foreground">
-                                            {conflict.orderNumber || (currentPage - 1) * itemsPerPage + index + 1}
-                                        </TableCell>
-                                        <TableCell className="font-medium whitespace-nowrap">
-                                            {conflict.dateOfFacts}
-                                        </TableCell>
-                                        <TableCell className="font-semibold text-primary">
-                                            {conflict.source}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="font-medium text-foreground">{conflict.locality}</div>
-                                            <div className="text-[11px] text-muted-foreground truncate max-w-[160px]">
-                                                {conflict.region}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground font-medium text-[11px]">
-                                                {conflict.category}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            {getTypeBadge(conflict.conflictType)}
-                                        </TableCell>
-                                        <TableCell className="text-foreground leading-snug line-clamp-3 max-w-[350px] py-3">
-                                            {conflict.description}
-                                        </TableCell>
-                                        <TableCell className="text-center whitespace-nowrap">
-                                            {getStatusBadge(conflict.status)}
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground italic text-[11px] line-clamp-2 max-w-[180px]">
-                                            {conflict.observations || "—"}
-                                        </TableCell>
-                                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem
-                                                        onClick={() => {
-                                                            setSelectedConflictForDetail(conflict);
-                                                            setIsDetailSheetOpen(true);
-                                                        }}
-                                                        className="gap-2"
-                                                    >
-                                                        <Eye className="h-4 w-4 text-blue-500" />
-                                                        Voir les détails
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => {
-                                                            setEditingConflict(conflict);
-                                                            setIsEditSheetOpen(true);
-                                                        }}
-                                                        className="gap-2"
-                                                    >
-                                                        <Pencil className="h-4 w-4 text-amber-500" />
-                                                        Modifier
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => {
-                                                            setConflictToDelete(conflict);
-                                                            setIsDeleteDialogOpen(true);
-                                                        }}
-                                                        className="gap-2 text-destructive focus:text-destructive"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        Supprimer
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </Card>
-            ) : (
-                /* Vue Grille de cartes */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {paginatedConflicts.map((conflict) => (
-                        <Card 
-                            key={conflict.id} 
-                            className="shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between cursor-pointer border-t-4 border-t-primary"
-                            onClick={() => {
-                                setSelectedConflictForDetail(conflict);
-                                setIsDetailSheetOpen(true);
-                            }}
-                        >
-                            <CardHeader className="p-4 pb-2 space-y-1.5">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-muted-foreground">
-                                        N° {conflict.orderNumber || "•"} • {conflict.dateOfFacts}
-                                    </span>
-                                    {getStatusBadge(conflict.status)}
-                                </div>
-                                <CardTitle className="text-base font-bold text-primary flex items-center gap-1.5">
-                                    <Newspaper className="h-4 w-4 shrink-0" />
-                                    {conflict.source}
-                                </CardTitle>
-                                <CardDescription className="text-xs font-medium text-foreground">
-                                    📍 {conflict.locality} ({conflict.region})
-                                </CardDescription>
-                            </CardHeader>
-
-                            <CardContent className="p-4 pt-2 space-y-3 flex-1">
-                                <div>{getTypeBadge(conflict.conflictType)}</div>
-                                <p className="text-xs text-muted-foreground line-clamp-4 leading-relaxed">
-                                    {conflict.description}
-                                </p>
-                                {conflict.observations && (
-                                    <div className="text-[11px] bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-300 p-2 rounded border border-amber-200">
-                                        <strong>Obs:</strong> {conflict.observations}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            )}
-
-            {/* Pagination Controls */}
-            {filteredConflicts.length > 0 && (
-                <PaginationControls
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    itemsPerPage={itemsPerPage}
-                    totalItems={filteredConflicts.length}
-                    onPageChange={setCurrentPage}
-                    onItemsPerPageChange={setItemsPerPage}
-                />
-            )}
-
-            {/* Dialogues & Sheets */}
-            <AddPressConflictSheet
-                isOpen={isAddSheetOpen}
-                onCloseAction={() => setIsAddSheetOpen(false)}
-                onAddAction={handleAddConflict}
-            />
-
-            <EditPressConflictSheet
-                isOpen={isEditSheetOpen}
-                conflict={editingConflict}
-                onCloseAction={() => {
-                    setIsEditSheetOpen(false);
-                    setEditingConflict(null);
-                }}
-                onUpdateAction={handleUpdateConflict}
-            />
-
-            <PressConflictDetailSheet
-                isOpen={isDetailSheetOpen}
-                conflict={selectedConflictForDetail}
-                onCloseAction={() => {
-                    setIsDetailSheetOpen(false);
-                    setSelectedConflictForDetail(null);
-                }}
-                onEditAction={(c) => {
-                    setEditingConflict(c);
-                    setIsEditSheetOpen(true);
-                }}
-            />
-
-            {/* Suppression Confirmation */}
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Êtes-vous sûr de vouloir supprimer la fiche N° {conflictToDelete?.orderNumber || ""} (
-                            {conflictToDelete?.source} - {conflictToDelete?.locality}) ? Cette action est irréversible.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleDeleteConflict}
-                            disabled={isDeleting}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            {isDeleting ? "Suppression..." : "Supprimer définitivement"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* Rapport d'Impression Officiel */}
-            {isPrinting && (
-                <PressConflictPrintReport
+                <PressConflictSynthesisReport 
+                    isOpen={isSynthesisOpen}
+                    onClose={() => setIsSynthesisOpen(false)}
                     conflicts={filteredConflicts}
-                    organizationSettings={settings}
-                    isPrinting={isPrinting}
-                    onAfterPrint={() => setIsPrinting(false)}
-                    filterSummary={
-                        selectedRegion !== "Tous" || selectedType !== "Tous"
-                            ? `${selectedRegion !== "Tous" ? `Région: ${selectedRegion}` : ""} ${
-                                  selectedType !== "Tous" ? `• Type: ${selectedType}` : ""
-                              }`
-                            : undefined
-                    }
                 />
-            )}
+                
+                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
+                    <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-5 shrink-0">
+                        <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full">
+                            <div className="flex items-center gap-4 shrink-0">
+                                <div className="h-10 w-10 rounded-lg bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                                    <Newspaper className="h-6 w-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-xl">Tableau de Veille : Presse & Terrain</CardTitle>
+                                    <CardDescription>
+                                        <span className="flex items-center gap-1.5">
+                                            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest text-primary border-primary/20 bg-primary/5 px-1.5 py-0 rounded">
+                                                Veille Indépendante
+                                            </Badge>
+                                            Relevé systématique des alertes et différends.
+                                        </span>
+                                    </CardDescription>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col lg:flex-row flex-wrap items-center gap-4 w-full xl:w-auto justify-start xl:justify-end">
+                                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start xl:justify-end">
+                                    <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white border-slate-200">
+                                            <SelectValue placeholder="Région" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-lg border-slate-100">
+                                            <SelectItem value="Tous">Toutes Régions</SelectItem>
+                                            <SelectItem value="Abidjan">District d'Abidjan</SelectItem>
+                                            <SelectItem value="Yamoussoukro">District de Yamoussoukro</SelectItem>
+                                            {IVORIAN_REGIONS.map((r) => (
+                                                <SelectItem key={r} value={r}>{r}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
 
-            {/* Rapport de Synthèse Périodique */}
-            <PressConflictSynthesisReport 
-                isOpen={isSynthesisOpen}
-                onClose={() => setIsSynthesisOpen(false)}
-                conflicts={filteredConflicts}
-            />
-        </div>
+                                    <Select value={selectedType} onValueChange={setSelectedType}>
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white border-slate-200">
+                                            <SelectValue placeholder="Type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Tous">Tous Types</SelectItem>
+                                            {PRESS_CONFLICT_TYPES.map((t) => (
+                                                <SelectItem key={t} value={t}>{t}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+
+                                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white border-slate-200">
+                                            <SelectValue placeholder="Statut" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Tous">Tous Statuts</SelectItem>
+                                            {PRESS_CONFLICT_STATUSES.map((st) => (
+                                                <SelectItem key={st} value={st}>{st}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                                    <div className="relative group flex-grow lg:w-[280px]">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                                        <Input
+                                            placeholder="Journal, localité, mot-clé..."
+                                            className="pl-11 h-10 rounded-lg border-slate-200 bg-white shadow-inner focus:ring-slate-900 w-full"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-center p-1 bg-white rounded-lg shadow-inner border border-slate-100 shrink-0 w-full sm:w-auto">
+                                        <Button 
+                                            variant={viewMode === 'table' ? 'default' : 'ghost'} 
+                                            size="icon" 
+                                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'table' ? "bg-slate-900 shadow-md text-white" : "text-slate-400 hover:text-slate-900")}
+                                            onClick={() => setViewMode('table')}
+                                        >
+                                            <List className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                            variant={viewMode === 'grid' ? 'default' : 'ghost'} 
+                                            size="icon" 
+                                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'grid' ? "bg-slate-900 shadow-md text-white" : "text-slate-400 hover:text-slate-900")}
+                                            onClick={() => setViewMode('grid')}
+                                        >
+                                            <LayoutGrid className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Actions & Stats Row */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4 border-t border-slate-100">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-lg text-slate-700 text-xs font-bold shadow-sm">
+                                    <FileText className="h-3.5 w-3.5" /> Total: {conflictStats.total}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 rounded-lg text-emerald-700 text-xs font-bold shadow-sm">
+                                    <CheckCircle2 className="h-3.5 w-3.5" /> Résolus: {conflictStats.resolved}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 rounded-lg text-amber-700 text-xs font-bold shadow-sm">
+                                    <History className="h-3.5 w-3.5" /> En cours: {conflictStats.inProgress}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-lg text-blue-700 text-xs font-bold shadow-sm">
+                                    <AlertTriangle className="h-3.5 w-3.5" /> À suivre: {conflictStats.toFollow}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                                {conflicts.length === 0 && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleSeedData(false)}
+                                        disabled={isSeeding}
+                                        className="h-9 font-bold bg-white text-primary border-primary/20 w-full sm:w-auto"
+                                    >
+                                        {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                                        Init Données
+                                    </Button>
+                                )}
+                                
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="sm" className="h-9 font-bold bg-white text-slate-600 w-full sm:w-auto">
+                                            <Printer className="mr-2 h-4 w-4" /> Rapports
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56 rounded-lg">
+                                        <DropdownMenuItem onClick={() => setIsPrinting(true)} className="cursor-pointer">
+                                            <List className="mr-2 h-4 w-4" /> Imprimer la liste
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setIsSynthesisOpen(true)} className="cursor-pointer text-primary">
+                                            <BarChart3 className="mr-2 h-4 w-4" /> Rapport de Synthèse
+                                        </DropdownMenuItem>
+                                        <Link href="/conflicts/press/mapping">
+                                            <DropdownMenuItem className="cursor-pointer text-orange-600">
+                                                <Globe className="mr-2 h-4 w-4" /> Cartographie
+                                            </DropdownMenuItem>
+                                        </Link>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                
+                                <Button size="sm" onClick={() => setIsAddSheetOpen(true)} className="h-9 rounded-lg font-bold shadow-md w-full sm:w-auto">
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Consigner un Fait
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
+
+                    <CardContent className="p-0 flex-1 min-h-0 relative overflow-hidden flex flex-col">
+                        <div className="flex-1 overflow-auto bg-slate-50/50 p-4">
+                            {filteredConflicts.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center text-slate-400 h-full border-2 border-dashed border-slate-200 rounded-xl bg-white p-8">
+                                    <ShieldAlert className="h-10 w-10 mb-4 opacity-20" />
+                                    <p className="text-sm font-medium">Aucun fait signalé trouvé pour ces critères.</p>
+                                </div>
+                            ) : viewMode === "table" ? (
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                                    <Table className="relative w-full">
+                                        <TableHeader className="bg-slate-50/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm border-b border-slate-100">
+                                            <TableRow className="hover:bg-transparent">
+                                                <TableHead className="w-16 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center py-4">Réf.</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Source & Date</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Localité & Région</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Typologie</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500 min-w-[280px]">Faits & Description</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Statut</TableHead>
+                                                <TableHead className="w-16 text-right pr-6"></TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {paginatedConflicts.map((conflict, index) => (
+                                                <TableRow 
+                                                    key={conflict.id} 
+                                                    className="group border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer"
+                                                    onClick={() => {
+                                                        setSelectedConflictForDetail(conflict);
+                                                        setIsDetailSheetOpen(true);
+                                                    }}
+                                                >
+                                                    <TableCell className="text-center">
+                                                        <span className="text-[10px] font-mono font-bold text-slate-400">
+                                                            #{conflict.orderNumber || String((currentPage - 1) * itemsPerPage + index + 1).padStart(3, '0')}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <span className="font-bold text-primary text-xs">{conflict.source}</span>
+                                                            <span className="text-[10px] font-medium text-slate-500">{conflict.dateOfFacts}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <span className="font-bold text-slate-900 text-xs">{conflict.locality}</span>
+                                                            <span className="text-[10px] font-medium text-slate-500">{conflict.region}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col items-start gap-1">
+                                                            {getTypeBadge(conflict.conflictType)}
+                                                            <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium text-[9px] uppercase tracking-wider">
+                                                                {conflict.category}
+                                                            </span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                                                            {conflict.description}
+                                                        </p>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {getStatusBadge(conflict.status)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-6" onClick={(e) => e.stopPropagation()}>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-48 rounded-lg">
+                                                                <DropdownMenuItem onSelect={() => {
+                                                                    setSelectedConflictForDetail(conflict);
+                                                                    setIsDetailSheetOpen(true);
+                                                                }} className="cursor-pointer">
+                                                                    <Eye className="mr-2 h-4 w-4 text-slate-400" /> Consulter
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onSelect={() => {
+                                                                    setEditingConflict(conflict);
+                                                                    setIsEditSheetOpen(true);
+                                                                }} className="cursor-pointer text-amber-600">
+                                                                    <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onSelect={() => {
+                                                                    setConflictToDelete(conflict);
+                                                                    setIsDeleteDialogOpen(true);
+                                                                }} className="cursor-pointer text-rose-600">
+                                                                    <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                                    {paginatedConflicts.map((conflict) => (
+                                        <Card 
+                                            key={conflict.id} 
+                                            className="shadow-sm hover:shadow-md transition-shadow cursor-pointer border-t-4 border-t-primary bg-white h-full flex flex-col"
+                                            onClick={() => {
+                                                setSelectedConflictForDetail(conflict);
+                                                setIsDetailSheetOpen(true);
+                                            }}
+                                        >
+                                            <CardHeader className="p-4 pb-2 space-y-2 shrink-0">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold text-slate-400">
+                                                        N° {conflict.orderNumber || "•"} • {conflict.dateOfFacts}
+                                                    </span>
+                                                    {getStatusBadge(conflict.status)}
+                                                </div>
+                                                <CardTitle className="text-sm font-bold text-primary flex items-center gap-1.5 leading-snug">
+                                                    <Newspaper className="h-4 w-4 shrink-0" />
+                                                    {conflict.source}
+                                                </CardTitle>
+                                                <CardDescription className="text-xs font-medium text-slate-600 flex items-center gap-1">
+                                                    <Globe className="h-3 w-3" /> {conflict.locality} <span className="text-slate-400">({conflict.region})</span>
+                                                </CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="p-4 pt-2 flex-1 flex flex-col gap-3">
+                                                <div>{getTypeBadge(conflict.conflictType)}</div>
+                                                <p className="text-xs text-slate-600 line-clamp-4 leading-relaxed flex-1">
+                                                    {conflict.description}
+                                                </p>
+                                                {conflict.observations && (
+                                                    <div className="text-[10px] bg-amber-50 text-amber-800 p-2 rounded-md border border-amber-100 italic line-clamp-2">
+                                                        {conflict.observations}
+                                                    </div>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Pagination pinned to bottom */}
+                        {totalPages > 1 && (
+                            <div className="border-t border-slate-100 p-4 bg-slate-50/50 shrink-0">
+                                <PaginationControls 
+                                    currentPage={currentPage} 
+                                    totalPages={totalPages} 
+                                    onPageChange={setCurrentPage} 
+                                    itemsPerPage={itemsPerPage}
+                                    onItemsPerPageChange={setItemsPerPage}
+                                    totalItems={filteredConflicts.length}
+                                />
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Dialogues & Sheets */}
+                <AddPressConflictSheet
+                    isOpen={isAddSheetOpen}
+                    onCloseAction={() => setIsAddSheetOpen(false)}
+                    onAddAction={handleAddConflict}
+                />
+
+                <EditPressConflictSheet
+                    isOpen={isEditSheetOpen}
+                    conflict={editingConflict}
+                    onCloseAction={() => {
+                        setIsEditSheetOpen(false);
+                        setEditingConflict(null);
+                    }}
+                    onUpdateAction={handleUpdateConflict}
+                />
+
+                <PressConflictDetailSheet
+                    isOpen={isDetailSheetOpen}
+                    conflict={selectedConflictForDetail}
+                    onCloseAction={() => {
+                        setIsDetailSheetOpen(false);
+                        setSelectedConflictForDetail(null);
+                    }}
+                    onEditAction={(c) => {
+                        setEditingConflict(c);
+                        setIsEditSheetOpen(true);
+                    }}
+                />
+
+                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <AlertDialogContent className="rounded-2xl">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Êtes-vous sûr de vouloir supprimer la fiche N° {conflictToDelete?.orderNumber || ""} (
+                                {conflictToDelete?.source} - {conflictToDelete?.locality}) ? Cette action est irréversible.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={isDeleting} className="rounded-xl">Annuler</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleDeleteConflict}
+                                disabled={isDeleting}
+                                className="bg-rose-500 text-white hover:bg-rose-600 rounded-xl font-bold"
+                            >
+                                {isDeleting ? "Suppression..." : "Supprimer définitivement"}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        </PermissionGuard>
     );
 }

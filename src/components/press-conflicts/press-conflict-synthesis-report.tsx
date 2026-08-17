@@ -39,16 +39,55 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
   const [isPrinting, setIsPrinting] = useState(false);
   
   // Data for charts
+  const cleanRegionForChart = (name: string) => {
+    return name
+      .replace(/^District Autonome (d'|de )/i, "")
+      .replace(/^Région (du |de la |des |de l'|de l’|d')/i, "")
+      .replace(/^A vérifier.*/i, "Non précisée")
+      .trim();
+  };
+
   const statsByRegion = useMemo(() => {
     const counts: Record<string, number> = {};
     conflicts.forEach(c => {
-      const region = c.region || "Inconnue";
+      const region = cleanRegionForChart(c.region || "Non précisée");
       counts[region] = (counts[region] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 10); // Top 10
+  }, [conflicts]);
+
+  const resolvedRegionData = useMemo(() => {
+      const counts: Record<string, number> = {};
+      conflicts.forEach(c => {
+          if (c.status?.toLowerCase().includes('résolu')) {
+              const r = cleanRegionForChart(c.region || 'Non précisée');
+              counts[r] = (counts[r] || 0) + 1;
+          }
+      });
+      return Object.entries(counts)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 10);
+  }, [conflicts]);
+
+  const typeList = useMemo(() => {
+    const types = new Set<string>();
+    conflicts.forEach(c => types.add(c.conflictType || 'Non spécifié'));
+    return Array.from(types).sort();
+  }, [conflicts]);
+
+  const crossTabData = useMemo(() => {
+    const data: Record<string, Record<string, number>> = {};
+    conflicts.forEach(c => {
+        const r = cleanRegionForChart(c.region || 'Non précisée');
+        const t = c.conflictType || 'Non spécifié';
+        if (!data[r]) data[r] = {};
+        data[r][t] = (data[r][t] || 0) + 1;
+    });
+    return data;
   }, [conflicts]);
 
   const statsByType = useMemo(() => {
@@ -143,11 +182,14 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
                   data={statsByType}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
+                  innerRadius={50}
+                  outerRadius={75}
                   paddingAngle={2}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  isAnimationActive={false}
+                  fontSize={13}
+                  fontWeight="500"
+                  label={({ name, value, percent }) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}
                 >
                   {statsByType.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -171,9 +213,12 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
                   data={statsByStatus}
                   cx="50%"
                   cy="50%"
-                  outerRadius={90}
+                  outerRadius={75}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  isAnimationActive={false}
+                  fontSize={13}
+                  fontWeight="500"
+                  label={({ name, value, percent }) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}
                 >
                   {statsByStatus.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || COLORS[index % COLORS.length]} />
@@ -186,18 +231,18 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
         </Card>
 
         {/* Chart: Regions */}
-        <Card className="shadow-sm border-slate-200 lg:col-span-2 break-inside-avoid">
+        <Card className="shadow-sm border-slate-200 break-inside-avoid">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-bold text-slate-800">Top 10 des Régions les plus signalées</CardTitle>
           </CardHeader>
           <CardContent className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={statsByRegion} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
+              <BarChart data={statsByRegion} layout="vertical" margin={{ top: 5, right: 60, left: 100, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 11 }} />
+                <XAxis type="number" tick={{ fontSize: 13, fill: '#334155' }} />
+                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 13, fill: '#334155' }} />
                 <RechartsTooltip formatter={(value: number) => [`${value} faits`, "Total"]} />
-                <Bar dataKey="value" fill="#0ea5e9" radius={[0, 4, 4, 0]}>
+                <Bar dataKey="value" fill="#0ea5e9" radius={[0, 4, 4, 0]} isAnimationActive={false} label={{ position: 'right', fill: '#0f172a', fontSize: 13, fontWeight: 'bold' }}>
                   {statsByRegion.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -206,7 +251,89 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {/* Chart: Resolved Regions */}
+        <Card className="shadow-sm border-slate-200 break-inside-avoid">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-bold text-slate-800">Top 10 Régions (Faits Résolus)</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={resolvedRegionData} layout="vertical" margin={{ top: 5, right: 60, left: 100, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 13, fill: '#334155' }} />
+                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 13, fill: '#334155' }} />
+                <RechartsTooltip formatter={(value: number) => [`${value} faits`, "Total"]} />
+                <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} isAnimationActive={false} label={{ position: 'right', fill: '#0f172a', fontSize: 13, fontWeight: 'bold' }}>
+                  {resolvedRegionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Cross-tab Table */}
+      <Card className="shadow-sm border-slate-200 mt-6 break-inside-avoid">
+        <CardHeader className="pb-4">
+            <CardTitle className="text-base font-bold text-slate-800 text-center uppercase">Détail des Faits par Région et par Typologie</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-sm text-left text-slate-600">
+                    <thead className="text-[11px] text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th className="px-3 py-2 font-bold border-r border-slate-200">Région</th>
+                            {typeList.map(type => (
+                                <th key={type} className="px-3 py-2 font-semibold text-center border-r border-slate-200 whitespace-nowrap">{type}</th>
+                            ))}
+                            <th className="px-3 py-2 font-bold text-center bg-slate-100">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Object.keys(crossTabData).sort().map((region, idx) => {
+                            const rowTotal = typeList.reduce((sum, t) => sum + (crossTabData[region][t] || 0), 0);
+                            return (
+                                <tr key={region} className={`border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
+                                    <td className="px-3 py-1.5 font-bold text-[13px] text-slate-900 border-r border-slate-200 whitespace-nowrap">{region}</td>
+                                    {typeList.map(type => (
+                                        <td key={type} className="px-3 py-1.5 text-center border-r border-slate-200">
+                                            {crossTabData[region][type] ? (
+                                                <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 bg-slate-100 text-slate-700 rounded text-[13px] font-semibold">
+                                                    {crossTabData[region][type]}
+                                                </span>
+                                            ) : <span className="text-slate-300">-</span>}
+                                        </td>
+                                    ))}
+                                    <td className="px-3 py-1.5 font-bold text-center bg-slate-50 text-slate-800">
+                                        {rowTotal}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                    <tfoot className="font-bold bg-slate-100 border-t border-slate-300 shadow-[0_-1px_0_0_rgba(0,0,0,0.05)]">
+                        <tr>
+                            <td className="px-3 py-2 text-slate-800 border-r border-slate-200 uppercase text-[11px] tracking-wider">Total Général</td>
+                            {typeList.map(type => {
+                                const colTotal = Object.keys(crossTabData).reduce((sum, r) => sum + (crossTabData[r][type] || 0), 0);
+                                return (
+                                    <td key={type} className="px-3 py-2 text-center border-r border-slate-200 text-slate-800 text-sm">
+                                        {colTotal}
+                                    </td>
+                                );
+                            })}
+                            <td className="px-3 py-3 text-center text-slate-900 text-base font-black">
+                                {conflicts.length}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </CardContent>
+      </Card>
     </div>
   );
 

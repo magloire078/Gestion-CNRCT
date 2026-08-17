@@ -35,6 +35,7 @@ interface ConflictsOfficialReportProps {
         resolutionRate: number;
         topType: string;
     };
+    periodLabel?: string;
 }
 
 export function ConflictsOfficialReport({ 
@@ -43,7 +44,8 @@ export function ConflictsOfficialReport({
     subtitle,
     isPrinting,
     onAfterPrint,
-    stats 
+    stats,
+    periodLabel 
 }: ConflictsOfficialReportProps) {
     if (!organizationSettings) return null;
 
@@ -66,7 +68,7 @@ export function ConflictsOfficialReport({
             {/* --- PAGE DE GARDE --- */}
             <InstitutionalCover 
                 title="RAPPORT NATIONAL DE MÉDIATION ET DES LITIGES COMMUNAUTAIRES"
-                subtitle={subtitle || "Périmètre National"}
+                subtitle={periodLabel ? `Période : ${periodLabel}` : (subtitle || "Périmètre National")}
                 direction="DFP"
                 service="Direction des Finances et du Patrimoine"
                 stats={[

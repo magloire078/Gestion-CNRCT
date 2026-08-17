@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useMemo, useEffect, useTransition } from "react";
-import { format, parseISO, isValid } from "date-fns";
+import { format, parseISO, isValid, isThisMonth, isThisQuarter, isThisYear, getMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import { 
     PlusCircle, Search, Loader2, List, Map, 
     MoreHorizontal, Pencil, Eye, Trash2, 
     Printer, Settings2, TrendingUp, ShieldAlert,
-    AlertTriangle, CheckCircle2, History, FileText
+    AlertTriangle, CheckCircle2, History, FileText, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,6 +64,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConflictsOfficialReport } from "@/components/reports/conflicts-official-report";
+import { ConflictSynthesisReport } from "@/components/conflicts/conflict-synthesis-report";
 import { PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
@@ -103,7 +104,8 @@ export default function ConflictsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const { toast } = useToast();
 
-    const [selectedYear, setSelectedYear] = useState<string>("Tous");
+    const [selectedPeriod, setSelectedPeriod] = useState<string>("Tous");
+    const [isSynthesisOpen, setIsSynthesisOpen] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -270,17 +272,42 @@ export default function ConflictsPage() {
                 (conflict.region || '').toLowerCase().includes(searchTermLower);
             
             const conflictYear = conflict.reportedDate.split('-')[0];
-            const matchesYear = selectedYear === "Tous" || conflictYear === selectedYear;
+            
+            let matchesPeriod = true;
+            if (selectedPeriod !== "Tous") {
+                const date = parseISO(conflict.reportedDate);
+                if (!isValid(date)) {
+                    matchesPeriod = false;
+                } else if (selectedPeriod === "Ce Mois") {
+                    matchesPeriod = isThisMonth(date);
+                } else if (selectedPeriod === "Ce Trimestre") {
+                    matchesPeriod = isThisQuarter(date);
+                } else if (selectedPeriod === "Ce Semestre") {
+                    const isCurrentYear = isThisYear(date);
+                    if (!isCurrentYear) matchesPeriod = false;
+                    else {
+                        const currentMonth = getMonth(new Date());
+                        const dateMonth = getMonth(date);
+                        const isFirstSemester = currentMonth < 6;
+                        matchesPeriod = isFirstSemester ? dateMonth < 6 : dateMonth >= 6;
+                    }
+                } else if (selectedPeriod === "Cette Année") {
+                    matchesPeriod = isThisYear(date);
+                } else {
+                    matchesPeriod = conflictYear === selectedPeriod; // e.g. "2023"
+                }
+            }
+
             const matchesRegion = selectedRegion === "Tous" || getOfficialRegion(conflict.region || "") === getOfficialRegion(selectedRegion);
             const matchesType = selectedConflictType === "Tous" || conflict.type === selectedConflictType;
             
-            return matchesSearch && matchesYear && matchesRegion && matchesType;
+            return matchesSearch && matchesPeriod && matchesRegion && matchesType;
         });
         if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
             setCurrentPage(1);
         }
         return filtered;
-    }, [conflicts, searchTerm, currentPage, itemsPerPage, selectedYear, selectedRegion, selectedConflictType]);
+    }, [conflicts, searchTerm, currentPage, itemsPerPage, selectedPeriod, selectedRegion, selectedConflictType]);
 
     const regions = useMemo(() => {
         return IVORIAN_REGIONS;
@@ -346,6 +373,7 @@ export default function ConflictsPage() {
                         isPrinting={isPrintingList}
                         onAfterPrint={() => setIsPrintingList(false)}
                         stats={conflictStats}
+                        periodLabel={selectedPeriod !== "Tous" ? selectedPeriod : undefined}
                     />
                 )}
                 
@@ -357,6 +385,13 @@ export default function ConflictsPage() {
                         />
                     </div>
                 )}
+                
+                <ConflictSynthesisReport 
+                    isOpen={isSynthesisOpen}
+                    onClose={() => setIsSynthesisOpen(false)}
+                    conflicts={filteredConflicts}
+                    periodLabel={selectedPeriod !== "Tous" ? selectedPeriod : undefined}
+                />
                 
                 <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
                     <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-5 shrink-0">
@@ -380,12 +415,16 @@ export default function ConflictsPage() {
                             
                             <div className="flex flex-col lg:flex-row flex-wrap items-center gap-4 w-full xl:w-auto justify-start xl:justify-end">
                                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start xl:justify-end">
-                                    <Select value={selectedYear} onValueChange={setSelectedYear}>
-                                        <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white border-slate-200">
-                                            <SelectValue placeholder="Année" />
+                                    <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[130px] h-10 rounded-lg bg-white border-slate-200">
+                                            <SelectValue placeholder="Période" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-lg border-slate-100">
-                                            <SelectItem value="Tous">Toutes Années</SelectItem>
+                                            <SelectItem value="Tous">Toutes Périodes</SelectItem>
+                                            <SelectItem value="Ce Mois">Ce Mois</SelectItem>
+                                            <SelectItem value="Ce Trimestre">Ce Trimestre</SelectItem>
+                                            <SelectItem value="Ce Semestre">Ce Semestre</SelectItem>
+                                            <SelectItem value="Cette Année">Cette Année</SelectItem>
                                             {availableYears.map(year => (
                                                 <SelectItem key={year} value={year}>{year}</SelectItem>
                                             ))}
@@ -465,9 +504,12 @@ export default function ConflictsPage() {
                                         <DropdownMenuItem onClick={handlePrint} className="cursor-pointer">
                                             <List className="mr-2 h-4 w-4" /> Imprimer la liste
                                         </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setIsSynthesisOpen(true)} className="cursor-pointer text-primary">
+                                            <BarChart3 className="mr-2 h-4 w-4" /> Rapport de Synthèse
+                                        </DropdownMenuItem>
                                         <Link href="/conflicts/analytics">
                                             <DropdownMenuItem className="cursor-pointer">
-                                                <TrendingUp className="mr-2 h-4 w-4" /> Statistiques
+                                                <TrendingUp className="mr-2 h-4 w-4" /> Statistiques Détaillées
                                             </DropdownMenuItem>
                                         </Link>
                                     </DropdownMenuContent>

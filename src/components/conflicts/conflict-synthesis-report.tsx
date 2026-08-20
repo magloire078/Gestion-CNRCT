@@ -6,6 +6,7 @@ import { fr } from "date-fns/locale";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, X } from "lucide-react";
+import html2canvas from 'html2canvas';
 import {
     PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer,
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
@@ -146,6 +147,32 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
         }, 1000); // Give time for charts to render in print wrapper
     };
 
+    const handleDownloadChart = async (elementId: string, filename: string) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            try {
+                const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
+                const url = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = url;
+                link.click();
+            } catch (err) {
+                console.error("Erreur lors de la génération de l'image", err);
+            }
+        }
+    };
+
+    const narrativeSummary = useMemo(() => {
+        if (total === 0) return "Aucune donnée n'a été enregistrée pour cette période.";
+        
+        const topRegion = regionData[0] ? `${regionData[0].name} (${regionData[0].value} cas)` : 'N/A';
+        const topType = typeData[0] ? `${typeData[0].name} avec ${typeData[0].value} cas (${((typeData[0].value / total) * 100).toFixed(0)}%)` : 'N/A';
+        const resolutionRate = total > 0 ? ((resolved / total) * 100).toFixed(0) : '0';
+
+        return `Sur la période analysée, le CNRCT a enregistré un total de ${total} conflits. La typologie dominante est "${topType}". La région la plus touchée est la région ${topRegion}. Concernant le traitement, ${resolved} conflits ont été résolus (soit un taux de résolution de ${resolutionRate}%) et ${mediation} sont actuellement en cours de médiation.`;
+    }, [total, regionData, typeData, resolved, mediation]);
+
     const todayDate = format(new Date(), "dd MMMM yyyy", { locale: fr });
 
     return (
@@ -180,18 +207,23 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-8 break-inside-avoid">
+                            <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8 text-slate-700 leading-relaxed text-justify">
+                                <h3 className="font-bold text-slate-900 mb-2 uppercase tracking-wider text-sm">Résumé Analytique</h3>
+                                <p>{narrativeSummary}</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-12 break-inside-avoid">
                                 <div className="border border-slate-200 rounded-xl p-4 bg-white">
                                     <h3 className="text-center font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm">Répartition par Type de Conflit</h3>
-                                    <div className="h-[300px]">
+                                    <div className="h-[400px] print:h-[550px] w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
-                                                <Pie data={typeData} cx="50%" cy="50%" innerRadius={40} outerRadius={75} paddingAngle={2} dataKey="value" isAnimationActive={false} label={({name, value, percent}) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}>
+                                                <Pie data={typeData} cx="50%" cy="50%" innerRadius="40%" outerRadius="65%" paddingAngle={2} dataKey="value" isAnimationActive={false} label={({name, value, percent}) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`} labelLine={{ strokeWidth: 2 }}>
                                                     {typeData.map((entry, index) => (
                                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                     ))}
                                                 </Pie>
-                                                <Legend wrapperStyle={{ fontSize: '13px' }} />
+                                                <Legend wrapperStyle={{ fontSize: '14px', fontWeight: 'bold' }} />
                                             </PieChart>
                                         </ResponsiveContainer>
                                     </div>
@@ -199,24 +231,24 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
 
                                 <div className="border border-slate-200 rounded-xl p-4 bg-white">
                                     <h3 className="text-center font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm">Répartition par Statut</h3>
-                                    <div className="h-[300px]">
+                                    <div className="h-[400px] print:h-[550px] w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
-                                                <Pie data={statusData} cx="50%" cy="50%" innerRadius={40} outerRadius={75} paddingAngle={2} dataKey="value" isAnimationActive={false} label={({name, value, percent}) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}>
+                                                <Pie data={statusData} cx="50%" cy="50%" innerRadius="40%" outerRadius="65%" paddingAngle={2} dataKey="value" isAnimationActive={false} label={({name, value, percent}) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`} labelLine={{ strokeWidth: 2 }}>
                                                     {statusData.map((entry, index) => (
                                                         <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || COLORS[index % COLORS.length]} />
                                                     ))}
                                                 </Pie>
-                                                <Legend wrapperStyle={{ fontSize: '13px' }} />
+                                                <Legend wrapperStyle={{ fontSize: '14px', fontWeight: 'bold' }} />
                                             </PieChart>
                                         </ResponsiveContainer>
                                     </div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-8 mt-8 break-inside-avoid">
+                            <div className="grid grid-cols-1 gap-12 mt-12 break-inside-avoid">
                                 <div className="border border-slate-200 rounded-xl p-4 bg-white">
                                     <h3 className="text-center font-bold text-slate-800 mb-6 uppercase tracking-wider text-sm">Top 10 Régions les plus touchées</h3>
-                                    <div className="h-[350px]">
+                                    <div className="h-[400px] print:h-[500px] w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={regionData} margin={{ top: 30, right: 30, left: 0, bottom: 60 }}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -233,7 +265,7 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
                                 </div>
                                 <div className="border border-slate-200 rounded-xl p-4 bg-white">
                                     <h3 className="text-center font-bold text-slate-800 mb-6 uppercase tracking-wider text-sm">Top 10 Régions (Conflits Résolus)</h3>
-                                    <div className="h-[350px]">
+                                    <div className="h-[400px] print:h-[500px] w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={resolvedRegionData} margin={{ top: 30, right: 30, left: 0, bottom: 60 }}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -353,14 +385,25 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
                                     </div>
                                 </div>
 
+                                {/* Narrative Summary UI */}
+                                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-700 leading-relaxed text-justify shadow-sm">
+                                    <h3 className="font-bold text-slate-900 mb-2 uppercase tracking-wider text-sm">Résumé Analytique</h3>
+                                    <p>{narrativeSummary}</p>
+                                </div>
+
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {/* Types */}
-                                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                                        <h3 className="text-center font-bold text-slate-800 mb-6 uppercase tracking-wider text-xs">Répartition par Type</h3>
-                                        <div className="h-[300px]">
+                                    <div id="ui-type-chart" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 relative">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h3 className="font-bold text-slate-800 uppercase tracking-wider text-xs">Répartition par Type</h3>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 print:hidden" onClick={() => handleDownloadChart("ui-type-chart", "repartition-types.png")} title="Télécharger l'image">
+                                                <Download className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <div className="h-[350px]">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <PieChart>
-                                                    <Pie data={typeData} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={3} dataKey="value" stroke="none" isAnimationActive={false} label={({name, value, percent}) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}>
+                                                    <Pie data={typeData} cx="50%" cy="50%" innerRadius="40%" outerRadius="65%" paddingAngle={3} dataKey="value" stroke="none" isAnimationActive={false} label={({name, value, percent}) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}>
                                                         {typeData.map((entry, index) => (
                                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                         ))}
@@ -373,12 +416,17 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
                                     </div>
 
                                     {/* Statuses */}
-                                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                                        <h3 className="text-center font-bold text-slate-800 mb-6 uppercase tracking-wider text-xs">Répartition par Statut</h3>
-                                        <div className="h-[300px]">
+                                    <div id="ui-status-chart" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 relative">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h3 className="font-bold text-slate-800 uppercase tracking-wider text-xs">Répartition par Statut</h3>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 print:hidden" onClick={() => handleDownloadChart("ui-status-chart", "repartition-statuts.png")} title="Télécharger l'image">
+                                                <Download className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <div className="h-[350px]">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <PieChart>
-                                                    <Pie data={statusData} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={3} dataKey="value" stroke="none" isAnimationActive={false} label={({name, value, percent}) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}>
+                                                    <Pie data={statusData} cx="50%" cy="50%" innerRadius="40%" outerRadius="65%" paddingAngle={3} dataKey="value" stroke="none" isAnimationActive={false} label={({name, value, percent}) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}>
                                                         {statusData.map((entry, index) => (
                                                             <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || COLORS[index % COLORS.length]} />
                                                         ))}
@@ -448,12 +496,17 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
                                 </div>
 
                                 {/* Regions */}
-                                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                                    <h3 className="font-bold text-slate-800 mb-8 uppercase tracking-wider text-xs flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full bg-primary"></div>
-                                        Top 10 Régions (Volume de Conflits)
-                                    </h3>
-                                    <div className="h-[400px]">
+                                <div id="ui-region-chart" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative">
+                                    <div className="flex justify-between items-center mb-8">
+                                        <h3 className="font-bold text-slate-800 uppercase tracking-wider text-xs flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-primary"></div>
+                                            Top 10 Régions (Volume de Conflits)
+                                        </h3>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 print:hidden" onClick={() => handleDownloadChart("ui-region-chart", "top-regions.png")} title="Télécharger l'image">
+                                            <Download className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <div className="h-[450px]">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={regionData} margin={{ top: 20, right: 30, left: 0, bottom: 80 }}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

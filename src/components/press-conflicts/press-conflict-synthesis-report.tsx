@@ -15,7 +15,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, 
   PieChart, Pie, Cell 
 } from "recharts";
-import { Printer, TrendingUp, MapPin, AlertCircle, BarChart3 } from "lucide-react";
+import { Printer, TrendingUp, MapPin, AlertCircle, BarChart3, Download } from "lucide-react";
+import html2canvas from "html2canvas";
 import type { PressConflict } from "@/types/press-conflict";
 
 interface PressConflictSynthesisReportProps {
@@ -116,8 +117,44 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
     setIsPrinting(true);
   };
 
+  const handleDownloadChart = async (elementId: string, filename: string) => {
+      const element = document.getElementById(elementId);
+      if (element) {
+          try {
+              const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
+              const url = canvas.toDataURL('image/png');
+              const link = document.createElement('a');
+              link.download = filename;
+              link.href = url;
+              link.click();
+          } catch (err) {
+              console.error("Erreur lors de la génération de l'image", err);
+          }
+      }
+  };
+
+  const narrativeSummary = useMemo(() => {
+      const total = conflicts.length;
+      if (total === 0) return "Aucun fait signalé n'a été enregistré pour cette période.";
+      
+      const topRegion = statsByRegion[0] ? `${statsByRegion[0].name} (${statsByRegion[0].value} cas)` : 'N/A';
+      const topType = statsByType[0] ? `${statsByType[0].name} avec ${statsByType[0].value} cas (${((statsByType[0].value / total) * 100).toFixed(0)}%)` : 'N/A';
+      
+      const resolvedCount = statsByStatus.find(s => s.name.includes("Résolu"))?.value || 0;
+      const inProgressCount = statsByStatus.find(s => s.name.includes("En cours"))?.value || 0;
+      const resolutionRate = total > 0 ? ((resolvedCount / total) * 100).toFixed(0) : '0';
+
+      return `Sur la période analysée, le tableau de bord a recensé un total de ${total} faits signalés dans la presse. La typologie dominante est "${topType}". La région la plus touchée est la région ${topRegion}. Concernant l'état d'avancement, ${resolvedCount} faits ont été résolus (soit un taux de ${resolutionRate}%) et ${inProgressCount} sont actuellement en cours de traitement.`;
+  }, [conflicts.length, statsByRegion, statsByType, statsByStatus]);
+
   const chartsContent = (
     <div className="grid-content space-y-6">
+      {/* Narrative Summary UI */}
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-700 leading-relaxed text-justify shadow-sm">
+        <h3 className="font-bold text-slate-900 mb-2 uppercase tracking-wider text-sm">Résumé Analytique</h3>
+        <p>{narrativeSummary}</p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="shadow-sm border-slate-200">
           <CardContent className="p-4 flex items-center gap-4">
@@ -169,27 +206,31 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 print:grid-cols-1 gap-6 print:gap-12">
         {/* Chart: Typology */}
-        <Card className="shadow-sm border-slate-200 break-inside-avoid">
-          <CardHeader className="pb-2">
+        <Card id="press-type-chart" className="shadow-sm border-slate-200 break-inside-avoid">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-bold text-slate-800">Typologie des Faits Signalés</CardTitle>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 print:hidden" onClick={() => handleDownloadChart("press-type-chart", "press-repartition-types.png")} title="Télécharger l'image">
+                <Download className="h-4 w-4" />
+            </Button>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[400px] print:h-[550px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={statsByType}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={75}
+                  innerRadius="40%"
+                  outerRadius="65%"
                   paddingAngle={2}
                   dataKey="value"
                   isAnimationActive={false}
-                  fontSize={13}
-                  fontWeight="500"
+                  fontSize={14}
+                  fontWeight="bold"
                   label={({ name, value, percent }) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}
+                  labelLine={{ strokeWidth: 2 }}
                 >
                   {statsByType.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -202,23 +243,28 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
         </Card>
 
         {/* Chart: Status */}
-        <Card className="shadow-sm border-slate-200 break-inside-avoid">
-          <CardHeader className="pb-2">
+        <Card id="press-status-chart" className="shadow-sm border-slate-200 break-inside-avoid">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-bold text-slate-800">Répartition par Statut</CardTitle>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 print:hidden" onClick={() => handleDownloadChart("press-status-chart", "press-repartition-statuts.png")} title="Télécharger l'image">
+                <Download className="h-4 w-4" />
+            </Button>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[400px] print:h-[550px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={statsByStatus}
                   cx="50%"
                   cy="50%"
-                  outerRadius={75}
+                  innerRadius="40%"
+                  outerRadius="65%"
                   dataKey="value"
                   isAnimationActive={false}
-                  fontSize={13}
-                  fontWeight="500"
+                  fontSize={14}
+                  fontWeight="bold"
                   label={({ name, value, percent }) => `${name} : ${value} (${(percent * 100).toFixed(0)}%)`}
+                  labelLine={{ strokeWidth: 2 }}
                 >
                   {statsByStatus.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || COLORS[index % COLORS.length]} />
@@ -231,11 +277,14 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
         </Card>
 
         {/* Chart: Regions */}
-        <Card className="shadow-sm border-slate-200 break-inside-avoid">
-          <CardHeader className="pb-2">
+        <Card id="press-region-chart" className="shadow-sm border-slate-200 break-inside-avoid">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-bold text-slate-800">Top 10 des Régions les plus signalées</CardTitle>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 print:hidden" onClick={() => handleDownloadChart("press-region-chart", "press-top-regions.png")} title="Télécharger l'image">
+                <Download className="h-4 w-4" />
+            </Button>
           </CardHeader>
-          <CardContent className="h-[350px]">
+          <CardContent className="h-[400px] print:h-[500px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statsByRegion} layout="vertical" margin={{ top: 5, right: 60, left: 100, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -253,11 +302,14 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
         </Card>
 
         {/* Chart: Resolved Regions */}
-        <Card className="shadow-sm border-slate-200 break-inside-avoid">
-          <CardHeader className="pb-2">
+        <Card id="press-resolved-chart" className="shadow-sm border-slate-200 break-inside-avoid">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-bold text-slate-800">Top 10 Régions (Faits Résolus)</CardTitle>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 print:hidden" onClick={() => handleDownloadChart("press-resolved-chart", "press-regions-resolus.png")} title="Télécharger l'image">
+                <Download className="h-4 w-4" />
+            </Button>
           </CardHeader>
-          <CardContent className="h-[350px]">
+          <CardContent className="h-[400px] print:h-[500px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={resolvedRegionData} layout="vertical" margin={{ top: 5, right: 60, left: 100, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />

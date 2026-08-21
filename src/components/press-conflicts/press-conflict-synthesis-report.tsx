@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, 
@@ -23,6 +27,7 @@ interface PressConflictSynthesisReportProps {
   isOpen: boolean;
   onClose: () => void;
   conflicts: PressConflict[];
+  periodLabel?: string;
 }
 
 const COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#f97316'];
@@ -36,8 +41,28 @@ const STATUS_COLORS: Record<string, string> = {
 
 import { InstitutionalReportWrapper } from "../reports/institutional-report-wrapper";
 
-export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: PressConflictSynthesisReportProps) {
+export function PressConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabel }: PressConflictSynthesisReportProps) {
   const [isPrinting, setIsPrinting] = useState(false);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+
+  const localConflicts = useMemo(() => {
+      let filtered = conflicts;
+      if (startDate) {
+          filtered = filtered.filter(c => c.date >= startDate);
+      }
+      if (endDate) {
+          filtered = filtered.filter(c => c.date <= endDate);
+      }
+      return filtered;
+  }, [conflicts, startDate, endDate]);
+
+  const dynamicPeriodLabel = useMemo(() => {
+      if (startDate && endDate) return `Du ${format(parseISO(startDate), "dd/MM/yyyy")} au ${format(parseISO(endDate), "dd/MM/yyyy")}`;
+      if (startDate) return `Depuis le ${format(parseISO(startDate), "dd/MM/yyyy")}`;
+      if (endDate) return `Jusqu'au ${format(parseISO(endDate), "dd/MM/yyyy")}`;
+      return periodLabel;
+  }, [startDate, endDate, periodLabel]);
   
   // Data for charts
   const cleanRegionForChart = (name: string) => {
@@ -50,7 +75,7 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
 
   const statsByRegion = useMemo(() => {
     const counts: Record<string, number> = {};
-    conflicts.forEach(c => {
+    localConflicts.forEach(c => {
       const region = cleanRegionForChart(c.region || "Non précisée");
       counts[region] = (counts[region] || 0) + 1;
     });
@@ -58,11 +83,11 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 10); // Top 10
-  }, [conflicts]);
+  }, [localConflicts]);
 
   const resolvedRegionData = useMemo(() => {
       const counts: Record<string, number> = {};
-      conflicts.forEach(c => {
+      localConflicts.forEach(c => {
           if (c.status?.toLowerCase().includes('résolu')) {
               const r = cleanRegionForChart(c.region || 'Non précisée');
               counts[r] = (counts[r] || 0) + 1;
@@ -72,46 +97,46 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
           .map(([name, value]) => ({ name, value }))
           .sort((a, b) => b.value - a.value)
           .slice(0, 10);
-  }, [conflicts]);
+  }, [localConflicts]);
 
   const typeList = useMemo(() => {
     const types = new Set<string>();
-    conflicts.forEach(c => types.add(c.conflictType || 'Non spécifié'));
+    localConflicts.forEach(c => types.add(c.conflictType || 'Non spécifié'));
     return Array.from(types).sort();
-  }, [conflicts]);
+  }, [localConflicts]);
 
   const crossTabData = useMemo(() => {
     const data: Record<string, Record<string, number>> = {};
-    conflicts.forEach(c => {
+    localConflicts.forEach(c => {
         const r = cleanRegionForChart(c.region || 'Non précisée');
         const t = c.conflictType || 'Non spécifié';
         if (!data[r]) data[r] = {};
         data[r][t] = (data[r][t] || 0) + 1;
     });
     return data;
-  }, [conflicts]);
+  }, [localConflicts]);
 
   const statsByType = useMemo(() => {
     const counts: Record<string, number> = {};
-    conflicts.forEach(c => {
+    localConflicts.forEach(c => {
       const type = c.conflictType || "Autre";
       counts[type] = (counts[type] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
-  }, [conflicts]);
+  }, [localConflicts]);
 
   const statsByStatus = useMemo(() => {
     const counts: Record<string, number> = {};
-    conflicts.forEach(c => {
+    localConflicts.forEach(c => {
       const status = c.status || "Inconnu";
       counts[status] = (counts[status] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
-  }, [conflicts]);
+  }, [localConflicts]);
 
   const handlePrint = () => {
     setIsPrinting(true);
@@ -134,7 +159,7 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
   };
 
   const narrativeSummary = useMemo(() => {
-      const total = conflicts.length;
+      const total = localConflicts.length;
       if (total === 0) return "Aucun fait signalé n'a été enregistré pour cette période.";
       
       const topRegion = statsByRegion[0] ? `${statsByRegion[0].name} (${statsByRegion[0].value} cas)` : 'N/A';
@@ -145,10 +170,36 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
       const resolutionRate = total > 0 ? ((resolvedCount / total) * 100).toFixed(0) : '0';
 
       return `Sur la période analysée, le tableau de bord a recensé un total de ${total} faits signalés dans la presse. La typologie dominante est "${topType}". La région la plus touchée est la région ${topRegion}. Concernant l'état d'avancement, ${resolvedCount} faits ont été résolus (soit un taux de ${resolutionRate}%) et ${inProgressCount} sont actuellement en cours de traitement.`;
-  }, [conflicts.length, statsByRegion, statsByType, statsByStatus]);
+  }, [localConflicts.length, statsByRegion, statsByType, statsByStatus]);
 
   const chartsContent = (
     <div className="grid-content space-y-6">
+      {/* Date Filter */}
+      <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 print:hidden">
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-sm font-medium text-slate-600 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+              <div className="flex items-center gap-2">
+                  <Label htmlFor="pressStartDate" className="text-xs uppercase tracking-widest font-black">Du</Label>
+                  <Input 
+                      id="pressStartDate" 
+                      type="date" 
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="h-8 text-xs font-bold"
+                  />
+              </div>
+              <div className="flex items-center gap-2">
+                  <Label htmlFor="pressEndDate" className="text-xs uppercase tracking-widest font-black">Au</Label>
+                  <Input 
+                      id="pressEndDate" 
+                      type="date" 
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="h-8 text-xs font-bold"
+                  />
+              </div>
+              <span className="ml-2 font-black text-slate-800 bg-white px-2 py-1 rounded shadow-sm border border-slate-200">Total : {localConflicts.length}</span>
+          </div>
+      </div>
       {/* Narrative Summary UI */}
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-700 leading-relaxed text-justify shadow-sm">
         <h3 className="font-bold text-slate-900 mb-2 uppercase tracking-wider text-sm">Résumé Analytique</h3>
@@ -378,7 +429,7 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
                                 );
                             })}
                             <td className="px-3 py-3 text-center text-slate-900 text-base font-black">
-                                {conflicts.length}
+                                {localConflicts.length}
                             </td>
                         </tr>
                     </tfoot>
@@ -400,7 +451,7 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
                 Rapport de Synthèse Statistique
               </DialogTitle>
               <DialogDescription>
-                Analyse visuelle et répartition des {conflicts.length} faits signalés actuellement filtrés.
+                Analyse visuelle et répartition des {localConflicts.length} faits signalés actuellement filtrés.
               </DialogDescription>
             </div>
             <Button onClick={handlePrint} className="gap-2 shadow-sm rounded-xl">
@@ -418,7 +469,7 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts }: Pre
       <InstitutionalReportWrapper isPrinting={isPrinting} onAfterPrint={() => setIsPrinting(false)} orientation="landscape">
         <div className="p-8">
           <h1 className="text-2xl font-bold uppercase mb-2">Rapport de Synthèse - Faits Signalés</h1>
-          <p className="text-sm text-slate-600 mb-6">Basé sur {conflicts.length} enregistrements</p>
+          <p className="text-sm text-slate-600 mb-6">{dynamicPeriodLabel ? `Période : ${dynamicPeriodLabel} • ` : ''}Basé sur {localConflicts.length} enregistrements</p>
           {chartsContent}
         </div>
       </InstitutionalReportWrapper>

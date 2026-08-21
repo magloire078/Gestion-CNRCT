@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, startTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -320,7 +320,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="sexe" className="text-slate-700 font-medium">Genre</Label>
-                          <Select value={sexe} onValueChange={(value) => setSexe(value as Employe['sexe'])}>
+                          <Select value={sexe} onValueChange={(value) => startTransition(() => setSexe(value as Employe['sexe']))}>
                             <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white">
                               <SelectValue placeholder="Choisir..." />
                             </SelectTrigger>
@@ -506,14 +506,16 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                             value={dateEmbauche} 
                             onChange={(e) => {
                               const val = e.target.value;
-                              setDateEmbauche(val);
-                              // Auto calculate dateDepart for Garde Républicaine
-                              const isGarde = departmentList.find(d => d.id === departmentId)?.name === "Garde Républicaine";
-                              if (isGarde && val) {
-                                const start = new Date(val);
-                                start.setMonth(start.getMonth() + 6);
-                                setDateDepart(start.toISOString().split('T')[0]);
-                              }
+                              startTransition(() => {
+                                setDateEmbauche(val);
+                                // Auto calculate dateDepart for Garde Républicaine
+                                const isGarde = departmentList.find(d => d.id === departmentId)?.name === "Garde Républicaine";
+                                if (isGarde && val) {
+                                  const start = new Date(val);
+                                  start.setMonth(start.getMonth() + 6);
+                                  setDateDepart(start.toISOString().split('T')[0]);
+                                }
+                              });
                             }} 
                             className="h-11 rounded-lg border-slate-200 bg-white" 
                           />

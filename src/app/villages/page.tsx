@@ -597,11 +597,14 @@ export default function VillagesPage() {
 
                                 <div className="relative group flex-grow lg:w-auto lg:min-w-[200px]">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-                                    <Input
+                                    <DebouncedInput
                                         placeholder="Localité, Chef..."
                                         className="pl-9 h-10 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm focus:ring-slate-900 w-full"
                                         value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        debounce={300}
+                                        onChange={(val) => {
+                                            startTransition(() => setSearchQuery(String(val)));
+                                        }}
                                     />
                                 </div>
                                 <div className="flex items-center justify-center p-1 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 shrink-0 w-full sm:w-auto">

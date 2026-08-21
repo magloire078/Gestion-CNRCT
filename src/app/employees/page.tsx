@@ -251,7 +251,7 @@ export default function EmployeesPage() {
       const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
 
       const matchesPersonnelType = personnelTypeFilter === 'all' || 
-                                   (personnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional') : personnelTypeFilter === employee.calculatedGroup);
+                                   (personnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional' || employee.calculatedGroup === 'garde-republicaine') : personnelTypeFilter === employee.calculatedGroup);
 
       const matchesRegion = !isGeoTab || regionFilter === 'all' || employee.Region === regionFilter;
       const matchesGeoDept = !isGeoTab || geoDepartementFilter === 'all' || employee.Departement === geoDepartementFilter;
@@ -594,6 +594,7 @@ export default function EmployeesPage() {
                   <TabsTrigger value="personnel-siege" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Personnel Siège</TabsTrigger>
                   <TabsTrigger value="chauffeur-directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Chauffeurs</TabsTrigger>
                   <TabsTrigger value="regional" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Comités Régionaux</TabsTrigger>
+                  <TabsTrigger value="garde-republicaine" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Garde Républicaine</TabsTrigger>
                 </>
               )}
               {isGeoTab && (
@@ -601,6 +602,7 @@ export default function EmployeesPage() {
                   <TabsTrigger value="all-geo" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Membres Géo-localisés</TabsTrigger>
                   <TabsTrigger value="directoire" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
                   <TabsTrigger value="regional" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Comités Régionaux</TabsTrigger>
+                  <TabsTrigger value="garde-republicaine" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Garde Républicaine</TabsTrigger>
                 </>
               )}
               <TabsTrigger value="analytics" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all gap-2">
@@ -614,7 +616,7 @@ export default function EmployeesPage() {
 
             {!['analytics'].includes(personnelTypeFilter) && (
               <div className="space-y-6 animate-in fade-in duration-500">
-                {isGeoTab && personnelTypeFilter !== 'directoire' && personnelTypeFilter !== 'regional' && showDirectoireMap && (
+                {isGeoTab && personnelTypeFilter === 'all-geo' && showDirectoireMap && (
                   <div className="mb-6">
                     <DirectoireMap members={filteredEmployees} className="h-[1000px]" />
                   </div>
@@ -636,13 +638,16 @@ export default function EmployeesPage() {
                       <div className="flex flex-col md:flex-row gap-3">
                         <div className="relative flex-1 md:min-w-[280px]">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                          <Input
+                          <DebouncedInput
                             placeholder="Rechercher (Nom, Matricule...)"
                             className="h-10 pl-9 rounded-lg border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium text-sm transition-colors"
                             value={searchTerm}
-                            onChange={(e) => {
-                              setSearchTerm(e.target.value);
-                              setCurrentPage(1);
+                            debounce={300}
+                            onChange={(val) => {
+                              startTransition(() => {
+                                setSearchTerm(String(val));
+                                setCurrentPage(1);
+                              });
                             }}
                           />
                         </div>
@@ -810,6 +815,7 @@ export default function EmployeesPage() {
                                 <TableHead>Titre / Fonction</TableHead>
                                 <TableHead>Région</TableHead>
                                 <TableHead>Département</TableHead>
+                                <TableHead>Village</TableHead>
                               </>
                             ) : (
                               <>
@@ -902,6 +908,7 @@ export default function EmployeesPage() {
                                     <TableCell className="text-sm md:text-xs truncate max-w-[150px] font-bold text-slate-700">{employee.poste}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement}</TableCell>
+                                    <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Village}</TableCell>
                                   </>
                                 ) : (
                                   <>
@@ -1012,6 +1019,10 @@ export default function EmployeesPage() {
                                         <div className="flex justify-between items-center text-[10px]">
                                           <span className="text-slate-400 font-bold uppercase tracking-widest">Dép.</span>
                                           <span className="font-bold text-slate-700 truncate max-w-[120px]">{employee.Departement || '-'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px]">
+                                          <span className="text-slate-400 font-bold uppercase tracking-widest">Village</span>
+                                          <span className="font-bold text-slate-700 truncate max-w-[120px]">{employee.Village || '-'}</span>
                                         </div>
                                       </>
                                     ) : (

@@ -113,9 +113,9 @@ export default function CantonsPage() {
             if (!cantonsMap.has(key)) {
                 cantonsMap.set(key, {
                     name: v.canton,
-                    region: v.region,
-                    department: v.department,
-                    subPrefecture: v.subPrefecture,
+                    region: v.region || "",
+                    department: v.department || "",
+                    subPrefecture: v.subPrefecture || "",
                     villages: [],
                     chiefs: [],
                     cantonChief: null,
@@ -126,6 +126,31 @@ export default function CantonsPage() {
             const cData = cantonsMap.get(key)!;
             cData.villages.push(v);
             if (v.population) cData.population += v.population;
+        });
+
+        // Also add cantons explicitly declared on chiefs even if no village mentions them
+        chiefs.forEach(c => {
+            if (!c.cantonName) return;
+            const key = normalizeString(c.cantonName);
+            if (!key) return;
+
+            if (!cantonsMap.has(key)) {
+                cantonsMap.set(key, {
+                    name: c.cantonName,
+                    region: c.region || "",
+                    department: c.department || "",
+                    subPrefecture: c.subPrefecture || "",
+                    villages: [],
+                    chiefs: [],
+                    cantonChief: null,
+                    population: 0
+                });
+            } else {
+                const cData = cantonsMap.get(key)!;
+                if (!cData.region && c.region) cData.region = c.region;
+                if (!cData.department && c.department) cData.department = c.department;
+                if (!cData.subPrefecture && c.subPrefecture) cData.subPrefecture = c.subPrefecture;
+            }
         });
 
         // Add chiefs and identify canton chief

@@ -5,6 +5,8 @@ import { format, parseISO, isValid } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Printer, Download, X } from "lucide-react";
 import html2canvas from 'html2canvas';
 import {
@@ -35,41 +37,62 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabel }: ConflictSynthesisReportProps) {
     const [isPrinting, setIsPrinting] = useState(false);
+    const [startDate, setStartDate] = useState<string>("");
+    const [endDate, setEndDate] = useState<string>("");
+
+    // 0. Filter by selected period
+    const localConflicts = useMemo(() => {
+        let filtered = conflicts;
+        if (startDate) {
+            filtered = filtered.filter(c => c.reportedDate >= startDate);
+        }
+        if (endDate) {
+            filtered = filtered.filter(c => c.reportedDate <= endDate);
+        }
+        return filtered;
+    }, [conflicts, startDate, endDate]);
+
+    const dynamicPeriodLabel = useMemo(() => {
+        if (startDate && endDate) return `Du ${format(parseISO(startDate), "dd/MM/yyyy")} au ${format(parseISO(endDate), "dd/MM/yyyy")}`;
+        if (startDate) return `Depuis le ${format(parseISO(startDate), "dd/MM/yyyy")}`;
+        if (endDate) return `Jusqu'au ${format(parseISO(endDate), "dd/MM/yyyy")}`;
+        return periodLabel;
+    }, [startDate, endDate, periodLabel]);
 
     // 1. Data Processing
     const { total, open, mediation, resolved, other } = useMemo(() => {
         let open = 0, mediation = 0, resolved = 0, other = 0;
-        conflicts.forEach(c => {
+        localConflicts.forEach(c => {
             const s = c.status?.toLowerCase() || '';
             if (s === 'ouvert') open++;
             else if (s === 'en médiation') mediation++;
             else if (s === 'résolu') resolved++;
             else other++;
         });
-        return { total: conflicts.length, open, mediation, resolved, other };
-    }, [conflicts]);
+        return { total: localConflicts.length, open, mediation, resolved, other };
+    }, [localConflicts]);
 
     const typeData = useMemo(() => {
         const counts: Record<string, number> = {};
-        conflicts.forEach(c => {
+        localConflicts.forEach(c => {
             const t = c.type || 'Non spécifié';
             counts[t] = (counts[t] || 0) + 1;
         });
         return Object.entries(counts)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value);
-    }, [conflicts]);
+    }, [localConflicts]);
 
     const statusData = useMemo(() => {
         const counts: Record<string, number> = {};
-        conflicts.forEach(c => {
+        localConflicts.forEach(c => {
             const s = c.status || 'Non spécifié';
             counts[s] = (counts[s] || 0) + 1;
         });
         return Object.entries(counts)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value);
-    }, [conflicts]);
+    }, [localConflicts]);
 
     const cleanRegionForChart = (name: string) => {
         return name
@@ -81,7 +104,7 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
 
     const regionData = useMemo(() => {
         const counts: Record<string, number> = {};
-        conflicts.forEach(c => {
+        localConflicts.forEach(c => {
             const r = cleanRegionForChart(getOfficialRegion(c.region || 'Non précisée'));
             counts[r] = (counts[r] || 0) + 1;
         });
@@ -89,11 +112,11 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
             .slice(0, 10); // Top 10 regions
-    }, [conflicts]);
+    }, [localConflicts]);
 
     const resolvedRegionData = useMemo(() => {
         const counts: Record<string, number> = {};
-        conflicts.forEach(c => {
+        localConflicts.forEach(c => {
             if (c.status?.toLowerCase() === 'résolu') {
                 const r = cleanRegionForChart(getOfficialRegion(c.region || 'Non précisée'));
                 counts[r] = (counts[r] || 0) + 1;
@@ -103,24 +126,24 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
             .slice(0, 10);
-    }, [conflicts]);
+    }, [localConflicts]);
 
     const typeList = useMemo(() => {
         const types = new Set<string>();
-        conflicts.forEach(c => types.add(c.type || 'Non spécifié'));
+        localConflicts.forEach(c => types.add(c.type || 'Non spécifié'));
         return Array.from(types).sort();
-    }, [conflicts]);
+    }, [localConflicts]);
 
     const crossTabData = useMemo(() => {
         const data: Record<string, Record<string, number>> = {};
-        conflicts.forEach(c => {
+        localConflicts.forEach(c => {
             const r = cleanRegionForChart(getOfficialRegion(c.region || 'Non précisée'));
             const t = c.type || 'Non spécifié';
             if (!data[r]) data[r] = {};
             data[r][t] = (data[r][t] || 0) + 1;
         });
         return data;
-    }, [conflicts]);
+    }, [localConflicts]);
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
@@ -186,7 +209,7 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
                         <div className="space-y-8">
                             <div className="text-center mb-8">
                                 <h1 className="text-2xl font-bold text-slate-900">RAPPORT DE SYNTHÈSE DES CONFLITS</h1>
-                                <p className="text-slate-500">{periodLabel ? `Période : ${periodLabel}` : `Date d'édition : ${todayDate}`}</p>
+                                <p className="text-slate-500">{dynamicPeriodLabel ? `Période : ${dynamicPeriodLabel}` : `Date d'édition : ${todayDate}`}</p>
                             </div>
                             <div className="grid grid-cols-4 gap-4 mb-6">
                                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
@@ -365,6 +388,31 @@ export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabe
                             </div>
                         ) : (
                             <div className="space-y-6 max-w-6xl mx-auto">
+                                <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                                    <div className="flex flex-col sm:flex-row items-center gap-4 text-sm font-medium text-slate-600 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="startDate" className="text-xs uppercase tracking-widest font-black">Du</Label>
+                                            <Input 
+                                                id="startDate" 
+                                                type="date" 
+                                                value={startDate}
+                                                onChange={(e) => setStartDate(e.target.value)}
+                                                className="h-8 text-xs font-bold"
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="endDate" className="text-xs uppercase tracking-widest font-black">Au</Label>
+                                            <Input 
+                                                id="endDate" 
+                                                type="date" 
+                                                value={endDate}
+                                                onChange={(e) => setEndDate(e.target.value)}
+                                                className="h-8 text-xs font-bold"
+                                            />
+                                        </div>
+                                        <span className="ml-2 font-black text-slate-800 bg-white px-2 py-1 rounded shadow-sm border border-slate-200">Total : {total}</span>
+                                    </div>
+                                </div>
                                 {/* KPIs */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">

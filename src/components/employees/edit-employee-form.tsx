@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,58 +128,64 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    setFormData(prev => {
-      const newData = { ...prev, [id]: value };
-      
-      // Auto calculate Date_Depart if department is Garde Républicaine and dateEmbauche changes
-      if (id === 'dateEmbauche') {
-        const isGarde = departmentList.find(d => d.id === prev.departmentId)?.name === "Garde Républicaine";
-        if (isGarde && value) {
-          try {
-            const start = new Date(value);
-            if (!isNaN(start.getTime())) {
-              start.setMonth(start.getMonth() + 6);
-              newData.Date_Depart = start.toISOString().split('T')[0];
+    startTransition(() => {
+      setFormData(prev => {
+        const newData = { ...prev, [id]: value };
+        
+        // Auto calculate Date_Depart if department is Garde Républicaine and dateEmbauche changes
+        if (id === 'dateEmbauche') {
+          const isGarde = departmentList.find(d => d.id === prev.departmentId)?.name === "Garde Républicaine";
+          if (isGarde && value) {
+            try {
+              const start = new Date(value);
+              if (!isNaN(start.getTime())) {
+                start.setMonth(start.getMonth() + 6);
+                newData.Date_Depart = start.toISOString().split('T')[0];
+              }
+            } catch (e) {
+              console.error("Invalid dateEmbauche for Garde:", e);
             }
-          } catch (e) {
-            console.error("Invalid dateEmbauche for Garde:", e);
           }
         }
-      }
-      
-      return newData;
+        
+        return newData;
+      });
     });
   };
 
   const handleSelectChange = (id: keyof Employe, value: any) => {
-    setFormData(prev => {
-      const newData = { ...prev, [id]: value };
-      if (id === 'departmentId') {
-        newData.directionId = undefined;
-        newData.serviceId = undefined;
-        
-        // Auto calculate Date_Depart if changing to Garde Républicaine and dateEmbauche exists
-        const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
-        if (isGarde && prev.dateEmbauche) {
-          try {
-            const start = new Date(prev.dateEmbauche);
-            if (!isNaN(start.getTime())) {
-              start.setMonth(start.getMonth() + 6);
-              newData.Date_Depart = start.toISOString().split('T')[0];
+    startTransition(() => {
+      setFormData(prev => {
+        const newData = { ...prev, [id]: value };
+        if (id === 'departmentId') {
+          newData.directionId = undefined;
+          newData.serviceId = undefined;
+          
+          // Auto calculate Date_Depart if changing to Garde Républicaine and dateEmbauche exists
+          const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
+          if (isGarde && prev.dateEmbauche) {
+            try {
+              const start = new Date(prev.dateEmbauche);
+              if (!isNaN(start.getTime())) {
+                start.setMonth(start.getMonth() + 6);
+                newData.Date_Depart = start.toISOString().split('T')[0];
+              }
+            } catch (e) {
+              console.error("Invalid dateEmbauche for Garde:", e);
             }
-          } catch (e) {
-            console.error("Invalid dateEmbauche for Garde:", e);
           }
+        } else if (id === 'directionId') {
+          newData.serviceId = undefined;
         }
-      } else if (id === 'directionId') {
-        newData.serviceId = undefined;
-      }
-      return newData;
+        return newData;
+      });
     });
   };
 
   const handleValueChange = (id: string, value: string | number) => {
-    setFormData(prev => ({ ...prev, [id]: value }));
+    startTransition(() => {
+      setFormData(prev => ({ ...prev, [id]: value }));
+    });
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

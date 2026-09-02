@@ -222,10 +222,29 @@ service cloud.firestore {
 
     // --- SYSTEM & METADATA ---
     
-    match /notifications/{id} { 
+    match /notifications/{id} {
+      // Un utilisateur voit seulement ses propres notifications et celles diffusées à 'all'.
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.userId == 'all');
-      allow create, update: if isSignedIn();
-      allow delete: if isSignedIn();
+
+      // Création : uniquement pour soi-même ou broadcast, et seul un admin peut faire un broadcast.
+      // Le message ne peut pas dépasser 2 kB pour éviter l'abus de stockage.
+      allow create: if isSignedIn()
+        && request.resource.data.userId is string
+        && (
+          request.resource.data.userId == request.auth.uid ||
+          (request.resource.data.userId == 'all' && isSuperAdmin())
+        )
+        && request.resource.data.get('description', '').size() < 2048;
+
+      // Update : uniquement le propriétaire, et seul le champ isRead est modifiable
+      // (empêche de changer le contenu, le lien href, ou l'expéditeur d'une notif reçue).
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+
+      // Delete : uniquement le propriétaire, ou super-admin pour purge.
+      allow delete: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isSuperAdmin());
     }
 
     match /tickets/{id} { 

@@ -216,7 +216,13 @@ export default function ConflictsPage() {
                 setConflicts(fetchedConflicts);
                 setError(null);
 
-                if (!overdueCheckRun && fetchedConflicts.length > 0) {
+                // Seul un super-admin/manager peut créer une notification broadcast (userId='all')
+                // dans les règles Firestore. Inutile de tenter le check pour les autres.
+                const isSuperAdminUser = user?.email === 'magloire078@gmail.com'
+                    || (user?.role?.name || '').toLowerCase().includes('admin')
+                    || (user?.role?.name || '').toLowerCase().includes('dirigeant');
+
+                if (!overdueCheckRun && fetchedConflicts.length > 0 && isSuperAdminUser) {
                     overdueCheckRun = true;
                     const lastCheck = typeof window !== 'undefined' ? window.localStorage.getItem('conflicts:overdueLastCheck') : null;
                     const lastCheckMs = lastCheck ? Number(lastCheck) : 0;

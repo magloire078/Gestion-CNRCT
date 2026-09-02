@@ -4,6 +4,39 @@
 
 Merci d'envoyer un e-mail à l'administrateur du projet plutôt que d'ouvrir une issue publique. Les vulnérabilités reçoivent une réponse initiale sous 72 heures et un correctif est proposé selon la gravité.
 
+## Firebase App Check
+
+App Check ajoute une couche d'attestation reCAPTCHA v3 (invisible) devant Firestore / Auth / Storage / Functions. Objectif : refuser les requêtes qui ne proviennent pas d'une session de navigateur légitime sur votre app (bloque `curl`, scripts, bots, extractions massives — même quand l'API Key Firebase publique est connue).
+
+**⚠️ Activation en 3 étapes**
+
+1. **reCAPTCHA v3** — Aller sur https://www.google.com/recaptcha/admin, créer un site v3 pour votre domaine (`intranetcnrct.org` + `localhost` en dev), copier la **site key** publique.
+2. **Firebase Console** — Ouvrir le projet CNRCT → **App Check** → cliquer sur votre app web → *Register* → sélectionner *reCAPTCHA v3* → coller la site key + le secret. Firebase la garde côté serveur pour vérifier les tokens.
+3. **Variables d'environnement** — Ajouter dans `.env.local` (dev) et l'env de prod :
+   ```env
+   NEXT_PUBLIC_RECAPTCHA_SITE_KEY=votre-site-key-recaptcha-v3
+   ```
+   Optionnel en dev : `NEXT_PUBLIC_APP_CHECK_DEBUG=true` (voir plus bas).
+
+**Enforcement progressif**
+
+Ne pas passer directement en mode « Enforce ». Séquence recommandée :
+
+1. Rester en mode « Unenforced » 24-48h après la mise en prod pour vérifier que 100% des requêtes légitimes portent bien un token App Check dans les métriques (Firebase Console → App Check → onglet *Usage*).
+2. Passer en « Enforce » pour Firestore, Storage, Auth, Functions un service à la fois.
+3. Toute requête sans token valide sera alors refusée avec `403 Missing App Check token`.
+
+**Développement local**
+
+Le mode debug permet de whitelister votre poste sans passer par reCAPTCHA :
+
+1. Mettre `NEXT_PUBLIC_APP_CHECK_DEBUG=true` dans `.env.local`.
+2. Charger l'app une fois — la console navigateur affiche un debug token UUID.
+3. Firebase Console → App Check → onglet *Apps* → dropdown de votre app → *Debug tokens* → ajouter ce token.
+4. Il reste valide pour ce poste tant qu'il n'est pas révoqué.
+
+Sans `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` défini, App Check est **désactivé silencieusement** — l'app fonctionne mais sans la protection. Utile pour les postes de dev qui ne veulent pas configurer reCAPTCHA.
+
 ## Authentification à deux facteurs (MFA)
 
 Le code applicatif est prêt pour la MFA par TOTP (application authentificatrice : Google/Microsoft Authenticator, 1Password, Authy…). Chaque utilisateur peut activer/désactiver son second facteur depuis **Profil → Sécurité (MFA)** (`/settings/security`).

@@ -49,4 +49,13 @@ const db = initializeFirestore(app, {
 const auth = getAuth(app);
 const storage = getStorage(app);
 
+// Firebase App Check — atteste les requêtes légitimes (côté navigateur seulement).
+// L'init est async et non-bloquante ; en cas d'échec ou de site key absente,
+// l'app fonctionne sans App Check (voir src/lib/firebase-app-check.ts).
+if (typeof window !== 'undefined' && isConfigValid) {
+  import('./firebase-app-check')
+    .then((mod) => mod.initFirebaseAppCheck())
+    .catch(err => console.warn('[AppCheck] Failed to load module:', err));
+}
+
 export { app, db, auth, storage, isConfigValid, firebaseConfig as config };

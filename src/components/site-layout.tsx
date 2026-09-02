@@ -78,6 +78,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "./ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { NotificationBell } from "./common/notification-bell";
+import { GlobalSearch } from "./common/global-search";
 import { cn } from "@/lib/utils";
 
 import { ALL_MENU_ITEMS, MenuItem, SubMenuItem } from "@/constants/navigation";
@@ -444,6 +445,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-sm font-black tracking-tight text-slate-900 uppercase">Gestion CNRCT</span>
           </div>
           <div className="ml-auto flex items-center gap-4">
+            <GlobalSearch />
             <NotificationBell />
           </div>
         </header>

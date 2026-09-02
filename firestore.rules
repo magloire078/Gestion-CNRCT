@@ -71,7 +71,7 @@ service cloud.firestore {
       allow update: if can('settings', 'update');
     }
 
-    match /audit_log/{id} {
+    match /audit_logs/{id} {
       allow read: if can('audit-log', 'read');
       allow create: if isSignedIn();
     }
@@ -243,8 +243,9 @@ service cloud.firestore {
     
     match /notifications/{id} { 
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.userId == 'all');
-      allow create, update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow create: if isSuperAdmin(); // Seul le système/admin devrait créer des notifs
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']); // L'utilisateur ne peut que marquer comme lue
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid; // L'utilisateur ne peut supprimer que ses propres notifs
     }
 
     match /tickets/{id} { 

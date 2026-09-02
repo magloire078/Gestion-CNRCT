@@ -13,6 +13,11 @@ import {
     updatePassword,
     EmailAuthProvider,
     reauthenticateWithCredential,
+    multiFactor,
+    TotpMultiFactorGenerator,
+    getMultiFactorResolver,
+    type MultiFactorResolver,
+    type MultiFactorError,
     type User as FirebaseUser
 } from 'firebase/auth';
 import { uploadToCloudinary } from '@/lib/cloudinary';
@@ -203,8 +208,25 @@ export async function signIn(email: string, password: string): Promise<User> {
             }
         }
 
+        try {
+            const { logAuditAction } = await import('@/lib/audit');
+            await logAuditAction({
+                collection: 'users',
+                documentId: user.uid,
+                action: 'LOGIN',
+                userId: user.uid,
+                userEmail: user.email || undefined,
+            });
+        } catch (e) {
+            console.warn("[AuthService] Failed to log login action", e);
+        }
+
         return userProfile;
     } catch (error: any) {
+        if (error.code === 'auth/multi-factor-auth-required') {
+            const resolver = getMultiFactorResolver(auth, error);
+            throw { code: 'auth/multi-factor-auth-required', resolver };
+        }
         console.error("[AuthService] SignIn Error:", {
             code: error.code,
             message: error.message,
@@ -216,7 +238,77 @@ export async function signIn(email: string, password: string): Promise<User> {
     }
 }
 
+// --- MFA TOTP Logic ---
+
+export async function generateTotpSecret(userEmail: string) {
+    const user = auth.currentUser;
+    if (!user) throw new Error("Utilisateur non authentifié.");
+
+    const multiFactorSession = await multiFactor(user).getSession();
+    const totpSecret = await TotpMultiFactorGenerator.generateSecret(multiFactorSession);
+    
+    // We can generate a QR code URL
+    const qrCodeUrl = totpSecret.generateQrCodeUrl(userEmail, "CNRCT Intranet");
+    
+    return { totpSecret, qrCodeUrl, secretKey: totpSecret.secretKey };
+}
+
+export async function verifyTotpEnrollment(totpSecret: any, verificationCode: string, displayName: string = "Mon Authenticator"): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("Utilisateur non authentifié.");
+
+    const multiFactorAssertion = TotpMultiFactorGenerator.assertionForEnrollment(totpSecret, verificationCode);
+    await multiFactor(user).enroll(multiFactorAssertion, displayName);
+}
+
+export async function verifyTotpSignIn(resolver: MultiFactorResolver, verificationCode: string): Promise<User> {
+    // Find the TOTP hint
+    const hint = resolver.hints.find(h => h.factorId === TotpMultiFactorGenerator.FACTOR_ID);
+    if (!hint) {
+        throw new Error("Aucun facteur TOTP trouvé pour cet utilisateur.");
+    }
+
+    const multiFactorAssertion = TotpMultiFactorGenerator.assertionForSignIn(hint.uid, verificationCode);
+    const userCredential = await resolver.resolveSignIn(multiFactorAssertion);
+    const user = userCredential.user;
+
+    let userProfile = await getUserProfile(user.uid);
+    if (!userProfile) {
+        throw new Error("profile-creation-failed");
+    }
+
+    try {
+        const { logAuditAction } = await import('@/lib/audit');
+        await logAuditAction({
+            collection: 'users',
+            documentId: user.uid,
+            action: 'LOGIN',
+            userId: user.uid,
+            userEmail: user.email || undefined,
+        });
+    } catch (e) {}
+
+    return userProfile;
+}
+
+// --- End MFA Logic ---
+
 export async function signOut(): Promise<void> {
+    const user = auth.currentUser;
+    if (user) {
+        try {
+            const { logAuditAction } = await import('@/lib/audit');
+            await logAuditAction({
+                collection: 'users',
+                documentId: user.uid,
+                action: 'LOGOUT',
+                userId: user.uid,
+                userEmail: user.email || undefined,
+            });
+        } catch (e) {
+            console.warn("[AuthService] Failed to log logout action", e);
+        }
+    }
     await firebaseSignOut(auth);
 }
 

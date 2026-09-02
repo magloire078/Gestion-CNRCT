@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { requireAuth } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,8 +8,10 @@ export const dynamic = 'force-dynamic';
  * API pour récupérer l'annuaire simplifié des employés.
  * Exclut volontairement les champs sensibles (salaires, banques, etc.)
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { errorResponse } = await requireAuth(req);
+    if (errorResponse) return errorResponse;
     // Note: Pour plus de sécurité, on pourrait vérifier le token ID ici.
     // Cependant, pour cette phase, nous nous concentrons sur le filtrage des données.
 

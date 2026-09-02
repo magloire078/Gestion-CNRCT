@@ -24,6 +24,9 @@ export { app, db, auth, storage, isConfigValid };
 // Export the wrapped onSnapshot that waits for Auth
 export { onSnapshot } from './firestore-wrapper';
 
+// Export wrapped mutation functions with audit logs
+export { addDoc, setDoc, updateDoc, deleteDoc } from './audit-wrapper';
+
 // Re-export Firestore functions for services
 export {
   collection,
@@ -31,14 +34,10 @@ export {
   doc,
   getDoc,
   getDocs,
-  setDoc,
-  updateDoc,
-  deleteDoc,
   query,
   where,
   orderBy,
   limit,
-  addDoc,
   type DocumentData,
   type QuerySnapshot,
   type QueryDocumentSnapshot,

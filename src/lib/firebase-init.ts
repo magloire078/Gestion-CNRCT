@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // Helper to sanitize environment variables that might contain literal quotes
 const sanitize = (val: any) => {
@@ -43,6 +44,22 @@ const finalConfig = isConfigValid ? firebaseConfig : {
 
 // Initialize Firebase App (singleton pattern)
 const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
+
+if (typeof window !== 'undefined' && isConfigValid) {
+  // En mode développement, on peut utiliser un token de debug
+  if (process.env.NODE_ENV === 'development') {
+    (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  }
+  
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''),
+      isTokenAutoRefreshEnabled: true
+    });
+  } catch (error) {
+    console.warn("Failed to initialize AppCheck", error);
+  }
+}
 
 // Initialize Firestore with persistent multi-tab cache only on the client
 let db: ReturnType<typeof getFirestore>;

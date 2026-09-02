@@ -1,8 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireSuperAdmin } from '@/lib/api-auth';
 import { collection, addDoc, query, where, getDocs, db, writeBatch, doc } from '@/lib/firebase';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
+        const { errorResponse } = await requireSuperAdmin(req);
+        if (errorResponse) return errorResponse;
+
         const villages = [
             "Abodagui",
             "Adamagui",

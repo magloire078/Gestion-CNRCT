@@ -3,6 +3,7 @@
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc, deleteDoc } from '@/lib/firebase';
 import type { Conflict, ConflictComment, ConflictStatus } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { createNotification } from './notification-service';
 
 const conflictsCollection = collection(db, 'conflicts');
 
@@ -90,6 +91,14 @@ export async function addConflict(conflictDataToAdd: Omit<Conflict, 'id'>): Prom
         trackingId,
         createdAt: new Date().toISOString()
     });
+
+    createNotification({
+        userId: 'manager',
+        title: 'Nouveau conflit déclaré',
+        description: `Conflit ${trackingId} : ${conflictDataToAdd.title}`,
+        href: `/conflicts/${docRef.id}`
+    }).catch(e => console.warn('Failed to notify about new conflict', e));
+
     return { id: docRef.id, ...conflictDataToAdd, trackingId };
 }
 
@@ -157,4 +166,11 @@ export async function updateConflictStatus(id: string, status: ConflictStatus, a
         ...updateData,
         comments: arrayUnion(systemComment)
     });
+
+    createNotification({
+        userId: 'manager',
+        title: 'Statut de conflit modifié',
+        description: `Le conflit a été passé en statut : ${status} par ${author}`,
+        href: `/conflicts/${id}`
+    }).catch(e => console.warn('Failed to notify about conflict status', e));
 }

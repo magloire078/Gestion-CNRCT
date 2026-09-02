@@ -14,6 +14,7 @@ import { getDirections } from './direction-service';
 import { getServices } from './service-service';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { recalculateSalaryChain, getEmployeeHistory } from './employee-history-service';
+import { createNotification } from './notification-service';
 
 import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
 import { parseISO, addYears, format, isValid } from 'date-fns';
@@ -321,7 +322,19 @@ export async function getEmployees(): Promise<Employe[]> {
  */
 export async function getEmployeeDirectory(): Promise<Employe[]> {
     try {
-        const response = await fetch('/api/employees/directory');
+        let headers: HeadersInit = {};
+        try {
+            const { getAuth } = await import('firebase/auth');
+            const auth = getAuth();
+            if (auth.currentUser) {
+                const token = await auth.currentUser.getIdToken();
+                headers = { 'Authorization': `Bearer ${token}` };
+            }
+        } catch (authErr) {
+            console.warn('[EmployeeService] Auth not available for directory fetch');
+        }
+
+        const response = await fetch('/api/employees/directory', { headers });
         if (!response.ok) {
             console.warn('[EmployeeService] Directory API failed, falling back to client-side fetch');
             return await getEmployees();
@@ -443,6 +456,14 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
         createOrUpdateChiefFromEmployee(newEmployee).catch(err => 
             console.error("Failed to sync chief from employee:", err)
         );
+
+        // Notify managers about new employee
+        createNotification({
+            userId: 'manager',
+            title: 'Nouvel employé ajouté',
+            description: `${newEmployee.firstName} ${newEmployee.lastName} a été ajouté au système.`,
+            href: `/employees/${newEmployee.id}`
+        }).catch(e => console.warn('Notification failed:', e));
 
         return newEmployee;
     } catch (error: any) {

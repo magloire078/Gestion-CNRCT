@@ -8,6 +8,7 @@ import { getEmployees } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 
 import { Button } from "@/components/ui/button";
@@ -501,7 +502,7 @@ Decision Numero: 015/CNRCT/DIR/P.
                        <div 
                          id="generated-document-display" 
                          className="p-4 text-sm rounded-md bg-white border font-serif h-[400px] overflow-auto"
-                         dangerouslySetInnerHTML={{ __html: state.document }}
+                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(state.document) }}
                        />
                     ) : (
                       <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
@@ -695,7 +696,7 @@ Decision Numero: 015/CNRCT/DIR/P.
             <CardContent className="flex-grow overflow-auto p-6 bg-muted/10 font-serif text-sm leading-relaxed max-h-[500px]">
               <div 
                 className="border bg-white p-8 max-w-[210mm] mx-auto shadow-sm"
-                dangerouslySetInnerHTML={{ __html: selectedHistoryDoc.generatedText }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedHistoryDoc.generatedText) }}
               />
             </CardContent>
             <CardFooter className="gap-2 justify-end border-t pt-4">
@@ -728,7 +729,7 @@ Decision Numero: 015/CNRCT/DIR/P.
                  <DocumentLayout>
                     <div 
                       className="text-sm font-serif bg-white text-black p-2"
-                      dangerouslySetInnerHTML={{ __html: formattedDocument || '' }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(formattedDocument || '') }}
                     />
                  </DocumentLayout>
             )}

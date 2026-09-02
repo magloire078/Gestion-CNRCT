@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { subscribeToPublishedNews, incrementNewsView } from '@/services/news-service';
 import type { NewsItem } from '@/types/common';
 import type { Chief } from '@/lib/data';
@@ -266,7 +267,7 @@ export function NewsFeed({ directoireMembers = [] }: NewsFeedProps) {
                                     {/* Content */}
                                     <div
                                         className="prose prose-sm md:prose-base prose-neutral dark:prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: selectedNews.content }}
+                                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedNews.content) }}
                                     />
 
                                     {/* Tags */}

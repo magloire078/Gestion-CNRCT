@@ -119,8 +119,25 @@ export function NotificationBell() {
             </div>
           )}
         </ScrollArea>
-        <div className="p-3 bg-slate-50/50 border-t border-slate-100 text-center">
-           <button className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 transition-colors">Tout marquer comme lu</button>
+        <div className="p-3 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
+          <Link 
+            href="/notifications" 
+            className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-600 hover:text-blue-800 transition-colors"
+            onClick={() => setIsOpen(false)}
+          >
+            Voir tout l'historique
+          </Link>
+          {unreadCount > 0 && (
+            <button 
+              className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 transition-colors"
+              onClick={async () => {
+                const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
+                await markNotificationsAsRead(unreadIds);
+              }}
+            >
+              Tout marquer comme lu
+            </button>
+          )}
         </div>
       </PopoverContent>
     </Popover>

@@ -45,3 +45,18 @@ firebase-debug.log
 firestore-debug.log
 .env*.local
 .firebase/
+
+# secrets — NE JAMAIS COMMITER
+serviceAccountKey.json
+*serviceAccount*.json
+*service-account*.json
+*.serviceAccount.json
+*.key.json
+gcp-*-key.json
+firebase-adminsdk-*.json
+# fichiers de credentials divers
+credentials.json
+gha-creds-*.json
+client_secret*.json
+# exception : fichiers d'exemple sans secrets
+!*.example.json

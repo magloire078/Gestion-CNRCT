@@ -42,12 +42,6 @@ service cloud.firestore {
          getRoleData(user.roleId).get(['resourcePermissions', res, act], null) == true);
     }
 
-    // --- TEMPORARY DEBUG ACCESS ---
-    match /{document=**} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
     // --- SYSTEM & ADMIN ---
     
     match /roles/{roleId} {

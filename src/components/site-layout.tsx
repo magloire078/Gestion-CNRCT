@@ -425,6 +425,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                   <span>Paramètres</span>
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings/security">
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  <span>Sécurité (MFA)</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />

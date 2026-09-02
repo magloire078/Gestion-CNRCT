@@ -4,6 +4,21 @@
 
 Merci d'envoyer un e-mail à l'administrateur du projet plutôt que d'ouvrir une issue publique. Les vulnérabilités reçoivent une réponse initiale sous 72 heures et un correctif est proposé selon la gravité.
 
+## Authentification à deux facteurs (MFA)
+
+Le code applicatif est prêt pour la MFA par TOTP (application authentificatrice : Google/Microsoft Authenticator, 1Password, Authy…). Chaque utilisateur peut activer/désactiver son second facteur depuis **Profil → Sécurité (MFA)** (`/settings/security`).
+
+**⚠️ Activation côté Firebase requise avant tout usage** :
+
+1. Ouvrir la [Firebase Console](https://console.firebase.google.com/) → projet CNRCT
+2. Authentication → Sign-in method → **Multi-factor authentication**
+3. Activer **TOTP** comme second facteur
+4. Sauvegarder
+
+Sans cette activation, la page `/settings/security` renverra une erreur au moment de générer le QR code (`auth/operation-not-allowed`).
+
+**Recommandation** : activer la MFA sur tous les comptes super-admin, dirigeant et administrateur RH — ce sont les premiers ciblés par du phishing.
+
 ## Bonnes pratiques pour les contributeurs
 
 ### Ne jamais commiter de secrets

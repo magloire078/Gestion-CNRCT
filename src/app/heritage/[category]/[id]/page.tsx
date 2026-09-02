@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getHeritageItem, deleteHeritageItem } from "@/services/heritage-service";
+import { logAudit } from "@/services/audit-log-service";
 import type { HeritageItem, HeritageCategory } from "@/types/heritage";
 import { heritageCategoryLabels } from "@/types/heritage";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
@@ -59,7 +60,21 @@ export default function HeritageDetailPage() {
     const handleDelete = async () => {
         if (!id) return;
         try {
+            const snapshot = item ? { ...item } : null;
             await deleteHeritageItem(id as string);
+            void logAudit({
+                action: 'delete',
+                resource: 'heritage',
+                resourceId: id as string,
+                resourceLabel: snapshot?.name || (id as string),
+                summary: `Retrait de ${snapshot?.name || id} (${category})`,
+                beforeSnapshot: snapshot ? {
+                    category: snapshot.category,
+                    region: snapshot.region,
+                    village: snapshot.village,
+                    ethnicGroup: snapshot.ethnicGroup,
+                } : undefined,
+            });
             toast({
                 title: "Élément archivé",
                 description: "L'élément a été retiré du répertoire national.",

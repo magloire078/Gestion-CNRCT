@@ -50,6 +50,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import type { Chief } from "@/types/chief";
 import { subscribeToChiefs, addChief, deleteChief } from "@/services/chief-service";
+import { logAudit } from "@/services/audit-log-service";
 import { AddChiefSheet } from "@/components/chiefs/add-chief-sheet";
 import { Badge } from "@/components/ui/badge";
 import Papa from "papaparse";
@@ -115,7 +116,22 @@ export default function ChiefsPage() {
 
   const handleAddChief = async (newChiefData: Omit<Chief, "id">, photoFile: File | null) => {
     try {
-      await addChief(newChiefData, photoFile);
+      const created = await addChief(newChiefData, photoFile);
+      void logAudit({
+        action: 'create',
+        resource: 'chief',
+        resourceId: (created as any)?.id,
+        resourceLabel: newChiefData.name,
+        summary: `Nouveau chef : ${newChiefData.name} — ${newChiefData.role} de ${newChiefData.village}`,
+        afterSnapshot: {
+          role: newChiefData.role,
+          village: newChiefData.village,
+          region: newChiefData.region,
+          department: newChiefData.department,
+          subPrefecture: newChiefData.subPrefecture,
+          ethnicGroup: newChiefData.ethnicGroup,
+        },
+      });
       setIsSheetOpen(false);
       toast({
         title: "Chef ajouté",
@@ -130,7 +146,21 @@ export default function ChiefsPage() {
   const handleDeleteChief = async () => {
     if (!deleteTarget) return;
     try {
+      const snapshot = { ...deleteTarget };
       await deleteChief(deleteTarget.id);
+      void logAudit({
+        action: 'delete',
+        resource: 'chief',
+        resourceId: deleteTarget.id,
+        resourceLabel: deleteTarget.name,
+        summary: `Retrait du chef ${deleteTarget.name} (${deleteTarget.role} de ${deleteTarget.village})`,
+        beforeSnapshot: {
+          role: snapshot.role,
+          village: snapshot.village,
+          region: snapshot.region,
+          department: snapshot.department,
+        },
+      });
       toast({
         title: "Chef supprimé",
         description: `${deleteTarget.name} a été retiré du répertoire.`,

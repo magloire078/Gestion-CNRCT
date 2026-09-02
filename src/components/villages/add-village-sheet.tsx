@@ -39,6 +39,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { addVillage } from "@/services/village-service";
+import { logAudit } from "@/services/audit-log-service";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { calculateDevelopmentScore } from "@/services/village-service";
@@ -194,7 +195,20 @@ export function AddVillageSheet() {
                 }
             });
 
-            await addVillage(finalData as any);
+            const created = await addVillage(finalData as any);
+            void logAudit({
+                action: 'create',
+                resource: 'village',
+                resourceId: (created as any)?.id,
+                resourceLabel: values.name,
+                summary: `Nouveau village : ${values.name} (${values.region || '?'})`,
+                afterSnapshot: {
+                    region: values.region,
+                    department: values.department,
+                    subPrefecture: values.subPrefecture,
+                    codeINS: values.codeINS,
+                },
+            });
             toast({
                 title: "Village ajouté",
                 description: `Le village ${values.name} a été créé avec succès.`,

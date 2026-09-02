@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { subscribeToHeritage, deleteHeritageItem, addHeritageItem } from "@/services/heritage-service";
+import { logAudit } from "@/services/audit-log-service";
 import type { HeritageItem, HeritageCategory } from "@/types/heritage";
 import { heritageCategoryLabels } from "@/types/heritage";
 import { AddHeritageItemSheet } from "@/components/heritage/add-heritage-item-sheet";
@@ -114,7 +115,20 @@ export default function HeritageCategoryPage() {
 
     const handleAddItem = async (data: Omit<HeritageItem, "id">) => {
         try {
-            await addHeritageItem(data);
+            const created = await addHeritageItem(data);
+            void logAudit({
+                action: 'create',
+                resource: 'heritage',
+                resourceId: (created as any)?.id,
+                resourceLabel: data.name,
+                summary: `Nouvel élément patrimoine : ${data.name} (${categoryLabel})`,
+                afterSnapshot: {
+                    category: data.category,
+                    region: data.region,
+                    village: data.village,
+                    ethnicGroup: data.ethnicGroup,
+                },
+            });
             toast({
                 title: "Enregistrement réussi",
                 description: `${data.name} a été ajouté au répertoire.`,
@@ -131,7 +145,21 @@ export default function HeritageCategoryPage() {
     const handleDelete = async () => {
         if (!deleteTarget) return;
         try {
+            const snapshot = { ...deleteTarget };
             await deleteHeritageItem(deleteTarget.id);
+            void logAudit({
+                action: 'delete',
+                resource: 'heritage',
+                resourceId: deleteTarget.id,
+                resourceLabel: deleteTarget.name,
+                summary: `Retrait de ${deleteTarget.name} (${categoryLabel})`,
+                beforeSnapshot: {
+                    category: snapshot.category,
+                    region: snapshot.region,
+                    village: snapshot.village,
+                    ethnicGroup: snapshot.ethnicGroup,
+                },
+            });
             toast({
                 title: "Suppression réussie",
                 description: `${deleteTarget.name} a été retiré du répertoire.`,

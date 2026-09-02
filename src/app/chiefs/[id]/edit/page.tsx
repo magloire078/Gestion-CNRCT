@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { getChief, updateChief } from "@/services/chief-service";
+import { logAudit } from "@/services/audit-log-service";
 import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent } from "@/types/chief";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { IVORIAN_REGIONS } from "@/constants/regions";
@@ -190,6 +191,20 @@ export default function EditChiefPage() {
             if (longitude !== '') updateData.longitude = Number(longitude);
 
             await updateChief(id, updateData, photoFile);
+            void logAudit({
+                action: 'update',
+                resource: 'chief',
+                resourceId: id,
+                resourceLabel: updateData.name || id,
+                summary: `Modification de la fiche : ${updateData.name || id}`,
+                details: {
+                    role: updateData.role,
+                    village: updateData.village,
+                    region: updateData.region,
+                    updatedFields: Object.keys(updateData),
+                    photoChanged: !!photoFile,
+                },
+            });
             toast({ title: "Modifications enregistrées", description: "La fiche du chef a été mise à jour avec succès." });
             router.push(`/chiefs/${id}`);
         } catch (err: any) {

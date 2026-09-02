@@ -38,6 +38,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { updateVillage } from "@/services/village-service";
+import { logAudit } from "@/services/audit-log-service";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { calculateDevelopmentScore } from "@/services/village-service";
@@ -245,7 +246,15 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
             });
 
             await updateVillage(village.id, finalData as any);
-            
+            void logAudit({
+                action: 'update',
+                resource: 'village',
+                resourceId: village.id,
+                resourceLabel: values.name,
+                summary: `Modification du village ${values.name}`,
+                details: { updatedFields: Object.keys(finalData) },
+            });
+
             toast({
                 title: "Village mis à jour",
                 description: `Le village ${values.name} a été modifié avec succès.`,

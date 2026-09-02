@@ -1,12 +1,15 @@
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { requireSuperAdmin } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 const db = adminDb;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+    const auth = await requireSuperAdmin(req);
+    if (!auth.ok) return auth.response;
     try {
         const OLD_NAMES = [
             "Fourniture de bureau et documentation",

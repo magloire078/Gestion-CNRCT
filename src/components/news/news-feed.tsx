@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import { subscribeToPublishedNews, incrementNewsView } from '@/services/news-service';
 import type { NewsItem } from '@/types/common';
 import type { Chief } from '@/lib/data';
@@ -263,10 +264,15 @@ export function NewsFeed({ directoireMembers = [] }: NewsFeedProps) {
                                         </div>
                                     </div>
 
-                                    {/* Content */}
+                                    {/* Content — sanitized to prevent XSS from malicious authors */}
                                     <div
                                         className="prose prose-sm md:prose-base prose-neutral dark:prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: selectedNews.content }}
+                                        dangerouslySetInnerHTML={{
+                                            __html: DOMPurify.sanitize(selectedNews.content, {
+                                                FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'meta', 'link'],
+                                                FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'onchange', 'onsubmit', 'formaction'],
+                                            }),
+                                        }}
                                     />
 
                                     {/* Tags */}

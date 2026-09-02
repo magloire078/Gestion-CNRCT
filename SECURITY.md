@@ -1,21 +1,73 @@
-# Security Policy
+# Politique de sécurité
 
-## Supported Versions
+## Signaler une vulnérabilité
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Merci d'envoyer un e-mail à l'administrateur du projet plutôt que d'ouvrir une issue publique. Les vulnérabilités reçoivent une réponse initiale sous 72 heures et un correctif est proposé selon la gravité.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+## Bonnes pratiques pour les contributeurs
 
-## Reporting a Vulnerability
+### Ne jamais commiter de secrets
 
-Use this section to tell people how to report a vulnerability.
+Les fichiers suivants sont **ignorés par `.gitignore` et bloqués par le pre-commit hook** :
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+- `serviceAccountKey.json` (Firebase Admin SDK)
+- `.env`, `.env.local`, `.env.production`
+- `credentials.json`, `client_secret*.json`
+- Tout fichier matchant `*serviceAccount*.json`, `firebase-adminsdk-*.json`, `*.key.json`
+
+Pour l'exemple d'un fichier de credentials, voir [`serviceAccountKey.example.json`](./serviceAccountKey.example.json).
+
+### Activer le pre-commit hook anti-secrets
+
+Après avoir cloné le repo (une seule fois) :
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Le hook `.githooks/pre-commit` scanne chaque commit pour bloquer :
+
+- Clés API Google (`AIza...`)
+- Clés privées PEM (`-----BEGIN … PRIVATE KEY-----`)
+- Tokens AWS, GitHub, OpenAI, Slack
+- Emails de service Firebase Admin
+
+### Routes API
+
+Toute nouvelle route dans `src/app/api/**/route.ts` DOIT commencer par un helper d'auth :
+
+```typescript
+import { requireAuth, requireSuperAdmin } from '@/lib/api-auth';
+
+export async function GET(req: NextRequest) {
+  const auth = await requireAuth(req);        // ou requireSuperAdmin
+  if (!auth.ok) return auth.response;
+  // ...
+}
+```
+
+Un endpoint sans cette vérification est **exposé à Internet sans authentification** dès son déploiement.
+
+### Rendu de HTML utilisateur
+
+Ne jamais utiliser `dangerouslySetInnerHTML` avec du contenu venu d'un utilisateur sans sanitisation. Utiliser :
+
+```typescript
+import DOMPurify from 'isomorphic-dompurify';
+
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />
+```
+
+### Règles Firestore
+
+Toute modification de `firestore.rules` doit être testée localement avec l'émulateur :
+
+```bash
+firebase emulators:start --only firestore
+```
+
+Ne jamais introduire de `match /{document=**} { allow read: if true; }` — c'est le pattern qui a exposé toute la base en octobre 2025.
+
+## Incident historique
+
+En cas de fuite de clés/tokens dans l'historique git, voir la procédure de purge dans [`docs/SECURITY-INCIDENT-KEYS.md`](./docs/SECURITY-INCIDENT-KEYS.md).

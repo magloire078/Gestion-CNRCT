@@ -1,15 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { requireAuth } from '@/lib/api-auth';
 
 /**
  * API pour récupérer l'annuaire simplifié des employés.
  * Exclut volontairement les champs sensibles (salaires, banques, etc.)
+ * Nécessite un ID token Firebase valide (Bearer) — voir src/lib/api-auth.ts
  */
-export async function GET() {
-  try {
-    // Note: Pour plus de sécurité, on pourrait vérifier le token ID ici.
-    // Cependant, pour cette phase, nous nous concentrons sur le filtrage des données.
+export async function GET(req: NextRequest) {
+  const auth = await requireAuth(req);
+  if (!auth.ok) return auth.response;
 
+  try {
     if (!adminDb) {
       console.error('[API Employees Directory] adminDb is not initialized');
       return NextResponse.json({ error: 'Database service unavailable' }, { status: 503 });

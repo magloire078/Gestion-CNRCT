@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook — bloque tout commit contenant un pattern de secret.
+# Activation :
+#   git config core.hooksPath .githooks
+#
+# Pour bypasser exceptionnellement (à éviter) :
+#   git commit --no-verify
+
+set -e
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$STAGED" ] && exit 0
+
+# Patterns de secrets à détecter dans le contenu des fichiers stagés
+PATTERNS=(
+    'AIza[0-9A-Za-z_-]{35}'                                # Google API key
+    '-----BEGIN [A-Z ]*PRIVATE KEY-----'                   # PEM private keys
+    '"private_key"\s*:\s*"-----BEGIN'                      # Service account JSON
+    'AKIA[0-9A-Z]{16}'                                     # AWS access key
+    'ASIA[0-9A-Z]{16}'                                     # AWS session token
+    'ghp_[0-9A-Za-z]{36}'                                  # GitHub personal token
+    'gho_[0-9A-Za-z]{36}'                                  # GitHub OAuth token
+    'ghs_[0-9A-Za-z]{36}'                                  # GitHub server token
+    'sk-[A-Za-z0-9]{20,}'                                  # OpenAI / Anthropic-style keys
+    'xox[baprs]-[0-9A-Za-z-]{10,}'                         # Slack tokens
+    'firebase-adminsdk-[a-z0-9]+@[a-z0-9-]+\.iam'          # Firebase admin SDK email
+)
+
+# Fichiers à ne JAMAIS committer même vides ou "modifiés"
+FORBIDDEN_FILES=(
+    'serviceAccountKey.json'
+    'credentials.json'
+    '.env'
+    '.env.local'
+    '.env.production'
+    '.env.production.local'
+)
+
+ERR=0
+
+for file in $STAGED; do
+    # 1. Fichiers interdits
+    for forbidden in "${FORBIDDEN_FILES[@]}"; do
+        if [ "$file" = "$forbidden" ]; then
+            echo "❌ BLOQUÉ : $file ne doit jamais être committé."
+            ERR=1
+        fi
+    done
+
+    # 2. Patterns de secrets dans le contenu (fichiers texte seulement)
+    if git diff --cached "$file" 2>/dev/null | grep -qE '^[+]'; then
+        for pattern in "${PATTERNS[@]}"; do
+            if git diff --cached "$file" 2>/dev/null | grep -E "^\+" | grep -qE "$pattern"; then
+                echo "❌ BLOQUÉ : $file semble contenir un secret (motif : $pattern)"
+                ERR=1
+            fi
+        done
+    fi
+done
+
+if [ $ERR -ne 0 ]; then
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Un ou plusieurs secrets ont été détectés dans votre commit."
+    echo "  Retirez-les avant de recommencer."
+    echo "  Si c'est un faux positif, contournez avec :  git commit --no-verify"
+    echo "════════════════════════════════════════════════════════════════"
+    exit 1
+fi
+
+exit 0

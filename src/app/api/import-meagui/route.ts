@@ -1,7 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { collection, addDoc, query, where, getDocs, db, writeBatch, doc } from '@/lib/firebase';
+import { requireSuperAdmin } from '@/lib/api-auth';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+    const auth = await requireSuperAdmin(req);
+    if (!auth.ok) return auth.response;
     try {
         const villages = [
             "Abodagui",

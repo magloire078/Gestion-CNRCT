@@ -203,6 +203,21 @@ export async function signIn(email: string, password: string): Promise<User> {
             }
         }
 
+        // Journalise la connexion réussie dans l'audit trail.
+        // Import dynamique pour éviter les cycles avec les services qui
+        // logAudit → auth → logAudit.
+        try {
+            const { logAudit } = await import('./audit-log-service');
+            void logAudit({
+                action: 'login',
+                resource: 'user',
+                resourceId: user.uid,
+                resourceLabel: userProfile?.name || user.email || user.uid,
+                summary: `Connexion : ${userProfile?.name || user.email}`,
+                details: { email: user.email, provider: userCredential.providerId || 'password' },
+            });
+        } catch {}
+
         return userProfile;
     } catch (error: any) {
         console.error("[AuthService] SignIn Error:", {
@@ -212,11 +227,38 @@ export async function signIn(email: string, password: string): Promise<User> {
             stack: error.stack,
             errorObject: error
         });
+        // Journalise l'échec — utile pour détecter les tentatives d'intrusion.
+        try {
+            const { logAudit } = await import('./audit-log-service');
+            void logAudit({
+                action: 'login',
+                resource: 'user',
+                resourceLabel: email,
+                summary: `Échec de connexion : ${email}`,
+                details: { email, errorCode: error?.code, errorMessage: error?.message },
+            });
+        } catch {}
         throw error;
     }
 }
 
 export async function signOut(): Promise<void> {
+    // Journalise avant la déconnexion (l'utilisateur est encore auth pour logAudit).
+    try {
+        const { logAudit } = await import('./audit-log-service');
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            void logAudit({
+                action: 'logout',
+                resource: 'user',
+                resourceId: currentUser.uid,
+                resourceLabel: currentUser.displayName || currentUser.email || currentUser.uid,
+                summary: `Déconnexion : ${currentUser.displayName || currentUser.email}`,
+            });
+            // Petit délai pour laisser Firestore accepter le write avant de perdre l'auth.
+            await new Promise((r) => setTimeout(r, 100));
+        }
+    } catch {}
     await firebaseSignOut(auth);
 }
 

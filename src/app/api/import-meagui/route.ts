@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { collection, addDoc, query, where, getDocs, db, writeBatch, doc } from '@/lib/firebase';
 import { requireSuperAdmin } from '@/lib/api-auth';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(req: NextRequest) {
+    // Endpoint d'import ponctuel : 3 requêtes / IP / heure
+    const rl = rateLimit(req, { max: 3, windowMs: 3_600_000 });
+    if (!rl.ok) return rl.response;
+
     const auth = await requireSuperAdmin(req);
     if (!auth.ok) return auth.response;
     try {

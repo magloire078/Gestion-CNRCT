@@ -2,12 +2,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { requireSuperAdmin } from '@/lib/api-auth';
+import { rateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 const db = adminDb;
 
 export async function GET(req: NextRequest) {
+    // Endpoint de migration : très restrictif, 5 requêtes / IP / heure
+    const rl = rateLimit(req, { max: 5, windowMs: 3_600_000 });
+    if (!rl.ok) return rl.response;
+
     const auth = await requireSuperAdmin(req);
     if (!auth.ok) return auth.response;
     try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { requireAuth } from '@/lib/api-auth';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * API pour récupérer l'annuaire simplifié des employés.
@@ -8,6 +9,10 @@ import { requireAuth } from '@/lib/api-auth';
  * Nécessite un ID token Firebase valide (Bearer) — voir src/lib/api-auth.ts
  */
 export async function GET(req: NextRequest) {
+  // Rate limit : 60 requêtes / IP / minute — largement plus qu'un usage normal.
+  const rl = rateLimit(req, { max: 60, windowMs: 60_000 });
+  if (!rl.ok) return rl.response;
+
   const auth = await requireAuth(req);
   if (!auth.ok) return auth.response;
 

@@ -48,11 +48,25 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts, perio
 
   const localConflicts = useMemo(() => {
       let filtered = conflicts;
+      
+      const parseDateOfFacts = (dof: string | undefined) => {
+          if (!dof) return null;
+          const match = dof.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+          if (match) return `${match[3]}-${match[2]}-${match[1]}`;
+          return null;
+      };
+
       if (startDate) {
-          filtered = filtered.filter(c => c.date >= startDate);
+          filtered = filtered.filter(c => {
+              const d = parseDateOfFacts(c.dateOfFacts);
+              return d ? d >= startDate : true;
+          });
       }
       if (endDate) {
-          filtered = filtered.filter(c => c.date <= endDate);
+          filtered = filtered.filter(c => {
+              const d = parseDateOfFacts(c.dateOfFacts);
+              return d ? d <= endDate : true;
+          });
       }
       return filtered;
   }, [conflicts, startDate, endDate]);

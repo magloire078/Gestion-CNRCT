@@ -95,7 +95,7 @@ export async function addConflict(conflictDataToAdd: Omit<Conflict, 'id'>): Prom
     createNotification({
         userId: 'manager',
         title: 'Nouveau conflit déclaré',
-        description: `Conflit ${trackingId} : ${conflictDataToAdd.title}`,
+        description: `Conflit ${trackingId} : ${conflictDataToAdd.type} à ${conflictDataToAdd.village}`,
         href: `/conflicts/${docRef.id}`
     }).catch(e => console.warn('Failed to notify about new conflict', e));
 

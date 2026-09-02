@@ -3,7 +3,7 @@ import { getChiefs } from './chief-service';
 import { getConflicts } from './conflict-service';
 import { getMissions } from './mission-service';
 import { getVillages } from './village-service';
-import { getHeritageAssets } from './heritage-service';
+import { getAllHeritageItems } from './heritage-service';
 
 export type SearchResultType = 'employee' | 'chief' | 'conflict' | 'mission' | 'village' | 'heritage';
 
@@ -75,16 +75,17 @@ export async function globalSearch(queryText: string, hasPermission: (p: string)
         promises.push(
             getConflicts().then(conflicts => {
                 const matches = conflicts.filter(c => 
-                    (c.title?.toLowerCase() || '').includes(lowerQuery) ||
+                    (c.trackingId?.toLowerCase() || '').includes(lowerQuery) ||
+                    (c.village?.toLowerCase() || '').includes(lowerQuery) ||
                     (c.region?.toLowerCase() || '').includes(lowerQuery) ||
-                    (c.parties?.join(' ')?.toLowerCase() || '').includes(lowerQuery)
+                    (c.parties?.toLowerCase() || '').includes(lowerQuery)
                 ).slice(0, 5);
                 
                 matches.forEach(c => {
                     results.push({
                         id: c.id!,
                         type: 'conflict',
-                        title: c.title || 'Conflit sans titre',
+                        title: c.trackingId ? `Conflit ${c.trackingId}` : `Conflit à ${c.village}`,
                         subtitle: `${c.region || ''} - ${c.status || ''}`,
                         url: `/conflicts/${c.id}`
                     });
@@ -99,7 +100,7 @@ export async function globalSearch(queryText: string, hasPermission: (p: string)
             getMissions().then(missions => {
                 const matches = missions.filter(m => 
                     (m.title?.toLowerCase() || '').includes(lowerQuery) ||
-                    (m.destination?.toLowerCase() || '').includes(lowerQuery)
+                    (m.lieuMission?.toLowerCase() || '').includes(lowerQuery)
                 ).slice(0, 5);
                 
                 matches.forEach(m => {
@@ -107,7 +108,7 @@ export async function globalSearch(queryText: string, hasPermission: (p: string)
                         id: m.id!,
                         type: 'mission',
                         title: m.title || 'Mission',
-                        subtitle: m.destination || '',
+                        subtitle: m.lieuMission || '',
                         url: `/missions/${m.id}`
                     });
                 });
@@ -137,10 +138,9 @@ export async function globalSearch(queryText: string, hasPermission: (p: string)
         );
     }
 
-    // 6. Heritage (Patrimoine)
     if (hasPermission('heritage:read')) {
         promises.push(
-            getHeritageAssets().then(assets => {
+            getAllHeritageItems().then(assets => {
                 const matches = assets.filter(a => 
                     (a.name?.toLowerCase() || '').includes(lowerQuery) ||
                     (a.category?.toLowerCase() || '').includes(lowerQuery)

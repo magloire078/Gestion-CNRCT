@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { getAppCheck } from 'firebase-admin/app-check';
 
 export interface AuthContext {
   uid: string;
@@ -37,6 +38,31 @@ async function verifyBearerToken(req: NextRequest): Promise<AuthContext | null> 
   } catch (error) {
     console.error('[API Auth] Error verifying token:', error);
     return null;
+  }
+}
+
+/**
+ * Verifies the App Check token from the X-Firebase-AppCheck header.
+ */
+export async function requireAppCheck(req: NextRequest): Promise<NextResponse | null> {
+  // En dev, on ignore AppCheck si la variable d'env est configurée
+  if (process.env.NODE_ENV === 'development' && process.env.IGNORE_APP_CHECK_IN_DEV === 'true') {
+    return null;
+  }
+
+  const appCheckToken = req.headers.get('X-Firebase-AppCheck');
+
+  if (!appCheckToken) {
+    return NextResponse.json({ error: 'Unauthorized. App Check token missing.' }, { status: 401 });
+  }
+
+  try {
+    const appCheckClaims = await getAppCheck().verifyToken(appCheckToken);
+    // Token is valid
+    return null;
+  } catch (err) {
+    console.error('[API Auth] Error verifying App Check token:', err);
+    return NextResponse.json({ error: 'Unauthorized. Invalid App Check token.' }, { status: 401 });
   }
 }
 

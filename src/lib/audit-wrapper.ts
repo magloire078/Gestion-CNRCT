@@ -7,7 +7,8 @@ import {
   CollectionReference,
   UpdateData,
   WithFieldValue,
-  SetOptions
+  SetOptions,
+  DocumentData
 } from 'firebase/firestore';
 import { logAuditAction } from './audit';
 import { auth } from './firebase-init';
@@ -24,7 +25,7 @@ function extractInfoFromRef(ref: DocumentReference<any, any> | CollectionReferen
   }
 }
 
-export async function addDoc<T, D>(reference: CollectionReference<T, D>, data: WithFieldValue<T>) {
+export async function addDoc<T, D extends DocumentData = DocumentData>(reference: CollectionReference<T, D>, data: WithFieldValue<T>) {
   const result = await firestoreAddDoc(reference, data);
   const info = extractInfoFromRef(reference);
   const user = auth.currentUser;
@@ -41,7 +42,7 @@ export async function addDoc<T, D>(reference: CollectionReference<T, D>, data: W
   return result;
 }
 
-export async function setDoc<T, D>(reference: DocumentReference<T, D>, data: WithFieldValue<T>, options?: SetOptions) {
+export async function setDoc<T, D extends DocumentData = DocumentData>(reference: DocumentReference<T, D>, data: WithFieldValue<T>, options?: SetOptions) {
   const result = options ? await firestoreSetDoc(reference, data, options) : await firestoreSetDoc(reference, data);
   const info = extractInfoFromRef(reference);
   const user = auth.currentUser;
@@ -50,7 +51,7 @@ export async function setDoc<T, D>(reference: DocumentReference<T, D>, data: Wit
     logAuditAction({
       collection: info.collection,
       documentId: info.documentId,
-      action: options?.merge ? 'UPDATE' : 'CREATE',
+      action: options && 'merge' in options && options.merge ? 'UPDATE' : 'CREATE',
       userId: user.uid,
       userEmail: user.email || undefined,
     }).catch(console.error);
@@ -58,7 +59,7 @@ export async function setDoc<T, D>(reference: DocumentReference<T, D>, data: Wit
   return result;
 }
 
-export async function updateDoc<T, D>(reference: DocumentReference<T, D>, data: UpdateData<D>) {
+export async function updateDoc<T, D extends DocumentData = DocumentData>(reference: DocumentReference<T, D>, data: UpdateData<D>) {
   const result = await firestoreUpdateDoc(reference, data as any);
   const info = extractInfoFromRef(reference);
   const user = auth.currentUser;
@@ -75,7 +76,7 @@ export async function updateDoc<T, D>(reference: DocumentReference<T, D>, data: 
   return result;
 }
 
-export async function deleteDoc<T, D>(reference: DocumentReference<T, D>) {
+export async function deleteDoc<T, D extends DocumentData = DocumentData>(reference: DocumentReference<T, D>) {
   const result = await firestoreDeleteDoc(reference);
   const info = extractInfoFromRef(reference);
   const user = auth.currentUser;

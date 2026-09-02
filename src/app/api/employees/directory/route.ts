@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { requireAuth } from '@/lib/api-auth';
+import { requireAuth, requireAppCheck } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,10 +10,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(req: NextRequest) {
   try {
+    const appCheckError = await requireAppCheck(req);
+    if (appCheckError) return appCheckError;
+
     const { errorResponse } = await requireAuth(req);
     if (errorResponse) return errorResponse;
-    // Note: Pour plus de sécurité, on pourrait vérifier le token ID ici.
-    // Cependant, pour cette phase, nous nous concentrons sur le filtrage des données.
 
     if (!adminDb) {
       console.error('[API Employees Directory] adminDb is not initialized');

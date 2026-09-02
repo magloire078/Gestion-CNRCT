@@ -23,7 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { ChevronRight, ShieldAlert, ShieldCheck, Loader2 } from "lucide-react";
 import { PermissionGuard } from "@/components/auth/permission-guard";
-import { useAuth } from "@/components/auth/auth-provider";
+import { useAuth } from "@/hooks/use-auth";
 import { generateTotpSecret, verifyTotpEnrollment } from "@/services/auth-service";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";

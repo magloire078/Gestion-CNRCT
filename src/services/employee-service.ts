@@ -330,8 +330,15 @@ export async function getEmployeeDirectory(): Promise<Employe[]> {
                 const token = await auth.currentUser.getIdToken();
                 headers = { 'Authorization': `Bearer ${token}` };
             }
+            
+            const { getToken } = await import('firebase/app-check');
+            const { appCheck } = await import('@/lib/firebase');
+            if (appCheck) {
+                const appCheckToken = await getToken(appCheck, false);
+                (headers as any)['X-Firebase-AppCheck'] = appCheckToken.token;
+            }
         } catch (authErr) {
-            console.warn('[EmployeeService] Auth not available for directory fetch');
+            console.warn('[EmployeeService] Auth/AppCheck not available for directory fetch');
         }
 
         const response = await fetch('/api/employees/directory', { headers });

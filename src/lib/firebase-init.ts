@@ -45,19 +45,27 @@ const finalConfig = isConfigValid ? firebaseConfig : {
 // Initialize Firebase App (singleton pattern)
 const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
 
+let appCheck: any = null;
+
 if (typeof window !== 'undefined' && isConfigValid) {
-  // En mode développement, on peut utiliser un token de debug
+  // En mode développement, on utilise le token de debug (doit être configuré dans Firebase Console)
   if (process.env.NODE_ENV === 'development') {
-    (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN || true;
   }
   
   try {
-    initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''),
-      isTokenAutoRefreshEnabled: true
-    });
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    if (siteKey) {
+      appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(siteKey),
+        isTokenAutoRefreshEnabled: true
+      });
+      console.log("[Firebase] App Check initialisé avec succès.");
+    } else {
+      console.warn("[Firebase] Clé reCAPTCHA manquante. App Check non initialisé.");
+    }
   } catch (error) {
-    console.warn("Failed to initialize AppCheck", error);
+    console.warn("[Firebase] Échec de l'initialisation AppCheck", error);
   }
 }
 
@@ -81,4 +89,4 @@ try {
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-export { app, db, auth, storage, isConfigValid, firebaseConfig as config };
+export { app, db, auth, storage, isConfigValid, firebaseConfig as config, appCheck };

@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { requireSuperAdmin } from '@/lib/api-auth';
+import { requireSuperAdmin, requireAppCheck } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +9,9 @@ const db = adminDb;
 
 export async function GET(req: NextRequest) {
     try {
+        const appCheckError = await requireAppCheck(req);
+        if (appCheckError) return appCheckError;
+
         const { errorResponse } = await requireSuperAdmin(req);
         if (errorResponse) return errorResponse;
 

@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSuperAdmin } from '@/lib/api-auth';
+import { requireSuperAdmin, requireAppCheck } from '@/lib/api-auth';
 import { collection, addDoc, query, where, getDocs, db, writeBatch, doc } from '@/lib/firebase';
 
 export async function GET(req: NextRequest) {
     try {
+        const appCheckError = await requireAppCheck(req);
+        if (appCheckError) return appCheckError;
+
         const { errorResponse } = await requireSuperAdmin(req);
         if (errorResponse) return errorResponse;
 

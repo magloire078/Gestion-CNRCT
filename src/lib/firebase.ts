@@ -1,5 +1,5 @@
 
-import { app, db, auth, storage, isConfigValid, config } from './firebase-init';
+import { app, db, auth, storage, isConfigValid, config, appCheck } from './firebase-init';
 import { getAnalytics } from "firebase/analytics";
 
 // Initialize Analytics lazily
@@ -19,7 +19,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export { app, db, auth, storage, isConfigValid };
+export { app, db, auth, storage, isConfigValid, appCheck };
 
 // Export the wrapped onSnapshot that waits for Auth
 export { onSnapshot } from './firestore-wrapper';

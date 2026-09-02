@@ -39,6 +39,7 @@ import {
   History,
   Zap,
   HandshakeIcon,
+  ScrollText,
 } from "lucide-react";
 import React from "react";
 
@@ -182,6 +183,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
       { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
       { href: "/documents", label: "Documents", icon: FileText, permission: "page:repository:view" },
       { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
+      { href: "/audit-log", label: "Journal des Activités", icon: ScrollText, permission: "audit-log:read" },
       { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
     ]
   },

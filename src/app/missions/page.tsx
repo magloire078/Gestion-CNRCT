@@ -31,6 +31,7 @@ import { MissionKanbanBoard } from "@/components/missions/mission-kanban-board";
 import { MissionGlobalTimeline } from "@/components/missions/mission-global-timeline";
 import { Input } from "@/components/ui/input";
 import { subscribeToMissions, addMission, deleteMission, updateMission } from "@/services/mission-service";
+import { logAudit } from "@/services/audit-log-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -164,6 +165,14 @@ export default function MissionsPage() {
   const handleAddMission = async (newMissionData: Omit<Mission, "id">) => {
     try {
       const newMission = await addMission(newMissionData);
+      void logAudit({
+        action: 'create',
+        resource: 'mission',
+        resourceId: newMission.id,
+        resourceLabel: newMissionData.title,
+        summary: `Nouvelle mission "${newMissionData.title}"`,
+        afterSnapshot: newMissionData as any,
+      });
       setIsSheetOpen(false);
       toast({
         title: "Mission ajoutée",
@@ -179,7 +188,16 @@ export default function MissionsPage() {
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     try {
+      const snapshot = { ...deleteTarget };
       await deleteMission(deleteTarget.id);
+      void logAudit({
+        action: 'delete',
+        resource: 'mission',
+        resourceId: deleteTarget.id,
+        resourceLabel: deleteTarget.title,
+        summary: `Suppression mission "${deleteTarget.title}"`,
+        beforeSnapshot: snapshot,
+      });
       toast({
         title: "Mission supprimée",
         description: `La mission "${deleteTarget.title}" a été supprimée.`,
@@ -194,7 +212,16 @@ export default function MissionsPage() {
   const handleQuickStatusChange = async (mission: Mission, newStatus: Status) => {
     if (newStatus === mission.status) return;
     try {
+      const previousStatus = mission.status;
       await updateMission(mission.id, { status: newStatus });
+      void logAudit({
+        action: 'status-change',
+        resource: 'mission',
+        resourceId: mission.id,
+        resourceLabel: mission.title,
+        summary: `${mission.title} : ${previousStatus} → ${newStatus}`,
+        details: { from: previousStatus, to: newStatus },
+      });
       toast({ title: "Statut mis à jour", description: `${mission.title} → ${newStatus}` });
     } catch (err) {
       console.error("Quick status change failed:", err);
@@ -206,7 +233,15 @@ export default function MissionsPage() {
     if (selectedIds.size === 0) return;
     setIsBulkDeleting(true);
     try {
-      await Promise.all(Array.from(selectedIds).map(id => deleteMission(id)));
+      const ids = Array.from(selectedIds);
+      const deletedTitles = missions.filter(m => ids.includes(m.id)).map(m => m.title);
+      await Promise.all(ids.map(id => deleteMission(id)));
+      void logAudit({
+        action: 'bulk-delete',
+        resource: 'mission',
+        summary: `Suppression groupée de ${ids.length} mission(s)`,
+        details: { count: ids.length, titles: deletedTitles, ids },
+      });
       toast({ title: "Suppression groupée", description: `${selectedIds.size} mission(s) supprimée(s).` });
       setSelectedIds(new Set());
       setBulkDeleteOpen(false);

@@ -62,6 +62,7 @@ import { EditConflictSheet } from "@/components/conflicts/edit-conflict-sheet";
 import { Input } from "@/components/ui/input";
 import { subscribeToConflicts, addConflict, updateConflict, deleteConflict, updateConflictStatus } from "@/services/conflict-service";
 import { checkAndNotifyForOverdueConflicts } from "@/services/notification-service";
+import { logAudit, diffChanges } from "@/services/audit-log-service";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import type { DateRange } from "react-day-picker";
@@ -286,7 +287,16 @@ export default function ConflictsPage() {
 
     const handleAddConflict = async (newConflictData: Omit<Conflict, "id">) => {
         try {
-            await addConflict(newConflictData);
+            const created = await addConflict(newConflictData);
+            const newId = (created as any)?.id ?? '';
+            void logAudit({
+                action: 'create',
+                resource: 'conflict',
+                resourceId: newId || undefined,
+                resourceLabel: newConflictData.village,
+                summary: `Nouveau conflit à ${newConflictData.village} (${newConflictData.type})`,
+                afterSnapshot: newConflictData,
+            });
             setIsAddSheetOpen(false);
             toast({
                 title: "Conflit ajouté",
@@ -300,7 +310,17 @@ export default function ConflictsPage() {
 
     const handleUpdateConflict = async (id: string, data: Partial<Omit<Conflict, 'id'>>) => {
         try {
+            const before = editingConflict ? { ...editingConflict } : {};
             await updateConflict(id, data);
+            const changes = diffChanges(before as any, data as any);
+            void logAudit({
+                action: 'update',
+                resource: 'conflict',
+                resourceId: id,
+                resourceLabel: editingConflict?.village || 'conflit',
+                summary: `Modification du conflit à ${editingConflict?.village || id}`,
+                details: { changes },
+            });
             setIsEditSheetOpen(false);
             setEditingConflict(null);
             toast({
@@ -327,7 +347,16 @@ export default function ConflictsPage() {
         if (!conflictToDelete) return;
         setIsDeleting(true);
         try {
+            const snapshot = { ...conflictToDelete };
             await deleteConflict(conflictToDelete.id);
+            void logAudit({
+                action: 'delete',
+                resource: 'conflict',
+                resourceId: conflictToDelete.id,
+                resourceLabel: conflictToDelete.village,
+                summary: `Suppression du conflit à ${conflictToDelete.village}`,
+                beforeSnapshot: snapshot,
+            });
             setIsDeleteDialogOpen(false);
             setConflictToDelete(null);
             toast({
@@ -458,7 +487,17 @@ export default function ConflictsPage() {
         if (selectedIds.size === 0) return;
         setIsBulkDeleting(true);
         try {
-            await Promise.all(Array.from(selectedIds).map(id => deleteConflict(id)));
+            const ids = Array.from(selectedIds);
+            const deletedLabels = (conflicts || [])
+                .filter(c => ids.includes(c.id))
+                .map(c => c.village);
+            await Promise.all(ids.map(id => deleteConflict(id)));
+            void logAudit({
+                action: 'bulk-delete',
+                resource: 'conflict',
+                summary: `Suppression groupée de ${ids.length} conflit(s)`,
+                details: { count: ids.length, villages: deletedLabels, ids },
+            });
             toast({ title: "Suppression groupée", description: `${selectedIds.size} dossier(s) supprimé(s).` });
             setSelectedIds(new Set());
             setBulkDeleteDialogOpen(false);
@@ -473,7 +512,16 @@ export default function ConflictsPage() {
         if (newStatus === (conflict.status || 'Ouvert')) return;
         try {
             const authorName = user?.displayName || user?.email || "Utilisateur";
+            const previousStatus = conflict.status || 'Ouvert';
             await updateConflictStatus(conflict.id, newStatus, authorName);
+            void logAudit({
+                action: 'status-change',
+                resource: 'conflict',
+                resourceId: conflict.id,
+                resourceLabel: conflict.village,
+                summary: `${conflict.village} : ${previousStatus} → ${newStatus}`,
+                details: { from: previousStatus, to: newStatus },
+            });
             toast({ title: "Statut mis à jour", description: `${conflict.village} → ${newStatus}` });
         } catch (err) {
             console.error("Quick status change failed:", err);

@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
+import { logAudit } from "@/services/audit-log-service";
 import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
 import { EmployeeOfficialReport } from "@/components/reports/employee-official-report";
 import { EmployeeAnalytics } from "@/components/employees/employee-analytics";
@@ -257,7 +258,21 @@ export default function EmployeesPage() {
 
   const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id'>, photoFile: File | null) => {
     try {
-      await addEmployee(newEmployeeData, photoFile);
+      const created = await addEmployee(newEmployeeData, photoFile);
+      const label = `${newEmployeeData.lastName || ''} ${newEmployeeData.firstName || ''}`.trim();
+      void logAudit({
+        action: 'create',
+        resource: 'employee',
+        resourceId: (created as any)?.id,
+        resourceLabel: label,
+        summary: `Nouvel agent : ${label}`,
+        afterSnapshot: {
+          matricule: newEmployeeData.matricule,
+          poste: newEmployeeData.poste,
+          status: newEmployeeData.status,
+          departmentId: newEmployeeData.departmentId,
+        },
+      });
       setIsAddSheetOpen(false);
       toast({
         title: "Employé ajouté",
@@ -270,9 +285,23 @@ export default function EmployeesPage() {
   };
 
   const handleDeleteEmployee = async (employeeId: string) => {
+    const target = deleteTarget;
     setDeleteTarget(null);
     try {
       await deleteEmployee(employeeId);
+      void logAudit({
+        action: 'delete',
+        resource: 'employee',
+        resourceId: employeeId,
+        resourceLabel: target ? `${target.lastName || ''} ${target.firstName || ''}`.trim() : employeeId,
+        summary: `Radiation de ${target?.name || employeeId}`,
+        beforeSnapshot: target ? {
+          matricule: target.matricule,
+          poste: target.poste,
+          status: target.status,
+          departmentId: target.departmentId,
+        } : undefined,
+      });
       toast({
         title: "Employé supprimé",
         description: "L'employé a été supprimé avec succès.",
@@ -310,7 +339,15 @@ export default function EmployeesPage() {
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
     try {
-      await Promise.all(Array.from(selectedIds).map(id => deleteEmployee(id)));
+      const ids = Array.from(selectedIds);
+      const deletedNames = employees.filter(e => ids.includes(e.id)).map(e => e.name || `${e.lastName || ''} ${e.firstName || ''}`.trim());
+      await Promise.all(ids.map(id => deleteEmployee(id)));
+      void logAudit({
+        action: 'bulk-delete',
+        resource: 'employee',
+        summary: `Radiation groupée de ${ids.length} agent(s)`,
+        details: { count: ids.length, names: deletedNames, ids },
+      });
       toast({ title: "Suppression groupée", description: `${selectedIds.size} employé(s) supprimé(s).` });
       setSelectedIds(new Set());
       setBulkDeleteOpen(false);

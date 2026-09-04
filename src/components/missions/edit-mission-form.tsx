@@ -41,9 +41,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Mission, MissionParticipant, Employe } from "@/lib/data";
-import { subscribeToEmployees, getDirectoireMembers } from "@/services/employee-service";
+import { subscribeToEmployees, getDirectors } from "@/services/employee-service";
 import { cn } from "@/lib/utils";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface EditMissionFormProps {
     mission: Mission;
@@ -60,7 +61,8 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
     const [status, setStatus] = useState<Mission['status']>(mission.status);
     const [participants, setParticipants] = useState<MissionParticipant[]>(mission.participants || []);
     const [signatoryId, setSignatoryId] = useState<string>(mission.signatoryId || "");
-    const [directoireMembers, setDirectoireMembers] = useState<Employe[]>([]);
+    const [directors, setDirectors] = useState<Employe[]>([]);
+    const [showAllForSignatory, setShowAllForSignatory] = useState(false);
 
     const [employees, setEmployees] = useState<Employe[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,11 +72,21 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         const unsubscribe = subscribeToEmployees((fetched) => {
             setEmployees(fetched);
         }, (err) => console.error(err));
-        getDirectoireMembers()
-            .then(setDirectoireMembers)
-            .catch(err => console.error('Failed to load directoire members', err));
+        getDirectors()
+            .then(setDirectors)
+            .catch(err => console.error('Failed to load directors', err));
         return () => unsubscribe();
     }, []);
+
+    // Si le signataire actuel n'est pas dans la liste des directeurs (poste
+    // hors filtre standard), on force l'affichage « tout le personnel »
+    // pour qu'il apparaisse dans le sélecteur.
+    useEffect(() => {
+        if (!signatoryId || directors.length === 0) return;
+        if (!directors.some(d => d.id === signatoryId) && employees.some(e => e.id === signatoryId)) {
+            setShowAllForSignatory(true);
+        }
+    }, [signatoryId, directors, employees]);
 
     const handleAddParticipant = (employeeId: string) => {
         const emp = employees.find(e => e.id === employeeId);
@@ -107,7 +119,10 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const signatory = directoireMembers.find(m => m.id === signatoryId);
+            const pool = showAllForSignatory
+                ? employees.filter(e => e.status === 'Actif')
+                : directors;
+            const signatory = pool.find(m => m.id === signatoryId);
             await onUpdateMission(mission.id, {
                 title,
                 description,
@@ -301,31 +316,49 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-8 space-y-3">
-                                    <Select value={signatoryId || "__none__"} onValueChange={(v) => setSignatoryId(v === "__none__" ? "" : v)}>
-                                        <SelectTrigger className="h-12 bg-white/50 rounded-xl border-slate-200 font-black uppercase text-[10px] tracking-[0.2em]">
-                                            <SelectValue placeholder="Sélectionner un signataire" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-xl shadow-2xl max-h-72">
-                                            <SelectItem value="__none__" className="font-bold py-3 italic text-slate-400 text-xs">Aucun signataire</SelectItem>
-                                            {directoireMembers.length === 0 ? (
-                                                <div className="p-3 text-[11px] italic text-slate-400 text-center">Aucun membre du Directoire disponible</div>
-                                            ) : (
-                                                directoireMembers.map(m => (
-                                                    <SelectItem key={m.id} value={m.id} className="font-bold py-3">
-                                                        <div className="flex flex-col items-start">
-                                                            <span className="text-sm">{m.name || `${m.lastName || ''} ${m.firstName || ''}`.trim()}</span>
-                                                            {m.poste && <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{m.poste}</span>}
-                                                        </div>
-                                                    </SelectItem>
-                                                ))
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    {mission.signatoryName && !signatoryId && (
-                                        <p className="text-[10px] italic text-amber-600">
-                                            Signataire actuel : <span className="font-black">{mission.signatoryName}</span>{mission.signatoryPoste && <> — {mission.signatoryPoste}</>}. Sélectionnez « Aucun signataire » pour le retirer.
-                                        </p>
-                                    )}
+                                    {(() => {
+                                        const pool = showAllForSignatory
+                                            ? employees.filter(e => e.status === 'Actif').sort((a, b) => (a.lastName || a.name || '').localeCompare(b.lastName || b.name || '', 'fr'))
+                                            : directors;
+                                        const emptyLabel = showAllForSignatory
+                                            ? "Aucun agent chargé"
+                                            : "Aucun directeur trouvé — cocher « Élargir » ci-dessous";
+                                        return (
+                                            <Select value={signatoryId || "__none__"} onValueChange={(v) => setSignatoryId(v === "__none__" ? "" : v)}>
+                                                <SelectTrigger className="h-12 bg-white/50 rounded-xl border-slate-200 font-black uppercase text-[10px] tracking-[0.2em]">
+                                                    <SelectValue placeholder={showAllForSignatory ? "Sélectionner un agent" : "Sélectionner un directeur"} />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl shadow-2xl max-h-72">
+                                                    <SelectItem value="__none__" className="font-bold py-3 italic text-slate-400 text-xs">Aucun signataire</SelectItem>
+                                                    {pool.length === 0 ? (
+                                                        <div className="p-3 text-[11px] italic text-slate-400 text-center">{emptyLabel}</div>
+                                                    ) : (
+                                                        pool.map(m => (
+                                                            <SelectItem key={m.id} value={m.id} className="font-bold py-3">
+                                                                <div className="flex flex-col items-start">
+                                                                    <span className="text-sm">{m.name || `${m.lastName || ''} ${m.firstName || ''}`.trim()}</span>
+                                                                    {m.poste && <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{m.poste}</span>}
+                                                                </div>
+                                                            </SelectItem>
+                                                        ))
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        );
+                                    })()}
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <Checkbox
+                                            id="signatory-all-edit"
+                                            checked={showAllForSignatory}
+                                            onCheckedChange={(v) => setShowAllForSignatory(!!v)}
+                                        />
+                                        <Label htmlFor="signatory-all-edit" className="text-[10px] font-bold text-slate-500 cursor-pointer">
+                                            Élargir à tout le personnel actif
+                                        </Label>
+                                    </div>
+                                    <p className="text-[10px] italic text-slate-400">
+                                        Par défaut, seuls les postes de Directeur/Directrice sont proposés (Sous-Directeur et Adjoint exclus).
+                                    </p>
                                 </CardContent>
                             </Card>
                         </div>

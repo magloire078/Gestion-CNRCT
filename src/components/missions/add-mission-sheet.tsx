@@ -31,10 +31,11 @@ import {
 } from "@/components/ui/select";
 import type { Mission, Employe } from "@/lib/data";
 import { getLatestMissionNumber } from "@/services/mission-service";
-import { getDirectoireMembers } from "@/services/employee-service";
+import { getDirectors, getEmployees } from "@/services/employee-service";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, Loader2, LogOut, PlusCircle, Crown } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 interface AddMissionSheetProps {
@@ -56,8 +57,10 @@ export function AddMissionSheet({
   const [endDate, setEndDate] = useState<Date>();
   const [status, setStatus] = useState<Mission['status']>('Planifiée');
   const [signatoryId, setSignatoryId] = useState<string>("");
+  const [showAllEmployees, setShowAllEmployees] = useState(false);
 
-  const [directoireMembers, setDirectoireMembers] = useState<Employe[]>([]);
+  const [directors, setDirectors] = useState<Employe[]>([]);
+  const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
 
   const [loadingInitial, setLoadingInitial] = useState(true);
 
@@ -69,12 +72,12 @@ export function AddMissionSheet({
       async function fetchInitialData() {
         setLoadingInitial(true);
         try {
-          const [missionNumber, members] = await Promise.all([
+          const [missionNumber, dirs] = await Promise.all([
             getLatestMissionNumber(true),
-            getDirectoireMembers(),
+            getDirectors(),
           ]);
           setNumeroMission(missionNumber.toString().padStart(3, '0'));
-          setDirectoireMembers(members);
+          setDirectors(dirs);
         } catch (err) {
           console.error("Failed to load initial data for mission sheet", err);
           setError("Impossible de charger les données initiales.");
@@ -94,8 +97,21 @@ export function AddMissionSheet({
     setLieuMission("");
     setStatus("Planifiée");
     setSignatoryId("");
+    setShowAllEmployees(false);
     setError("");
   }
+
+  const handleToggleAllEmployees = async (checked: boolean) => {
+    setShowAllEmployees(checked);
+    if (checked && allEmployees.length === 0) {
+      try {
+        const list = await getEmployees();
+        setAllEmployees(list.filter(e => e.status === 'Actif'));
+      } catch (err) {
+        console.error('Failed to load all employees:', err);
+      }
+    }
+  };
 
   const handleClose = () => {
     resetForm();
@@ -113,7 +129,8 @@ export function AddMissionSheet({
     setError("");
 
     try {
-      const signatory = directoireMembers.find(m => m.id === signatoryId);
+      const pool = showAllEmployees ? allEmployees : directors;
+      const signatory = pool.find(m => m.id === signatoryId);
       await onAddMissionAction({
         numeroMission,
         title,
@@ -260,27 +277,43 @@ export function AddMissionSheet({
                       <Label htmlFor="signatory" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1 flex items-center gap-1.5">
                         <Crown className="h-3 w-3 text-amber-500" /> Signataire de l'Ordre de Mission
                       </Label>
-                      <Select value={signatoryId} onValueChange={setSignatoryId}>
-                        <SelectTrigger id="signatory" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm">
-                          <SelectValue placeholder="Sélectionner un membre du Directoire" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl max-h-72">
-                          {directoireMembers.length === 0 ? (
-                            <div className="p-3 text-[11px] italic text-slate-400 text-center">Aucun membre du Directoire disponible</div>
-                          ) : (
-                            directoireMembers.map(m => (
-                              <SelectItem key={m.id} value={m.id} className="font-bold py-3">
-                                <div className="flex flex-col items-start">
-                                  <span className="text-sm">{m.name || `${m.lastName || ''} ${m.firstName || ''}`.trim()}</span>
-                                  {m.poste && <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{m.poste}</span>}
-                                </div>
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
+                      {(() => {
+                        const pool = showAllEmployees ? allEmployees : directors;
+                        const emptyLabel = showAllEmployees ? "Aucun agent chargé" : "Aucun directeur trouvé — cocher « Élargir » ci-dessous";
+                        return (
+                          <Select value={signatoryId} onValueChange={setSignatoryId}>
+                            <SelectTrigger id="signatory" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm">
+                              <SelectValue placeholder={showAllEmployees ? "Sélectionner un agent" : "Sélectionner un directeur"} />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100 shadow-2xl max-h-72">
+                              {pool.length === 0 ? (
+                                <div className="p-3 text-[11px] italic text-slate-400 text-center">{emptyLabel}</div>
+                              ) : (
+                                pool.map(m => (
+                                  <SelectItem key={m.id} value={m.id} className="font-bold py-3">
+                                    <div className="flex flex-col items-start">
+                                      <span className="text-sm">{m.name || `${m.lastName || ''} ${m.firstName || ''}`.trim()}</span>
+                                      {m.poste && <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{m.poste}</span>}
+                                    </div>
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        );
+                      })()}
+                      <div className="flex items-center gap-2 pl-1 pt-1">
+                        <Checkbox
+                          id="signatory-all"
+                          checked={showAllEmployees}
+                          onCheckedChange={(v) => handleToggleAllEmployees(!!v)}
+                        />
+                        <Label htmlFor="signatory-all" className="text-[10px] font-bold text-slate-500 cursor-pointer">
+                          Élargir à tout le personnel actif
+                        </Label>
+                      </div>
                       <p className="text-[10px] italic text-slate-400 pl-1">
-                        Membre du Directoire qui signera l'ordre de mission. Facultatif à la création, obligatoire à l'impression.
+                        Par défaut, seuls les postes de Directeur/Directrice sont proposés (Sous-Directeur et Adjoint exclus). Facultatif à la création, obligatoire à l'impression.
                       </p>
                     </div>
 

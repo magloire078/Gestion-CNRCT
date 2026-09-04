@@ -139,7 +139,12 @@ export function GroupMissionRequestPrint({ mission, logos, onCloseAction }: Grou
                         <div className="h-24"></div>
                     </div>
                     <div className="text-center">
-                        <p className="font-bold underline uppercase">Le Secrétaire Général</p>
+                        <p className="font-bold underline uppercase">
+                            {mission.signatoryName ? mission.signatoryName : "Le Secrétaire Général"}
+                        </p>
+                        {mission.signatoryPoste && (
+                            <p className="text-[10px] uppercase mt-1 italic">{mission.signatoryPoste}</p>
+                        )}
                         <div className="h-24"></div>
                     </div>
                 </div>
@@ -239,8 +244,12 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
                         <div className="h-32 border border-dashed border-gray-300 mt-2"></div>
                     </div>
                     <div className="text-center">
-                        <p className="font-bold underline uppercase">Le Secrétaire Général</p>
-                        <p className="text-[10px] uppercase mt-1">P.O L'Administrateur</p>
+                        <p className="font-bold underline uppercase">
+                            {mission.signatoryName ? mission.signatoryName : "Le Secrétaire Général"}
+                        </p>
+                        <p className="text-[10px] uppercase mt-1">
+                            {mission.signatoryPoste ? mission.signatoryPoste : "P.O L'Administrateur"}
+                        </p>
                         <div className="h-32 border border-dashed border-gray-300 mt-2"></div>
                     </div>
                 </div>

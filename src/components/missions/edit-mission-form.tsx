@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
-import { 
-    CalendarIcon, Loader2, Plus, 
-    Trash2, UserPlus, MapPin, 
+import {
+    CalendarIcon, Loader2, Plus,
+    Trash2, UserPlus, MapPin,
     Calendar, FileText, Settings,
-    Car, Hotel, CreditCard, Save, X
+    Car, Hotel, CreditCard, Save, X,
+    Crown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Mission, MissionParticipant, Employe } from "@/lib/data";
-import { subscribeToEmployees } from "@/services/employee-service";
+import { subscribeToEmployees, getDirectoireMembers } from "@/services/employee-service";
 import { cn } from "@/lib/utils";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 
@@ -58,7 +59,9 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
     const [endDate, setEndDate] = useState<Date | undefined>(mission.endDate ? parseISO(mission.endDate) : undefined);
     const [status, setStatus] = useState<Mission['status']>(mission.status);
     const [participants, setParticipants] = useState<MissionParticipant[]>(mission.participants || []);
-    
+    const [signatoryId, setSignatoryId] = useState<string>(mission.signatoryId || "");
+    const [directoireMembers, setDirectoireMembers] = useState<Employe[]>([]);
+
     const [employees, setEmployees] = useState<Employe[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("general");
@@ -67,6 +70,9 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         const unsubscribe = subscribeToEmployees((fetched) => {
             setEmployees(fetched);
         }, (err) => console.error(err));
+        getDirectoireMembers()
+            .then(setDirectoireMembers)
+            .catch(err => console.error('Failed to load directoire members', err));
         return () => unsubscribe();
     }, []);
 
@@ -101,6 +107,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const signatory = directoireMembers.find(m => m.id === signatoryId);
             await onUpdateMission(mission.id, {
                 title,
                 description,
@@ -108,7 +115,12 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                 startDate: startDate ? format(startDate, "yyyy-MM-dd") : mission.startDate,
                 endDate: endDate ? format(endDate, "yyyy-MM-dd") : mission.endDate,
                 status,
-                participants
+                participants,
+                // Ecrit toujours les 3 champs signataire (même à null) pour que
+                // le désengagement soit effectivement propagé.
+                signatoryId: signatory?.id || undefined,
+                signatoryName: signatory ? (signatory.name || `${signatory.lastName || ''} ${signatory.firstName || ''}`.trim()) : undefined,
+                signatoryPoste: signatory?.poste || undefined,
             });
         } catch (err) {
             console.error(err);
@@ -275,6 +287,45 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                             <SelectItem value="Annulée" className="font-bold py-3 uppercase text-[10px] tracking-widest">Annulée</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2rem]">
+                                <CardHeader className="p-8 border-b border-white/10 bg-slate-900/5">
+                                    <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
+                                        <Crown className="h-5 w-5 text-amber-500" />
+                                        Signataire
+                                    </CardTitle>
+                                    <CardDescription className="text-xs font-bold uppercase tracking-widest text-slate-500 mt-1">
+                                        Membre du Directoire qui signe l'ordre de mission
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-8 space-y-3">
+                                    <Select value={signatoryId || "__none__"} onValueChange={(v) => setSignatoryId(v === "__none__" ? "" : v)}>
+                                        <SelectTrigger className="h-12 bg-white/50 rounded-xl border-slate-200 font-black uppercase text-[10px] tracking-[0.2em]">
+                                            <SelectValue placeholder="Sélectionner un signataire" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl shadow-2xl max-h-72">
+                                            <SelectItem value="__none__" className="font-bold py-3 italic text-slate-400 text-xs">Aucun signataire</SelectItem>
+                                            {directoireMembers.length === 0 ? (
+                                                <div className="p-3 text-[11px] italic text-slate-400 text-center">Aucun membre du Directoire disponible</div>
+                                            ) : (
+                                                directoireMembers.map(m => (
+                                                    <SelectItem key={m.id} value={m.id} className="font-bold py-3">
+                                                        <div className="flex flex-col items-start">
+                                                            <span className="text-sm">{m.name || `${m.lastName || ''} ${m.firstName || ''}`.trim()}</span>
+                                                            {m.poste && <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{m.poste}</span>}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                    {mission.signatoryName && !signatoryId && (
+                                        <p className="text-[10px] italic text-amber-600">
+                                            Signataire actuel : <span className="font-black">{mission.signatoryName}</span>{mission.signatoryPoste && <> — {mission.signatoryPoste}</>}. Sélectionnez « Aucun signataire » pour le retirer.
+                                        </p>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>

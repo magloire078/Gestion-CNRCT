@@ -29,10 +29,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Mission } from "@/lib/data";
+import type { Mission, Employe } from "@/lib/data";
 import { getLatestMissionNumber } from "@/services/mission-service";
+import { getDirectoireMembers } from "@/services/employee-service";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, LogOut, PlusCircle } from "lucide-react";
+import { CalendarIcon, Loader2, LogOut, PlusCircle, Crown } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 
 
@@ -54,6 +55,9 @@ export function AddMissionSheet({
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [status, setStatus] = useState<Mission['status']>('Planifiée');
+  const [signatoryId, setSignatoryId] = useState<string>("");
+
+  const [directoireMembers, setDirectoireMembers] = useState<Employe[]>([]);
 
   const [loadingInitial, setLoadingInitial] = useState(true);
 
@@ -65,8 +69,12 @@ export function AddMissionSheet({
       async function fetchInitialData() {
         setLoadingInitial(true);
         try {
-          const missionNumber = await getLatestMissionNumber(true);
+          const [missionNumber, members] = await Promise.all([
+            getLatestMissionNumber(true),
+            getDirectoireMembers(),
+          ]);
           setNumeroMission(missionNumber.toString().padStart(3, '0'));
+          setDirectoireMembers(members);
         } catch (err) {
           console.error("Failed to load initial data for mission sheet", err);
           setError("Impossible de charger les données initiales.");
@@ -85,6 +93,7 @@ export function AddMissionSheet({
     setEndDate(undefined);
     setLieuMission("");
     setStatus("Planifiée");
+    setSignatoryId("");
     setError("");
   }
 
@@ -104,6 +113,7 @@ export function AddMissionSheet({
     setError("");
 
     try {
+      const signatory = directoireMembers.find(m => m.id === signatoryId);
       await onAddMissionAction({
         numeroMission,
         title,
@@ -113,6 +123,11 @@ export function AddMissionSheet({
         endDate: format(endDate, "yyyy-MM-dd"),
         status,
         lieuMission,
+        ...(signatory ? {
+          signatoryId: signatory.id,
+          signatoryName: signatory.name || `${signatory.lastName || ''} ${signatory.firstName || ''}`.trim(),
+          signatoryPoste: signatory.poste,
+        } : {}),
       });
       handleClose();
     } catch (err) {
@@ -239,6 +254,34 @@ export function AddMissionSheet({
                           <SelectItem value="Terminée" className="font-bold py-3">Terminée</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signatory" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1 flex items-center gap-1.5">
+                        <Crown className="h-3 w-3 text-amber-500" /> Signataire de l'Ordre de Mission
+                      </Label>
+                      <Select value={signatoryId} onValueChange={setSignatoryId}>
+                        <SelectTrigger id="signatory" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm">
+                          <SelectValue placeholder="Sélectionner un membre du Directoire" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl max-h-72">
+                          {directoireMembers.length === 0 ? (
+                            <div className="p-3 text-[11px] italic text-slate-400 text-center">Aucun membre du Directoire disponible</div>
+                          ) : (
+                            directoireMembers.map(m => (
+                              <SelectItem key={m.id} value={m.id} className="font-bold py-3">
+                                <div className="flex flex-col items-start">
+                                  <span className="text-sm">{m.name || `${m.lastName || ''} ${m.firstName || ''}`.trim()}</span>
+                                  {m.poste && <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{m.poste}</span>}
+                                </div>
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[10px] italic text-slate-400 pl-1">
+                        Membre du Directoire qui signera l'ordre de mission. Facultatif à la création, obligatoire à l'impression.
+                      </p>
                     </div>
 
                     {error && (

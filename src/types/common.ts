@@ -32,6 +32,10 @@ export type Mission = {
     endDate: string; // YYYY-MM-DD
     status: 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';
     lieuMission?: string;
+    // Signataire de l'ordre de mission — sélectionné parmi les membres du Directoire.
+    signatoryId?: string;
+    signatoryName?: string;
+    signatoryPoste?: string;
 };
 
 export const conflictTypes = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Affaires civiles", "Autre"] as const;

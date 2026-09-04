@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { 
-    ChevronLeft, Pencil, Calendar, 
-    MapPin, Users, FileText, 
-    CheckCircle2, Clock, XCircle, 
+import {
+    ChevronLeft, Pencil, Calendar,
+    MapPin, Users, FileText,
+    CheckCircle2, Clock, XCircle,
     ArrowRight, Printer, Share2,
     Shield, Building2, Briefcase,
     Info, ListChecks, Landmark,
-    Car, Hotel, CreditCard, AlertTriangle
+    Car, Hotel, CreditCard, AlertTriangle,
+    Crown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -212,6 +213,28 @@ export default function MissionDetailPage() {
                                         <span className="text-3xl font-black text-slate-900 tracking-tighter">{(mission.participants || []).length}</span>
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Agents</span>
                                     </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="group relative overflow-hidden border-none bg-white rounded-[2.5rem] shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
+                                <CardContent className="p-7">
+                                    <div className="h-12 w-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 mb-4">
+                                        <Crown className="h-6 w-6" />
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Signataire</p>
+                                    {mission.signatoryName ? (
+                                        <div>
+                                            <p className="text-base font-black text-slate-900 tracking-tight leading-tight line-clamp-2">{mission.signatoryName}</p>
+                                            {mission.signatoryPoste && (
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic mt-1 line-clamp-1">{mission.signatoryPoste}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <p className="text-base font-bold text-slate-400 italic">Non désigné</p>
+                                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mt-1">À définir avant impression</p>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>

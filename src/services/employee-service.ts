@@ -642,48 +642,6 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
 }
 
 /**
- * Filtre client-side identifiant les postes de direction.
- *
- * Retient : « Directeur », « Directrice » (ex. Directeur Général, Directrice
- * de la Communication, Directeur Régional, etc.).
- *
- * Exclut : les postes « Sous-Directeur / Sous-Directrice » et
- * « Directeur / Directrice Adjoint(e) », qui ne signent pas les ordres de
- * mission dans la pratique CNRCT.
- */
-export function isDirectorPoste(poste: string | undefined | null): boolean {
-    if (!poste) return false;
-    const p = poste
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, ''); // strip accents
-
-    const hasDirector = /direct(eur|rice)/.test(p);
-    if (!hasDirector) return false;
-
-    // Exclusions
-    if (/\bsous[\s-]?direct/.test(p)) return false;
-    if (/direct(eur|rice)e?\s+adjoint/.test(p)) return false;
-
-    return true;
-}
-
-/**
- * Retourne les employés actifs occupant un poste de directeur/directrice
- * (voir isDirectorPoste). Trié par nom.
- */
-export async function getDirectors(): Promise<Employe[]> {
-    const allEmployees = await getEmployees();
-    return allEmployees
-        .filter(e => e.status === 'Actif' && isDirectorPoste(e.poste))
-        .sort((a, b) => {
-            const an = (a.lastName || a.name || '').toLowerCase();
-            const bn = (b.lastName || b.name || '').toLowerCase();
-            return an.localeCompare(bn, 'fr');
-        });
-}
-
-/**
  * Optimized version: Only returns regions and their presidents (if already matched).
  * Fallback: uses divisions to generate the initial list.
  */

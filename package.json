@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit",
     "db:seed": "tsx src/scripts/seed-data.ts",
     "db:seed-assets": "tsx src/scripts/seed-assets.ts",
     "db:correct-dates": "tsx src/scripts/correct-employee-departure-dates.ts",

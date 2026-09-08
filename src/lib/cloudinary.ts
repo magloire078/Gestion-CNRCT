@@ -1,28 +1,44 @@
+/**
+ * Uploade un fichier via notre API interne (/api/upload), qui le scanne contre
+ * les malwares avant de le transférer à Cloudinary avec des identifiants
+ * signés côté serveur. Le fichier ne part plus directement du navigateur vers
+ * Cloudinary avec un preset non signé.
+ */
 export async function uploadToCloudinary(file: File): Promise<string> {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    let headers: HeadersInit = {};
+    try {
+        const { getAuth } = await import('firebase/auth');
+        const auth = getAuth();
+        if (auth.currentUser) {
+            const token = await auth.currentUser.getIdToken();
+            headers = { 'Authorization': `Bearer ${token}` };
+        }
 
-    if (!cloudName || !uploadPreset) {
-        throw new Error('Cloudinary environment variables are missing (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET).');
+        const { getToken } = await import('firebase/app-check');
+        const { appCheck } = await import('@/lib/firebase');
+        if (appCheck) {
+            const appCheckToken = await getToken(appCheck, false);
+            (headers as any)['X-Firebase-AppCheck'] = appCheckToken.token;
+        }
+    } catch {
+        console.warn('[Cloudinary] Auth/AppCheck indisponible pour l\'upload');
     }
-
-    const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
 
-    const response = await fetch(url, {
+    const response = await fetch('/api/upload', {
         method: 'POST',
+        headers,
         body: formData,
     });
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Cloudinary upload error:', errorData);
-        throw new Error(errorData.error?.message || 'Failed to upload file to Cloudinary');
+        console.error('Upload error:', errorData);
+        throw new Error(errorData.error || 'Échec de l\'upload du fichier');
     }
 
     const data = await response.json();
-    return data.secure_url;
+    return data.url;
 }

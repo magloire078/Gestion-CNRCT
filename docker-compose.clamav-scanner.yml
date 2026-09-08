@@ -1,0 +1,7 @@
+services:
+  clamav-scanner:
+    build: ./docker/clamav-scanner
+    container_name: clamav-scanner
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

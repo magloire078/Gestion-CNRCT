@@ -16,13 +16,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Upload, Loader2, Save, Building2, Globe, Heart } from "lucide-react";
+import { Upload, Loader2, Save, Building2, Globe, Heart, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getOrganizationSettings, saveOrganizationName, uploadOrganizationFile, saveSignatorySettings } from "@/services/organization-service";
+import { getOrganizationSettings, saveOrganizationName, uploadOrganizationFile, saveSignatorySettings, saveWhiteLabelMode } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OrganizationSettings } from "@/lib/data";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 
 
 type FileType = 'mainLogo' | 'secondaryLogo' | 'favicon';
@@ -55,6 +56,9 @@ function OrganizationSettingsContent() {
     const [initialShowRegional, setInitialShowRegional] = useState(true);
     const [isSavingSignatory, setIsSavingSignatory] = useState(false);
 
+    const [whiteLabelMode, setWhiteLabelMode] = useState(false);
+    const [isSavingWhiteLabel, setIsSavingWhiteLabel] = useState(false);
+
     const [files, setFiles] = useState<Record<FileType, FileState>>({
         mainLogo: { file: null, preview: "" },
         secondaryLogo: { file: null, preview: "" },
@@ -85,6 +89,7 @@ function OrganizationSettingsContent() {
                 setInitialSignatoryTitle(loadedSettings.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT");
                 setShowRegional(loadedSettings.showRegionalSignatories !== undefined ? loadedSettings.showRegionalSignatories : true);
                 setInitialShowRegional(loadedSettings.showRegionalSignatories !== undefined ? loadedSettings.showRegionalSignatories : true);
+                setWhiteLabelMode(loadedSettings.whiteLabelMode === true);
                 console.log("Secondary Logo Preview State Set To:", loadedSettings.secondaryLogoUrl);
             } catch (error) {
                 console.error("Failed to load organization settings:", error);
@@ -147,6 +152,25 @@ function OrganizationSettingsContent() {
             toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder les paramètres." });
         } finally {
             setIsSavingSignatory(false);
+        }
+    };
+
+    const handleToggleWhiteLabel = async (enabled: boolean) => {
+        setWhiteLabelMode(enabled);
+        setIsSavingWhiteLabel(true);
+        try {
+            await saveWhiteLabelMode(enabled);
+            toast({
+                title: enabled ? "Mode neutre activé" : "Mode neutre désactivé",
+                description: enabled
+                    ? "L'accueil, la connexion et l'inscription n'affichent plus aucune identité visuelle."
+                    : "L'identité visuelle de l'organisation est de nouveau affichée.",
+            });
+        } catch (error) {
+            setWhiteLabelMode(!enabled);
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de changer le mode neutre." });
+        } finally {
+            setIsSavingWhiteLabel(false);
         }
     };
 
@@ -256,6 +280,32 @@ function OrganizationSettingsContent() {
                         Enregistrer les signataires
                     </Button>
                 </CardFooter>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><EyeOff className="h-5 w-5" /> Mode Neutre (Marque Blanche)</CardTitle>
+                    <CardDescription>
+                        Masque le logo et le nom de l'organisation sur l'accueil public, la page de connexion et la page d'inscription.
+                        S'applique immédiatement à tous les visiteurs.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between rounded-md border p-4">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="white-label-mode" className="text-base font-medium">Activer le mode neutre</Label>
+                            <p className="text-sm text-muted-foreground">
+                                {whiteLabelMode ? "Actif : aucune identité visuelle n'est affichée." : "Inactif : l'identité visuelle habituelle est affichée."}
+                            </p>
+                        </div>
+                        <Switch
+                            id="white-label-mode"
+                            checked={whiteLabelMode}
+                            onCheckedChange={handleToggleWhiteLabel}
+                            disabled={isSavingWhiteLabel}
+                        />
+                    </div>
+                </CardContent>
             </Card>
 
             <Card>

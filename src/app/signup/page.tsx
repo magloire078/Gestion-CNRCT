@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -17,26 +17,19 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { signUp } from "@/services/auth-service";
-import { getOrganizationSettings } from "@/services/organization-service";
 import Image from "next/image";
+import { useSettings } from "@/hooks/use-settings";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { settings } = useSettings();
+  const neutral = settings.whiteLabelMode;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [orgName, setOrgName] = useState("La Chambre des Rois et des Chefs Traditionnels");
-  const [logoUrl, setLogoUrl] = useState<string>("https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png");
-
-  useEffect(() => {
-    getOrganizationSettings().then(settings => {
-      setOrgName(settings.organizationName || "Gestion App");
-      setLogoUrl(settings.mainLogoUrl);
-    })
-  }, []);
 
 
   const togglePasswordVisibility = () => {
@@ -78,25 +71,27 @@ export default function SignupPage() {
 
       <Card className="w-full max-w-md border-primary/5 bg-white/80 backdrop-blur-xl shadow-2xl shadow-[#1a1a1a]/5 rounded-xl overflow-hidden animate-in fade-in zoom-in duration-700">
         <CardHeader className="pt-10 pb-6 px-5">
-          <div className="flex flex-col items-center justify-center gap-4 mb-4 group">
-            <div className="relative w-24 h-24 transition-all duration-700 ease-in-out group-hover:scale-105">
-              <Image
-                src={logoUrl}
-                alt={orgName}
-                fill
-                className="object-contain transition-opacity duration-500"
-                sizes="96px"
-                priority
-              />
+          {!neutral && (
+            <div className="flex flex-col items-center justify-center gap-4 mb-4 group">
+              <div className="relative w-24 h-24 transition-all duration-700 ease-in-out group-hover:scale-105">
+                <Image
+                  src={settings.mainLogoUrl}
+                  alt={settings.organizationName}
+                  fill
+                  className="object-contain transition-opacity duration-500"
+                  sizes="96px"
+                  priority
+                />
+              </div>
+              <div className="text-center">
+                <h1 className="text-sm font-bold tracking-[0.3em] uppercase text-[#006039]/60 mb-1">{settings.organizationName}</h1>
+                <p className="text-[10px] tracking-[0.2em] font-medium text-muted-foreground/60 uppercase">Haute Institution de l'État</p>
+              </div>
             </div>
-            <div className="text-center">
-              <h1 className="text-sm font-bold tracking-[0.3em] uppercase text-[#006039]/60 mb-1">{orgName}</h1>
-              <p className="text-[10px] tracking-[0.2em] font-medium text-muted-foreground/60 uppercase">Haute Institution de l'État</p>
-            </div>
-          </div>
+          )}
           <CardTitle className="text-3xl font-black text-center text-[#1a1a1a]">Inscription</CardTitle>
           <CardDescription className="text-center text-base mt-2">
-            Créez votre accès à l'intranet de la Chambre.
+            {neutral ? "Créez votre accès à votre espace sécurisé." : "Créez votre accès à l'intranet de la Chambre."}
           </CardDescription>
         </CardHeader>
         <CardContent className="px-5 pb-6">

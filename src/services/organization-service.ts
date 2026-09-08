@@ -22,7 +22,8 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
             faviconUrl: defaultMainLogoUrl,
             globalSignatoryName: "FATOGOMA YEO",
             globalSignatoryTitle: "Préfet",
-            showRegionalSignatories: true
+            showRegionalSignatories: true,
+            whiteLabelMode: false
         };
     }
 
@@ -48,7 +49,8 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
                 faviconUrl: data.faviconUrl || mainLogoUrl || '',
                 globalSignatoryName: data.globalSignatoryName || "FATOGOMA YEO",
                 globalSignatoryTitle: data.globalSignatoryTitle || "Préfet",
-                showRegionalSignatories: data.showRegionalSignatories !== undefined ? data.showRegionalSignatories : true
+                showRegionalSignatories: data.showRegionalSignatories !== undefined ? data.showRegionalSignatories : true,
+                whiteLabelMode: data.whiteLabelMode === true
             };
         }
     } catch (e) {
@@ -63,8 +65,17 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         faviconUrl: defaultMainLogoUrl, // Use main logo as default favicon
         globalSignatoryName: "FATOGOMA YEO",
         globalSignatoryTitle: "Préfet",
-        showRegionalSignatories: true
+        showRegionalSignatories: true,
+        whiteLabelMode: false
     };
+}
+
+/**
+ * Active/désactive le mode neutre (marque blanche) : masque le logo et le nom
+ * de l'organisation sur l'accueil public, la connexion et l'inscription.
+ */
+export async function saveWhiteLabelMode(enabled: boolean): Promise<void> {
+    await setDoc(settingsDocRef, { whiteLabelMode: enabled }, { merge: true });
 }
 
 export async function saveOrganizationName(name: string): Promise<void> {

@@ -6,6 +6,8 @@ import type { Employe, Conflict } from "@/lib/data";
 import { getConflicts } from "@/services/conflict-service";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { getOfficialRegion } from "@/lib/normalization-utils";
+import { useSettings } from "@/hooks/use-settings";
+import { NeutralLanding } from "@/components/landing/neutral-landing";
 
 // Import landing components
 import { LandingHeader } from "@/components/landing/landing-header";
@@ -17,6 +19,7 @@ import { RegionalCommittees } from "@/components/landing/regional-committees";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
 export default function LandingPage() {
+    const { settings, loading: settingsLoading } = useSettings();
     const [directoireMembers, setDirectoireMembers] = useState<Employe[]>([]);
     const [regionalCommittees, setRegionalCommittees] = useState<RegionalCommittee[]>([]);
     const [allDirectors, setAllDirectors] = useState<Employe[]>([]);
@@ -27,6 +30,9 @@ export default function LandingPage() {
     const [pastDirectors, setPastDirectors] = useState<Employe[]>([]);
 
     useEffect(() => {
+        // En mode neutre, on n'a besoin d'aucune donnée institutionnelle.
+        if (settingsLoading || settings.whiteLabelMode) return;
+
         const fetchData = async () => {
             try {
                 const [membersRaw, directoryRaw, conflictsData] = await Promise.all([
@@ -122,7 +128,15 @@ export default function LandingPage() {
             }
         };
         fetchData();
-    }, []);
+    }, [settingsLoading, settings.whiteLabelMode]);
+
+    if (settingsLoading) {
+        return <div className="min-h-screen bg-white" />;
+    }
+
+    if (settings.whiteLabelMode) {
+        return <NeutralLanding />;
+    }
 
     return (
         <div className="flex flex-col min-h-screen bg-[#fafaf8] text-[#1a1a1a] font-body selection:bg-primary/20">

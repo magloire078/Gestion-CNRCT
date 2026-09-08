@@ -95,6 +95,8 @@ export type OrganizationSettings = {
     globalSignatoryName?: string;
     globalSignatoryTitle?: string;
     showRegionalSignatories?: boolean;
+    /** When true, the public homepage, login and signup pages hide all branding (logo, org name). */
+    whiteLabelMode?: boolean;
 };
 
 export type Notification = {

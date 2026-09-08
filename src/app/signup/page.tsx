@@ -22,7 +22,7 @@ import { useSettings } from "@/hooks/use-settings";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { settings } = useSettings();
+  const { settings, loading: settingsLoading } = useSettings();
   const neutral = settings.whiteLabelMode;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -71,7 +71,7 @@ export default function SignupPage() {
 
       <Card className="w-full max-w-md border-primary/5 bg-white/80 backdrop-blur-xl shadow-2xl shadow-[#1a1a1a]/5 rounded-xl overflow-hidden animate-in fade-in zoom-in duration-700">
         <CardHeader className="pt-10 pb-6 px-5">
-          {!neutral && (
+          {!settingsLoading && !neutral && (
             <div className="flex flex-col items-center justify-center gap-4 mb-4 group">
               <div className="relative w-24 h-24 transition-all duration-700 ease-in-out group-hover:scale-105">
                 <Image

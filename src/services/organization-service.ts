@@ -76,6 +76,15 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
  */
 export async function saveWhiteLabelMode(enabled: boolean): Promise<void> {
     await setDoc(settingsDocRef, { whiteLabelMode: enabled }, { merge: true });
+    if (typeof window !== 'undefined') {
+        try {
+            const cached = localStorage.getItem('cnrct_app_settings');
+            const prev = cached ? JSON.parse(cached) : {};
+            localStorage.setItem('cnrct_app_settings', JSON.stringify({ ...prev, whiteLabelMode: enabled }));
+        } catch (e) {
+            // ignore
+        }
+    }
 }
 
 export async function saveOrganizationName(name: string): Promise<void> {

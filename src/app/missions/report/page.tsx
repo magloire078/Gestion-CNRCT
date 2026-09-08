@@ -120,12 +120,12 @@ export default function MissionReportPage() {
     const selectedMonth = parseInt(month) - 1;
 
     try {
-      const allMissions = await getMissions();
+      const missionsList = allMissions.length > 0 ? allMissions : await getMissions();
 
       const periodStart = startOfMonth(new Date(selectedYear, selectedMonth));
       const periodEnd = endOfMonth(new Date(selectedYear, selectedMonth));
 
-      const filteredMissions = allMissions.filter(m => {
+      const filteredMissions = missionsList.filter(m => {
           try {
             const missionStart = parseISO(m.startDate);
             const missionEnd = parseISO(m.endDate);

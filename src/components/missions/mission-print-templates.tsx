@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Mission, MissionParticipant, OrganizationSettings } from "@/lib/data";
+import { formatEmployeeName } from "@/lib/normalization-utils";
 
 interface PrintProps {
     logos: OrganizationSettings;
@@ -53,20 +54,47 @@ function PrintFooter() {
 
 export function GroupMissionRequestPrint({ mission, logos, onCloseAction }: GroupPrintProps) {
     const [mounted, setMounted] = useState(false);
+    const [employees, setEmployees] = useState<Record<string, any>>({});
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setMounted(true);
-        const timer = setTimeout(() => {
-            window.print();
-            onCloseAction();
-        }, 800);
-        return () => {
-            setMounted(false);
-            clearTimeout(timer);
-        };
-    }, [onCloseAction]);
+        
+        const participantIds = mission.participants?.map(p => p.employeeId).filter((id): id is string => !!id) || [];
+        if (participantIds.length === 0) {
+            setLoading(false);
+            return;
+        }
 
-    if (!mounted) return null;
+        import("@/services/employee-service").then(({ getEmployee }) => {
+            Promise.all(
+                participantIds.map(id => 
+                    getEmployee(id!)
+                        .then(emp => ({ id, emp }))
+                        .catch(() => ({ id, emp: null }))
+                )
+            ).then(results => {
+                const map: Record<string, any> = {};
+                results.forEach(res => {
+                    if (res.emp) map[res.id] = res.emp;
+                });
+                setEmployees(map);
+                setLoading(false);
+            });
+        });
+    }, [mission.participants]);
+
+    useEffect(() => {
+        if (!loading && mounted) {
+            const timer = setTimeout(() => {
+                window.print();
+                onCloseAction();
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [loading, mounted, onCloseAction]);
+
+    if (!mounted || loading) return null;
 
     let yearSuffix = "26";
     try {
@@ -161,9 +189,11 @@ export function GroupMissionRequestPrint({ mission, logos, onCloseAction }: Grou
                 <div className="space-y-2">
                     <p className="font-bold underline">Personnes Concernées :</p>
                     <div className="space-y-1 pl-4">
-                        {mission.participants?.map((p, i) => (
-                            <p key={i} className="font-semibold">{p.employeeName}</p>
-                        ))}
+                        {mission.participants?.map((p, i) => {
+                            const employee = employees[p.employeeId || ""];
+                            const formattedName = employee ? formatEmployeeName(employee.lastName, employee.firstName, employee.name) : p.employeeName;
+                            return <p key={i} className="font-semibold">{formattedName}</p>;
+                        })}
                     </div>
                 </div>
             </div>
@@ -218,27 +248,38 @@ function getDisplayOrderNumber(participant?: MissionParticipant, mission?: Missi
 export function IndividualMissionSlipPrint({ mission, participant, logos, onCloseAction }: IndividualPrintProps) {
     const [mounted, setMounted] = useState(false);
     const [employee, setEmployee] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setMounted(true);
-        const timer = setTimeout(() => {
-            window.print();
-            onCloseAction();
-        }, 800);
-
         if (participant.employeeId) {
             import("@/services/employee-service").then(({ getEmployee }) => {
-                getEmployee(participant.employeeId!).then(setEmployee).catch(console.error);
+                getEmployee(participant.employeeId!)
+                    .then(emp => {
+                        setEmployee(emp);
+                        setLoading(false);
+                    })
+                    .catch((err) => {
+                        console.error("Error fetching employee for print:", err);
+                        setLoading(false);
+                    });
             });
+        } else {
+            setLoading(false);
         }
+    }, [participant.employeeId]);
 
-        return () => {
-            setMounted(false);
-            clearTimeout(timer);
-        };
-    }, [participant.employeeId, onCloseAction]);
+    useEffect(() => {
+        if (!loading && mounted) {
+            const timer = setTimeout(() => {
+                window.print();
+                onCloseAction();
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [loading, mounted, onCloseAction]);
 
-    if (!mounted) return null;
+    if (!mounted || loading) return null;
 
     const formatDayDate = (dateStr: string) => {
         if (!dateStr) return "";
@@ -252,7 +293,9 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
     };
 
     const civilite = employee?.civilite || (employee?.sexe === "Femme" ? "Madame" : "Monsieur");
-    const formattedOrderDate = format(new Date(), "dd MMMM yyyy", { locale: fr });
+    const formattedOrderDate = mission.dateSaisie 
+        ? format(parseISO(mission.dateSaisie), "dd MMMM yyyy", { locale: fr }) 
+        : format(new Date(), "dd MMMM yyyy", { locale: fr });
     const orderNumber = getDisplayOrderNumber(participant, mission);
 
     return createPortal(
@@ -305,11 +348,11 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
             <div className="space-y-2 text-[12pt] pl-6 pr-6 leading-relaxed">
                 <p className="flex items-start">
                     <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Donne ordre à :</span>
-                    <span className="font-medium flex-1">{civilite} {participant.employeeName}</span>
+                    <span className="font-medium flex-1">{civilite} {employee ? formatEmployeeName(employee.lastName, employee.firstName, employee.name) : participant.employeeName}</span>
                 </p>
                 <p className="flex items-start">
                     <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Fonction :</span>
-                    <span className="font-medium flex-1">{employee?.poste || "Collaborateur CNRCT"}</span>
+                    <span className="font-medium flex-1">{employee?.poste || employee?.fonction || "Collaborateur CNRCT"}</span>
                 </p>
                 <p className="flex items-start">
                     <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">De se rendre à :</span>
@@ -347,14 +390,16 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
             <div className="flex justify-end mt-4 pr-6">
                 <div className="text-center w-80 space-y-1 font-signature-block">
                     <p className="font-bold text-black">P. Le Président du Directoire et P.O</p>
-                    <p className="font-bold text-black">Le Secrétaire Général</p>
+                    <p className="font-bold text-black">{mission.signataireTitle || "Le Secrétaire Général"}</p>
                     <div className="h-14"></div>
-                    <p className="font-bold text-black underline uppercase">
-                        {logos.globalSignatoryName || "FATOGOMA YEO"}
-                    </p>
-                    <p className="text-slate-700 italic font-medium">
-                        {logos.globalSignatoryTitle || "Préfet"}
-                    </p>
+                    <div className="flex flex-col items-center justify-center leading-none">
+                        <span className="font-bold text-black underline uppercase text-[12pt] whitespace-nowrap block leading-none">
+                            {mission.signataireName || logos.globalSignatoryName || "FATOGOMA YEO"}
+                        </span>
+                        <span className="text-slate-700 italic font-medium block text-[11pt] leading-none mt-0">
+                            {logos.globalSignatoryTitle || "Préfet"}
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -415,20 +460,47 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
 
 export function CollectiveMissionOrderPrint({ mission, logos, onCloseAction }: GroupPrintProps) {
     const [mounted, setMounted] = useState(false);
+    const [employees, setEmployees] = useState<Record<string, any>>({});
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setMounted(true);
-        const timer = setTimeout(() => {
-            window.print();
-            onCloseAction();
-        }, 500);
-        return () => {
-            setMounted(false);
-            clearTimeout(timer);
-        };
-    }, [onCloseAction]);
+        
+        const participantIds = mission.participants?.map(p => p.employeeId).filter((id): id is string => !!id) || [];
+        if (participantIds.length === 0) {
+            setLoading(false);
+            return;
+        }
 
-    if (!mounted) return null;
+        import("@/services/employee-service").then(({ getEmployee }) => {
+            Promise.all(
+                participantIds.map(id => 
+                    getEmployee(id!)
+                        .then(emp => ({ id, emp }))
+                        .catch(() => ({ id, emp: null }))
+                )
+            ).then(results => {
+                const map: Record<string, any> = {};
+                results.forEach(res => {
+                    if (res.emp) map[res.id] = res.emp;
+                });
+                setEmployees(map);
+                setLoading(false);
+            });
+        });
+    }, [mission.participants]);
+
+    useEffect(() => {
+        if (!loading && mounted) {
+            const timer = setTimeout(() => {
+                window.print();
+                onCloseAction();
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [loading, mounted, onCloseAction]);
+
+    if (!mounted || loading) return null;
 
     return createPortal(
         <div id="print-section" className="bg-white text-black p-6 w-full min-h-screen font-serif">
@@ -477,20 +549,24 @@ export function CollectiveMissionOrderPrint({ mission, logos, onCloseAction }: G
                           </tr>
                         </thead>
                         <tbody>
-                          {mission.participants?.map((p, i) => (
-                            <tr key={i}>
-                              <td className="border border-black p-2 text-center">{i + 1}</td>
-                              <td className="border border-black p-2 font-bold">{p.employeeName}</td>
-                              <td className="border border-black p-2">{p.moyenTransport || "Véhicule CNRCT"} {p.immatriculation ? `(${p.immatriculation})` : ""}</td>
-                              <td className="border border-black p-2 text-center font-mono">{getDisplayOrderNumber(p, mission, i)}</td>
-                            </tr>
-                          ))}
+                          {mission.participants?.map((p, i) => {
+                            const employee = employees[p.employeeId || ""];
+                            const formattedName = employee ? formatEmployeeName(employee.lastName, employee.firstName, employee.name) : p.employeeName;
+                            return (
+                                <tr key={i}>
+                                  <td className="border border-black p-2 text-center">{i + 1}</td>
+                                  <td className="border border-black p-2 font-bold">{formattedName}</td>
+                                  <td className="border border-black p-2">{p.moyenTransport || "Véhicule CNRCT"} {p.immatriculation ? `(${p.immatriculation})` : ""}</td>
+                                  <td className="border border-black p-2 text-center font-mono">{getDisplayOrderNumber(p, mission, i)}</td>
+                                </tr>
+                            );
+                          })}
                         </tbody>
                     </table>
                 </div>
 
                 <div>
-                    <p className="text-right italic mt-4">Fait à Yamoussoukro, le {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
+                    <p className="text-right italic mt-4">Fait à Yamoussoukro, le {mission.dateSaisie ? format(parseISO(mission.dateSaisie), "dd MMMM yyyy", { locale: fr }) : format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
                 </div>
 
                 <div className="mt-8 grid grid-cols-2 gap-20">
@@ -499,9 +575,12 @@ export function CollectiveMissionOrderPrint({ mission, logos, onCloseAction }: G
                         <div className="h-24 mt-2 border border-dashed border-gray-300"></div>
                     </div>
                     <div className="text-center">
-                        <p className="font-bold underline uppercase">Le Secrétaire Général</p>
+                        <p className="font-bold underline uppercase">{mission.signataireTitle || "Le Secrétaire Général"}</p>
                         <p className="text-[10pt] uppercase mt-1">P. Le Président du Directoire et P.O</p>
-                        <div className="h-24 mt-2 border border-dashed border-gray-300"></div>
+                        <div className="h-24 mt-2 border border-dashed border-gray-300 flex items-center justify-center flex-col leading-none">
+                            {mission.signataireName && <span className="font-bold mt-16 leading-none block">{mission.signataireName}</span>}
+                            <span className="text-[10pt] text-slate-700 italic leading-none block mt-0">{logos.globalSignatoryTitle || "Préfet"}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -566,7 +645,9 @@ export function GroupedIndividualMissionsPrint({ mission, logos, onCloseAction }
         }
     };
 
-    const formattedOrderDate = format(new Date(), "dd MMMM yyyy", { locale: fr });
+    const formattedOrderDate = mission.dateSaisie 
+        ? format(parseISO(mission.dateSaisie), "dd MMMM yyyy", { locale: fr }) 
+        : format(new Date(), "dd MMMM yyyy", { locale: fr });
 
     return createPortal(
         <div id="print-section">
@@ -628,11 +709,11 @@ export function GroupedIndividualMissionsPrint({ mission, logos, onCloseAction }
                         <div className="space-y-2 text-[12pt] pl-6 pr-6 leading-relaxed">
                             <p className="flex items-start">
                                 <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Donne ordre à :</span>
-                                <span className="font-medium flex-1">{civilite} {participant.employeeName}</span>
+                                <span className="font-medium flex-1">{civilite} {employee ? formatEmployeeName(employee.lastName, employee.firstName, employee.name) : participant.employeeName}</span>
                             </p>
                             <p className="flex items-start">
                                 <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">Fonction :</span>
-                                <span className="font-medium flex-1">{employee?.poste || "Collaborateur CNRCT"}</span>
+                                <span className="font-medium flex-1">{employee?.poste || employee?.fonction || "Collaborateur CNRCT"}</span>
                             </p>
                             <p className="flex items-start">
                                 <span className="font-bold w-[195px] shrink-0 whitespace-nowrap">De se rendre à :</span>
@@ -670,14 +751,16 @@ export function GroupedIndividualMissionsPrint({ mission, logos, onCloseAction }
                         <div className="flex justify-end mt-4 pr-6">
                             <div className="text-center w-80 space-y-1 font-signature-block">
                                 <p className="font-bold text-black">P. Le Président du Directoire et P.O</p>
-                                <p className="font-bold text-black">Le Secrétaire Général</p>
+                                <p className="font-bold text-black">{mission.signataireTitle || "Le Secrétaire Général"}</p>
                                 <div className="h-14"></div>
-                                <p className="font-bold text-black underline uppercase">
-                                    {logos.globalSignatoryName || "FATOGOMA YEO"}
-                                </p>
-                                <p className="text-slate-700 italic font-medium">
-                                    {logos.globalSignatoryTitle || "Préfet"}
-                                </p>
+                                <div className="flex flex-col items-center justify-center leading-none">
+                                    <span className="font-bold text-black underline uppercase text-[12pt] whitespace-nowrap block leading-none">
+                                        {mission.signataireName || logos.globalSignatoryName || "FATOGOMA YEO"}
+                                    </span>
+                                    <span className="text-slate-700 italic font-medium block text-[11pt] leading-none mt-0">
+                                        {logos.globalSignatoryTitle || "Préfet"}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 

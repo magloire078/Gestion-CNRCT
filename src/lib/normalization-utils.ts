@@ -14,6 +14,27 @@ export const normalizeString = (s: string): string => {
 };
 
 /**
+ * Formats a first name to capitalize only the first letter of each word/part.
+ */
+export const formatFirstName = (name: string): string => {
+    if (!name) return "";
+    return name.split(/([\s-]+)/).map(word => {
+        if (word.trim() === '' || word === '-') return word;
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join('');
+};
+
+/**
+ * Formats an employee's full name: LASTNAME Firstname
+ */
+export const formatEmployeeName = (lastName?: string | null, firstName?: string | null, fallbackName?: string | null): string => {
+    if (lastName && firstName) {
+        return `${lastName.toUpperCase()} ${formatFirstName(firstName)}`;
+    }
+    return fallbackName || "";
+};
+
+/**
  * Finds the official name for a region based on a potentially misspelled input.
  */
 export const getOfficialRegion = (input: string): string => {

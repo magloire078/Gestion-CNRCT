@@ -33,6 +33,9 @@ export type Mission = {
     status: 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';
     lieuMission?: string;
     isRegularisation?: boolean;
+    dateSaisie?: string; // YYYY-MM-DD
+    signataireName?: string;
+    signataireTitle?: string;
 };
 
 export const conflictTypes = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Affaires civiles", "Autre"] as const;

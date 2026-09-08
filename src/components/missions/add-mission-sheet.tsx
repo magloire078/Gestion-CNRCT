@@ -33,7 +33,12 @@ import { Switch } from "@/components/ui/switch";
 import type { Mission } from "@/lib/data";
 import { getLatestMissionNumber } from "@/services/mission-service";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, LogOut, PlusCircle, MapPin, FileText, AlertCircle, Bookmark } from "lucide-react";
+import { CalendarIcon, Loader2, LogOut, PlusCircle, MapPin, FileText, AlertCircle, Bookmark, UserCheck } from "lucide-react";
+import type { Employe } from "@/lib/data";
+import { subscribeToEmployees } from "@/services/employee-service";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { useMemo } from "react";
+import { formatEmployeeName } from "@/lib/normalization-utils";
 
 
 interface AddMissionSheetProps {
@@ -51,10 +56,14 @@ export function AddMissionSheet({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [lieuMission, setLieuMission] = useState("");
+  const [dateSaisie, setDateSaisie] = useState<Date | undefined>(new Date());
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [status, setStatus] = useState<Mission['status']>('Planifiée');
   const [isRegularisation, setIsRegularisation] = useState(false);
+  const [signataireName, setSignataireName] = useState("");
+  const [signataireTitle, setSignataireTitle] = useState("");
+  const [employees, setEmployees] = useState<Employe[]>([]);
 
   const [loadingInitial, setLoadingInitial] = useState(true);
 
@@ -76,17 +85,44 @@ export function AddMissionSheet({
         }
       }
       fetchInitialData();
+      
+      const unsubscribe = subscribeToEmployees((fetched) => {
+          setEmployees(fetched);
+      }, (err) => console.error(err));
+      
+      return () => unsubscribe();
     }
   }, [isOpen]);
+
+  const employeeOptions = useMemo(() => {
+      return [...employees]
+          .map(emp => {
+              const label = formatEmployeeName(emp.lastName, emp.firstName, emp.name);
+              return { value: emp.id, label };
+          })
+          .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+  }, [employees]);
+
+  const handleSelectSignataire = (employeeId: string) => {
+      const emp = employees.find(e => e.id === employeeId);
+      if (emp) {
+          const label = formatEmployeeName(emp.lastName, emp.firstName, emp.name);
+          setSignataireName(label);
+          setSignataireTitle(emp.poste || "");
+      }
+  };
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
+    setDateSaisie(new Date());
     setStartDate(undefined);
     setEndDate(undefined);
     setLieuMission("");
     setStatus("Planifiée");
     setIsRegularisation(false);
+    setSignataireName("");
+    setSignataireTitle("");
     setError("");
   }
 
@@ -111,11 +147,14 @@ export function AddMissionSheet({
         title,
         description,
         participants: [],
+        dateSaisie: dateSaisie ? format(dateSaisie, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd"),
         status,
         lieuMission,
         isRegularisation,
+        signataireName,
+        signataireTitle,
       });
       handleClose();
     } catch (err) {
@@ -152,12 +191,22 @@ export function AddMissionSheet({
           ) : (
             <div className="overflow-y-auto max-h-[65vh] p-6 bg-slate-50 space-y-4">
               {/* Status & ID Header */}
-              <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <div className="space-y-0.5">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">N° Dossier</Label>
-                  <p className="font-extrabold text-lg text-slate-900 tracking-tight">ORD-{numeroMission}</p>
+              <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-100 gap-4">
+                <div className="space-y-1 flex-1">
+                  <Label htmlFor="numeroMission" className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                    N° Dossier (Généré automatiquement)
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-400">ORD-</span>
+                    <Input 
+                      id="numeroMission"
+                      value={numeroMission}
+                      onChange={(e) => setNumeroMission(e.target.value)}
+                      className="h-9 w-28 rounded-lg border-slate-200 bg-slate-50 font-black text-sm text-slate-900"
+                    />
+                  </div>
                 </div>
-                <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">
                   Nouveau Dossier
                 </div>
               </div>
@@ -205,6 +254,24 @@ export function AddMissionSheet({
                       className="h-12 rounded-xl border-slate-200 bg-white font-semibold text-sm focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all pl-10"
                     />
                   </div>
+                </div>
+
+                {/* Date de Saisie */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="dateSaisie" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-0.5 flex items-center gap-1">
+                    <CalendarIcon className="h-3.5 w-3.5 text-slate-400" /> Date de Saisie
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button id="dateSaisie" variant={"outline"} className={cn("h-12 w-full justify-start text-left font-semibold rounded-xl border-slate-200 bg-white hover:bg-slate-50 text-sm", !dateSaisie && "text-slate-400")}>
+                        <CalendarIcon className="mr-2 h-4 w-4 text-slate-500" />
+                        {dateSaisie ? format(dateSaisie, "dd MMM yyyy") : <span>Date du jour</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 border-none shadow-2xl rounded-2xl z-50">
+                      <Calendar mode="single" selected={dateSaisie} onSelect={setDateSaisie} initialFocus className="rounded-2xl bg-white" />
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {/* Dates */}
@@ -274,6 +341,48 @@ export function AddMissionSheet({
                       <SelectItem value="Terminée" className="font-bold py-3 hover:bg-slate-50 cursor-pointer">Terminée</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Custom Signatory */}
+                <div className="space-y-3 bg-slate-100/50 p-4 rounded-xl border border-slate-200/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserCheck className="h-4 w-4 text-purple-500" />
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-700">Signataire Spécifique</Label>
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-0.5">Choisir parmi le personnel</Label>
+                    <SearchableSelect
+                      items={employeeOptions}
+                      onValueChange={handleSelectSignataire}
+                      placeholder="Sélectionner un agent..."
+                      searchPlaceholder="Rechercher..."
+                      className="w-full h-12 bg-white rounded-xl shadow-sm border-slate-200"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="signataireName" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-0.5">Nom du Signataire</Label>
+                    <Input 
+                      id="signataireName" 
+                      value={signataireName} 
+                      onChange={(e) => setSignataireName(e.target.value)} 
+                      placeholder="Ex: YAO KOUASSI"
+                      className="h-12 rounded-xl border-slate-200 bg-white font-semibold text-sm px-4"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signataireTitle" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-0.5">Titre du Signataire (Optionnel)</Label>
+                    <Input 
+                      id="signataireTitle" 
+                      value={signataireTitle} 
+                      onChange={(e) => setSignataireTitle(e.target.value)} 
+                      placeholder="Ex: Le Secrétaire Général Adjoint"
+                      className="h-12 rounded-xl border-slate-200 bg-white font-semibold text-sm px-4"
+                    />
+                    </div>
+                  </div>
                 </div>
 
                 {error && (

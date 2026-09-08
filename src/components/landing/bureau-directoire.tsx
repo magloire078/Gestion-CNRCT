@@ -264,39 +264,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [], pastDire
                 </div>
               </>
             )}
-            {pastDirectors.length > 0 && (
-              <>
-                <div className="flex items-center gap-4 mb-6 mt-16 max-w-6xl mx-auto opacity-70">
-                  <div className="h-px flex-1 bg-slate-200" />
-                  <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Anciens Membres du Directoire</h4>
-                  <div className="h-px flex-1 bg-slate-200" />
-                </div>
-                <div className="flex flex-wrap justify-center gap-4 max-w-6xl mx-auto opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
-                  {pastDirectors.map((member, index) => (
-                    <div key={`past-${index}`} className="group relative w-full sm:max-w-[200px] flex-1 min-w-[180px]">
-                      <div className="relative flex flex-col items-center h-full bg-slate-50/50 p-4 rounded-xl border border-slate-100 transition-all hover:bg-slate-50 hover:shadow-sm">
-                        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-3 border border-slate-200 shadow-sm overflow-hidden relative">
-                          {member.photoUrl && (member.photoUrl.startsWith('http') || member.photoUrl.startsWith('/')) && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
-                            <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="48px" />
-                          ) : (
-                            <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name || 'AN')}&backgroundColor=94a3b8&fontFamily=Inter`} alt={member.name || ''} fill className="object-cover" sizes="48px" />
-                          )}
-                        </div>
-                        <p className="text-[9px] uppercase tracking-widest font-bold text-slate-400 text-center leading-tight mb-1">{member.poste}</p>
-                        <h4 className="font-bold text-xs text-slate-600 text-center mb-2">{member.name}</h4>
-                        {member.status && (
-                          <Badge 
-                            className="bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none text-slate-500 hover:bg-transparent"
-                          >
-                            {member.status}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+
           </>
         )}
       </div>

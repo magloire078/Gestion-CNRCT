@@ -11,6 +11,7 @@ import { EditMissionForm } from "@/components/missions/edit-mission-form";
 import { getMission, updateMission } from "@/services/mission-service";
 import type { Mission } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
+import { usePermissions } from "@/hooks/use-permissions";
 import { useToast } from "@/hooks/use-toast";
 
 export default function EditMissionPage() {
@@ -19,13 +20,17 @@ export default function EditMissionPage() {
     const { toast } = useToast();
     const [mission, setMission] = useState<Mission | null>(null);
     const [loading, setLoading] = useState(true);
-    const { hasPermission } = useAuth();
+    const { hasPermission, loading: authLoading } = useAuth();
+    const { can, loading: permissionsLoading } = usePermissions();
 
-    const canEdit = hasPermission('page:missions:view');
+    const isAuthResolving = authLoading || permissionsLoading;
+    const canEdit = hasPermission('page:missions:view') && can('missions', 'update');
 
     useEffect(() => {
-        if (!canEdit && !loading) {
-            router.replace('/intranet');
+        if (isAuthResolving) return;
+
+        if (!canEdit) {
+            router.replace('/missions');
             toast({
                 variant: "destructive",
                 title: "Accès refusé",
@@ -34,9 +39,11 @@ export default function EditMissionPage() {
             return;
         }
 
+        let isMounted = true;
         async function fetchMission() {
             try {
                 const data = await getMission(id);
+                if (!isMounted) return;
                 if (data) {
                     setMission(data);
                 } else {
@@ -49,11 +56,15 @@ export default function EditMissionPage() {
             } catch (err) {
                 console.error(err);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         }
         fetchMission();
-    }, [id, canEdit, loading, router, toast]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [id, canEdit, isAuthResolving, router, toast]);
 
     const handleUpdateMission = async (missionId: string, data: Partial<Mission>) => {
         try {
@@ -98,19 +109,28 @@ export default function EditMissionPage() {
     }
 
     return (
-        <div className="container mx-auto py-4 space-y-4">
+        <div className="container mx-auto py-6 space-y-6 max-w-7xl">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" onClick={() => router.back()} className="rounded-full h-10 w-10">
-                    <ChevronLeft className="h-5 w-5" />
+                <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => router.back()} 
+                    className="rounded-xl h-11 w-11 border-slate-200 bg-white shadow-sm hover:bg-slate-100 transition-all"
+                >
+                    <ChevronLeft className="h-5 w-5 text-slate-700" />
                 </Button>
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
-                        <Briefcase className="h-8 w-8 text-primary" />
-                        Édition de Mission
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="bg-slate-900 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-md">
+                            Dossier N° {mission.numeroMission}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">
+                            Modification des paramètres
+                        </span>
+                    </div>
+                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 uppercase">
+                        Édition du Dossier de Mission
                     </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Modification des paramètres du dossier {mission.numeroMission}
-                    </p>
                 </div>
             </div>
 

@@ -22,6 +22,10 @@ export const missionSchema = z.object({
     endDate: z.string(),
     status: z.enum(['Planifiée', 'En cours', 'Terminée', 'Annulée']),
     lieuMission: z.string().optional(),
+    isRegularisation: z.boolean().optional(),
+    dateSaisie: z.string().optional(),
+    signataireName: z.string().optional(),
+    signataireTitle: z.string().optional(),
 });
 
 export type MissionInput = z.infer<typeof missionSchema>;

@@ -45,6 +45,7 @@ import { getVehicles } from "@/services/fleet-service";
 import { cn } from "@/lib/utils";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Switch } from "@/components/ui/switch";
+import { formatEmployeeName } from "@/lib/normalization-utils";
 
 interface EditMissionFormProps {
     mission: Mission;
@@ -53,14 +54,18 @@ interface EditMissionFormProps {
 
 export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormProps) {
     const router = useRouter();
+    const [numeroMission, setNumeroMission] = useState(mission.numeroMission || "");
     const [title, setTitle] = useState(mission.title);
     const [description, setDescription] = useState(mission.description);
     const [lieuMission, setLieuMission] = useState(mission.lieuMission || "");
+    const [dateSaisie, setDateSaisie] = useState<Date | undefined>(mission.dateSaisie ? parseISO(mission.dateSaisie) : undefined);
     const [startDate, setStartDate] = useState<Date | undefined>(mission.startDate ? parseISO(mission.startDate) : undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(mission.endDate ? parseISO(mission.endDate) : undefined);
     const [status, setStatus] = useState<Mission['status']>(mission.status);
     const [participants, setParticipants] = useState<MissionParticipant[]>(mission.participants || []);
     const [isRegularisation, setIsRegularisation] = useState(mission.isRegularisation || false);
+    const [signataireName, setSignataireName] = useState(mission.signataireName || "");
+    const [signataireTitle, setSignataireTitle] = useState(mission.signataireTitle || "");
     
     const [employees, setEmployees] = useState<Employe[]>([]);
     const [fleetVehicles, setFleetVehicles] = useState<Fleet[]>([]);
@@ -79,19 +84,20 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
     // Fetch the latest global numeroOrdre and pre-fill empty participant references on mount
     useEffect(() => {
         async function initOrdreNumbers() {
-            let lastNum = await getLatestNumeroOrdre();
+            let lastNum = await getLatestNumeroOrdre(mission.id);
             setLatestNumeroOrdre(lastNum);
             
             setParticipants(prevParticipants => {
                 let hasEmpty = false;
+                let currentNum = lastNum;
                 const updated = prevParticipants.map((p) => {
                     if (!p.numeroOrdre || p.numeroOrdre.trim() === "") {
                         hasEmpty = true;
-                        const nextNum = incrementOrderNumberString(lastNum || mission.numeroMission || "000", 1);
-                        lastNum = nextNum;
+                        const nextNum = incrementOrderNumberString(currentNum || mission.numeroMission || "1000", 1);
+                        currentNum = nextNum;
                         return { ...p, numeroOrdre: nextNum };
                     } else {
-                        lastNum = p.numeroOrdre;
+                        currentNum = p.numeroOrdre;
                         return p;
                     }
                 });
@@ -99,14 +105,12 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
             });
         }
         initOrdreNumbers();
-    }, [mission.numeroMission]);
+    }, [mission.id, mission.numeroMission]);
 
     const employeeOptions = useMemo(() => {
         return [...employees]
             .map(emp => {
-                const label = emp.lastName && emp.firstName 
-                    ? `${emp.lastName.toUpperCase()} ${emp.firstName}` 
-                    : emp.name;
+                const label = formatEmployeeName(emp.lastName, emp.firstName, emp.name);
                 return { value: emp.id, label };
             })
             .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
@@ -130,7 +134,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
 
         const newParticipant: MissionParticipant = {
             employeeId: emp.id,
-            employeeName: emp.name,
+            employeeName: formatEmployeeName(emp.lastName, emp.firstName, emp.name),
             moyenTransport: 'Véhicule CNRCT',
             numeroOrdre: nextNum,
             coutTransport: 0,
@@ -139,6 +143,15 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         };
         setParticipants([...participants, newParticipant]);
         setLatestNumeroOrdre(nextNum);
+    };
+
+    const handleSelectSignataire = (employeeId: string) => {
+        const emp = employees.find(e => e.id === employeeId);
+        if (emp) {
+            const label = formatEmployeeName(emp.lastName, emp.firstName, emp.name);
+            setSignataireName(label);
+            setSignataireTitle(emp.poste || "");
+        }
     };
 
     const handleRemoveParticipant = (index: number) => {
@@ -172,14 +185,18 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         setIsSubmitting(true);
         try {
             await onUpdateMission(mission.id, {
+                numeroMission,
                 title,
                 description,
                 lieuMission,
+                dateSaisie: dateSaisie ? format(dateSaisie, "yyyy-MM-dd") : (mission.dateSaisie || format(new Date(), "yyyy-MM-dd")),
                 startDate: startDate ? format(startDate, "yyyy-MM-dd") : mission.startDate,
                 endDate: endDate ? format(endDate, "yyyy-MM-dd") : mission.endDate,
                 status,
                 participants,
-                isRegularisation
+                isRegularisation,
+                signataireName,
+                signataireTitle
             });
         } catch (err) {
             console.error(err);
@@ -198,7 +215,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                         <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Configuration Mission</h2>
                         <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline" className="border-slate-200 text-[9px] font-black uppercase tracking-widest text-slate-500">
-                                {mission.numeroMission || 'NO-REF'}
+                                {numeroMission || 'NO-REF'}
                             </Badge>
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paramétrage technique & Équipage</span>
                         </div>
@@ -252,6 +269,15 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                             </CardHeader>
                             <CardContent className="p-5 space-y-4">
                                 <div className="space-y-3">
+                                    <Label htmlFor="numeroMission" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Numéro de Dossier</Label>
+                                    <Input 
+                                        id="numeroMission" 
+                                        value={numeroMission} 
+                                        onChange={(e) => setNumeroMission(e.target.value)} 
+                                        className="h-12 w-48 rounded-xl border-slate-200 bg-white/50 font-black text-slate-900 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm px-4" 
+                                    />
+                                </div>
+                                <div className="space-y-3">
                                     <Label htmlFor="title" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Désignation de la Mission</Label>
                                     <Input 
                                         id="title" 
@@ -295,6 +321,20 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Date de Saisie</Label>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button variant={"outline"} className="h-12 w-full justify-start text-left bg-white/50 rounded-xl border-slate-200 font-bold text-xs uppercase tracking-tight">
+                                                        <CalendarIcon className="mr-2 h-4 w-4 text-emerald-600" />
+                                                        {dateSaisie ? format(dateSaisie, "dd MMM yyyy", { locale: fr }) : <span>Date de saisie</span>}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0 border-none shadow-2xl rounded-2xl overflow-hidden">
+                                                    <CalendarComponent mode="single" selected={dateSaisie} onSelect={setDateSaisie} initialFocus />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
                                         <div className="space-y-2">
                                             <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Début</Label>
                                             <Popover>
@@ -359,6 +399,47 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                 <CardContent className="p-5 flex items-center justify-between">
                                     <Label htmlFor="isRegularisation" className="text-xs font-bold text-slate-700">Mission de Régularisation</Label>
                                     <Switch id="isRegularisation" checked={isRegularisation} onCheckedChange={setIsRegularisation} />
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl">
+                                <CardHeader className="p-5 border-b border-white/10 bg-slate-900/5">
+                                    <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
+                                        <Settings className="h-5 w-5 text-purple-500" />
+                                        Signataire
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-5 space-y-4">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Choisir parmi le personnel</Label>
+                                        <SearchableSelect
+                                            items={employeeOptions}
+                                            onValueChange={handleSelectSignataire}
+                                            placeholder="Sélectionner un agent..."
+                                            searchPlaceholder="Rechercher..."
+                                            className="w-full h-10 bg-white/50 rounded-xl shadow-sm border-slate-200"
+                                        />
+                                    </div>
+                                    <div className="space-y-2 pt-2">
+                                        <Label htmlFor="signataireName" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Nom (Optionnel)</Label>
+                                        <Input 
+                                            id="signataireName" 
+                                            value={signataireName} 
+                                            onChange={(e) => setSignataireName(e.target.value)} 
+                                            placeholder="Laisser vide pour signataire par défaut"
+                                            className="h-10 rounded-xl border-slate-200 bg-white/50 font-bold text-sm" 
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="signataireTitle" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Titre (Optionnel)</Label>
+                                        <Input 
+                                            id="signataireTitle" 
+                                            value={signataireTitle} 
+                                            onChange={(e) => setSignataireTitle(e.target.value)} 
+                                            placeholder="Titre du signataire"
+                                            className="h-10 rounded-xl border-slate-200 bg-white/50 font-bold text-sm" 
+                                        />
+                                    </div>
                                 </CardContent>
                             </Card>
                         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import { formatEmployeeName } from "@/lib/normalization-utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -213,7 +214,7 @@ export default function LeaveReportPage() {
                     <SelectItem value="all">Tous les employés</SelectItem>
                     {employees.map(emp => (
                       <SelectItem key={emp.id} value={emp.id}>
-                        {emp.lastName && emp.firstName ? `${emp.lastName.toUpperCase()} ${emp.firstName}` : emp.name}
+                        {formatEmployeeName(emp.lastName, emp.firstName, emp.name)}
                       </SelectItem>
                     ))}
                   </SelectContent>

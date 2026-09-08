@@ -11,7 +11,7 @@ const missionsCollection = collection(db, 'missions');
 const usersCollection = collection(db, 'users');
 
 async function notifyParticipants(mission: Omit<Mission, 'id'> | Mission) {
-    const employeeIds = mission.participants.map(p => p.employeeId);
+    const employeeIds = (mission.participants || []).map(p => p.employeeId).filter(Boolean);
     if (employeeIds.length === 0) return;
 
     // Firestore 'in' query supports up to 30 items. Chunk if necessary.
@@ -19,16 +19,22 @@ async function notifyParticipants(mission: Omit<Mission, 'id'> | Mission) {
         const idChunk = employeeIds.slice(i, i + 30);
         if (idChunk.length === 0) continue;
 
-        const usersQuery = query(usersCollection, where("employeeId", "in", idChunk));
-        const usersSnapshot = await getDocs(usersQuery);
+        try {
+            const usersQuery = query(usersCollection, where("employeeId", "in", idChunk));
+            const usersSnapshot = await getDocs(usersQuery);
 
-        for (const userDoc of usersSnapshot.docs) {
-            await createNotification({
-                userId: userDoc.id,
-                title: 'Nouvelle Mission Assignée',
-                description: `Vous avez été assigné(e) à la mission : "${mission.title}"`,
-                href: `/missions` // Link to their mission list (filtered to them)
-            });
+            await Promise.all(
+                usersSnapshot.docs.map(userDoc =>
+                    createNotification({
+                        userId: userDoc.id,
+                        title: 'Nouvelle Mission Assignée',
+                        description: `Vous avez été assigné(e) à la mission : "${mission.title}"`,
+                        href: `/missions`
+                    })
+                )
+            );
+        } catch (error) {
+            console.error("Erreur lors de l'envoi des notifications aux participants:", error);
         }
     }
 }
@@ -48,15 +54,10 @@ export function subscribeToMissions(
     employeeId?: string,
     isAdmin: boolean = false
 ): Unsubscribe {
-    let q = query(missionsCollection, orderBy("startDate", "desc"));
-    
     // If not admin and we have an employeeId, only show their missions
-    if (!isAdmin && employeeId) {
-        q = query(missionsCollection, 
-            where("participantIds", "array-contains", employeeId),
-            orderBy("startDate", "desc")
-        );
-    }
+    const q = (!isAdmin && employeeId)
+        ? query(missionsCollection, where("participantIds", "array-contains", employeeId))
+        : query(missionsCollection, orderBy("startDate", "desc"));
 
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
@@ -69,6 +70,12 @@ export function subscribeToMissions(
                 }
                 return result.data as Mission;
             });
+
+            // Ensure consistent descending date sort even without composite index
+            if (!isAdmin && employeeId) {
+                missions.sort((a: Mission, b: Mission) => (b.startDate || "").localeCompare(a.startDate || ""));
+            }
+
             callback(missions);
         },
         (error) => {
@@ -141,6 +148,7 @@ export async function addMission(missionDataToAdd: Omit<Mission, 'id'>): Promise
     const finalData = { 
         ...missionDataToAdd, 
         numeroMission: finalNumeroMission,
+        dateSaisie: missionDataToAdd.dateSaisie || new Date().toISOString().split('T')[0],
         participantIds 
     };
 
@@ -152,18 +160,18 @@ export async function addMission(missionDataToAdd: Omit<Mission, 'id'>): Promise
 
 export async function updateMission(id: string, dataToUpdate: Partial<Mission>): Promise<void> {
     const docRef = doc(db, 'missions', id);
-    const originalMission = await getMission(id);
-
-    // Sync participantIds if participants is provided
+    
+    let originalMission: Mission | null = null;
     if (dataToUpdate.participants) {
         (dataToUpdate as any).participantIds = syncParticipantIds(dataToUpdate);
+        originalMission = await getMission(id);
     }
 
     await updateDoc(docRef, dataToUpdate);
 
     // Notify only new participants
     if (dataToUpdate.participants && originalMission) {
-        const originalParticipantIds = new Set(originalMission.participants.map(p => p.employeeId));
+        const originalParticipantIds = new Set((originalMission.participants || []).map(p => p.employeeId));
         const newParticipants = dataToUpdate.participants.filter(p => !originalParticipantIds.has(p.employeeId));
         if (newParticipants.length > 0) {
             const missionWithNewParticipants = { ...originalMission, id, participants: newParticipants };
@@ -194,37 +202,46 @@ export async function getLatestMissionNumber(isDossier: boolean = true): Promise
 }
 
 /**
- * Recovers the latest non-empty numeroOrdre used across previous missions.
+ * Recovers the highest numeroOrdre used across all missions (excluding the current one if specified).
  */
-export async function getLatestNumeroOrdre(): Promise<string | null> {
+export async function getLatestNumeroOrdre(excludeMissionId?: string): Promise<string | null> {
     try {
-        const q = query(missionsCollection, orderBy("startDate", "desc"), limit(20));
-        const snapshot = await getDocs(q);
+        const snapshot = await getDocs(missionsCollection);
+        let maxNum = 0;
+        let maxNumStr: string | null = null;
+
         for (const docSnap of snapshot.docs) {
+            if (excludeMissionId && docSnap.id === excludeMissionId) continue;
             const mission = docSnap.data();
             if (mission.participants && Array.isArray(mission.participants)) {
-                // Check from the last participant of the latest mission backwards
-                for (let i = mission.participants.length - 1; i >= 0; i--) {
-                    const p = mission.participants[i];
-                    if (p.numeroOrdre && p.numeroOrdre.trim() !== "") {
-                        return p.numeroOrdre;
+                for (const p of mission.participants) {
+                    if (p.numeroOrdre && typeof p.numeroOrdre === 'string') {
+                        const trimmed = p.numeroOrdre.trim();
+                        const match = trimmed.match(/(\d+)/);
+                        if (match) {
+                            const val = parseInt(match[1], 10);
+                            if (val > maxNum) {
+                                maxNum = val;
+                                maxNumStr = trimmed;
+                            }
+                        }
                     }
                 }
             }
         }
-        return null;
+        return maxNumStr || "1000";
     } catch (error) {
         console.error("Error fetching latest numeroOrdre:", error);
-        return null;
+        return "1000";
     }
 }
 
 /**
  * Increments the first sequence of digits found in the base string.
- * e.g., "088/CNRCT" -> "089/CNRCT"
+ * e.g., "1014" -> "1015", "088/CNRCT" -> "089/CNRCT"
  */
 export function incrementOrderNumberString(base: string | undefined | null, incrementValue: number = 1): string {
-    if (!base) return "";
+    if (!base || base.trim() === "") return (1000 + incrementValue).toString();
     const match = base.match(/(\d+)/);
     if (!match) {
         return base;

@@ -17,10 +17,11 @@ import {
 } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Employe, Department, Direction, Service, OrganizationSettings } from "@/lib/data";
+import type { Employe, Department, Direction, Service, OrganizationSettings, Chief } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
 import { subscribeToEmployees, addEmployee, deleteEmployee, getEmployeeGroup, getOrganizationalUnits } from "@/services/employee-service";
+import { subscribeToChiefs } from "@/services/chief-service";
 import { getOrganizationSettings } from "@/services/organization-service";
 import { exportToExcel } from "@/lib/export-utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -65,6 +66,7 @@ import { DebouncedInput } from "@/components/ui/debounced-input";
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
+  const [chiefs, setChiefs] = useState<Chief[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
@@ -159,6 +161,12 @@ export default function EmployeesPage() {
       setLoading(false);
     });
 
+    const unsubChiefs = subscribeToChiefs((fetchedChiefs) => {
+      setChiefs(fetchedChiefs);
+    }, (err) => {
+      console.warn("Could not load chiefs in employees list:", err);
+    });
+
     async function fetchOrgData() {
       try {
         const { departments, directions, services } = await getOrganizationalUnits();
@@ -173,7 +181,10 @@ export default function EmployeesPage() {
     getOrganizationSettings().then(setOrganizationLogos);
     fetchOrgData();
 
-    return () => unsubEmployees();
+    return () => {
+      unsubEmployees();
+      unsubChiefs();
+    };
   }, [user, authLoading]);
 
   useEffect(() => {
@@ -215,12 +226,52 @@ export default function EmployeesPage() {
     }
   };
 
+  const chiefLookup = useMemo(() => {
+    const map = new Map<string, Chief>();
+    chiefs.forEach(c => {
+      if (c.id) map.set(c.id, c);
+      const fullName = `${c.lastName || ''} ${c.firstName || ''}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      if (fullName) map.set(fullName, c);
+      const directName = (c.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      if (directName) map.set(directName, c);
+    });
+    return map;
+  }, [chiefs]);
+
+  const resolveEmployeeVillage = (emp: Employe): string => {
+    const direct = (emp.Village || emp.village || (emp as any).villageName || (emp as any).localite || '').trim();
+    if (direct) return direct;
+
+    if (emp.chiefId && chiefLookup.has(emp.chiefId)) {
+      const c = chiefLookup.get(emp.chiefId);
+      if (c?.village) return c.village.trim();
+    }
+
+    const empFullName = `${emp.lastName || ''} ${emp.firstName || ''}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    if (empFullName && chiefLookup.has(empFullName)) {
+      const c = chiefLookup.get(empFullName);
+      if (c?.village) return c.village.trim();
+    }
+
+    const empDirectName = (emp.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    if (empDirectName && chiefLookup.has(empDirectName)) {
+      const c = chiefLookup.get(empDirectName);
+      if (c?.village) return c.village.trim();
+    }
+
+    return (emp.Commune || '').trim();
+  };
+
   const enrichedEmployees = useMemo(() => {
-    return employees.map(emp => ({
-      ...emp,
-      calculatedGroup: getEmployeeGroup(emp, departments)
-    }));
-  }, [employees, departments]);
+    return employees.map(emp => {
+      const resolvedVillage = resolveEmployeeVillage(emp);
+      return {
+        ...emp,
+        calculatedGroup: getEmployeeGroup(emp, departments),
+        resolvedVillage: resolvedVillage || (emp.Village || emp.village || '')
+      };
+    });
+  }, [employees, departments, chiefLookup]);
 
   const filteredEmployees = useMemo(() => {
     const filtered = enrichedEmployees.filter(employee => {
@@ -229,7 +280,7 @@ export default function EmployeesPage() {
       const normalizedFullName = ((employee.lastName || '') + ' ' + (employee.firstName || '')).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normalizedName = (employee.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normalizedMatricule = (employee.matricule || '').toLowerCase();
-      const normalizedVillage = (employee.Village || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedVillage = (employee.resolvedVillage || employee.Village || employee.village || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normalizedPoste = (employee.poste || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normalizedRegion = (employee.Region || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normalizedDept = (employee.Departement || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -258,7 +309,7 @@ export default function EmployeesPage() {
       const matchesSubPref = !isGeoTab || subPrefectureFilter === 'all' || employee.subPrefecture === subPrefectureFilter || employee.Commune === subPrefectureFilter;
       
       const normalizedVillageFilter = villageFilter.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedEmpVillage = (employee.Village || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedEmpVillage = (employee.resolvedVillage || employee.Village || employee.village || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const matchesVillageFiltered = !isGeoTab || normalizedVillageFilter === "" || normalizedEmpVillage.includes(normalizedVillageFilter);
 
       let matchesMandat = true;
@@ -835,9 +886,10 @@ export default function EmployeesPage() {
                                 <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                                {isGeoTab ? (
+                                 {isGeoTab ? (
                                     <>
                                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                     </>
@@ -894,7 +946,7 @@ export default function EmployeesPage() {
                                     </span>
                                     {isGeoTab ? (
                                       <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate max-w-[200px]">
-                                        {[employee.subPrefecture || employee.sousPrefecture, employee.Village || employee.village].filter(Boolean).join(' - ')}
+                                        {[employee.subPrefecture || employee.sousPrefecture, employee.resolvedVillage || employee.Village || employee.village].filter(Boolean).join(' - ')}
                                       </span>
                                     ) : (
                                       <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.poste}</span>
@@ -906,9 +958,9 @@ export default function EmployeesPage() {
                                 {isGeoTab ? (
                                   <>
                                     <TableCell className="text-sm md:text-xs truncate max-w-[150px] font-bold text-slate-700">{employee.poste}</TableCell>
-                                    <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region}</TableCell>
-                                    <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement}</TableCell>
-                                    <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Village}</TableCell>
+                                    <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region || '-'}</TableCell>
+                                    <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement || '-'}</TableCell>
+                                    <TableCell className="text-sm md:text-xs font-bold text-slate-700">{employee.resolvedVillage || employee.Village || employee.village || '-'}</TableCell>
                                   </>
                                 ) : (
                                   <>
@@ -1002,7 +1054,7 @@ export default function EmployeesPage() {
                                     {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}
                                   </h3>
                                   <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-4 h-8 flex items-center justify-center line-clamp-2">
-                                    {isGeoTab ? [employee.subPrefecture, employee.Village].filter(Boolean).join(' - ') : employee.poste}
+                                    {isGeoTab ? [employee.subPrefecture || employee.sousPrefecture, employee.resolvedVillage || employee.Village || employee.village].filter(Boolean).join(' - ') : employee.poste}
                                   </p>
                                   
                                   <div className="w-full bg-slate-50 rounded-xl p-3 space-y-2 text-left">
@@ -1022,7 +1074,7 @@ export default function EmployeesPage() {
                                         </div>
                                         <div className="flex justify-between items-center text-[10px]">
                                           <span className="text-slate-400 font-bold uppercase tracking-widest">Village</span>
-                                          <span className="font-bold text-slate-700 truncate max-w-[120px]">{employee.Village || '-'}</span>
+                                          <span className="font-bold text-slate-700 truncate max-w-[120px]">{employee.resolvedVillage || employee.Village || employee.village || '-'}</span>
                                         </div>
                                       </>
                                     ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
@@ -10,6 +10,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+function MapResizer() {
+    const map = useMap();
+    useEffect(() => {
+        const t1 = setTimeout(() => map.invalidateSize(), 150);
+        const t2 = setTimeout(() => map.invalidateSize(), 600);
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+        };
+    }, [map]);
+    return null;
+}
 
 // Fix Leaflet default icon path issues
 if (typeof window !== 'undefined') {
@@ -47,7 +60,6 @@ export default function ChiefsMap({ chiefs, onChiefClick, height = "600px" }: Ch
         setIsMounted(true);
         return () => {
             setIsMounted(false);
-            // Nettoyage synchrone de l'ID Leaflet pour React 18 Strict Mode
             const containers = document.querySelectorAll('.leaflet-container');
             containers.forEach((c: any) => {
                 c._leaflet_id = null;
@@ -60,7 +72,7 @@ export default function ChiefsMap({ chiefs, onChiefClick, height = "600px" }: Ch
     const mappableChiefs = chiefs.filter(c => c.latitude && c.longitude);
 
     if (!isMounted) {
-        return <div style={{ height, width: '100%' }} className="rounded-xl border-4 border-white/60 shadow-[0_20px_40px_rgb(0,0,0,0.08)] bg-slate-100 animate-pulse" />;
+        return <div style={{ height, minHeight: height === '100%' ? '500px' : height, width: '100%' }} className="rounded-xl border-4 border-white/60 shadow-[0_20px_40px_rgb(0,0,0,0.08)] bg-slate-100 animate-pulse" />;
     }
 
     return (
@@ -68,12 +80,13 @@ export default function ChiefsMap({ chiefs, onChiefClick, height = "600px" }: Ch
             center={defaultCenter} 
             zoom={6} 
             scrollWheelZoom={true} 
-            style={{ height, width: '100%', zIndex: 0 }}
+            style={{ height, minHeight: height === '100%' ? '500px' : height, width: '100%', zIndex: 0 }}
             className="rounded-xl border-4 border-white/60 shadow-[0_20px_40px_rgb(0,0,0,0.08)] bg-slate-50"
         >
+            <MapResizer />
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             
             <MarkerClusterGroup

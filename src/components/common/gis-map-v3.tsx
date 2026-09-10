@@ -223,6 +223,9 @@ export function GISMap(props: GISMapProps) {
             layersRef.current.proximity = L.layerGroup();
 
             setMapReady(true);
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 200);
         } catch (err) {
             console.error("Leaflet initialization failed:", err);
         }
@@ -236,13 +239,28 @@ export function GISMap(props: GISMapProps) {
                 }
                 mapRef.current = null;
             }
-            // Nettoyage manuel forcé pour garantir que le prochain cycle réussira
             if (container) {
                 delete (container as any)._leaflet_id;
                 container.innerHTML = '';
             }
         };
     }, [L]);
+
+    // Ensure map tiles recalculate size properly when ready or on window resize
+    useEffect(() => {
+        if (!mapReady || !mapRef.current) return;
+        const map = mapRef.current;
+        const t1 = setTimeout(() => map.invalidateSize(), 100);
+        const t2 = setTimeout(() => map.invalidateSize(), 500);
+
+        const handleResize = () => map.invalidateSize();
+        window.addEventListener('resize', handleResize);
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [mapReady]);
 
     // Update Datasets & Markers
     useEffect(() => {
@@ -593,19 +611,15 @@ export function GISMap(props: GISMapProps) {
     };
 
     if (typeof window === 'undefined' || !isClient) {
-        return <div className={cn("bg-slate-50 relative map-container-dynamic", className)} />;
+        return <div className={cn("bg-slate-50 relative", className)} style={{ height, minHeight: typeof height === 'number' ? `${height}px` : height, width: '100%' }} />;
     }
 
     return (
         <div 
-            className={cn("bg-slate-50 relative group rounded-xl overflow-hidden shadow-2xl border border-slate-200 map-container-dynamic", className)}
+            className={cn("bg-slate-50 relative group rounded-xl overflow-hidden shadow-2xl border border-slate-200", className)}
+            style={{ height, minHeight: typeof height === 'number' ? `${height}px` : height, width: '100%' }}
         >
-            <style jsx>{`
-                .map-container-dynamic {
-                    min-height: ${height};
-                }
-            `}</style>
-            <div key={instanceId} ref={mapContainerRef} className="absolute inset-0 z-0" id={instanceId} />
+            <div key={instanceId} ref={mapContainerRef} className="absolute inset-0 z-0 h-full w-full" id={instanceId} />
 
             {/* Overlay de Chargement */}
             {!mapReady && (

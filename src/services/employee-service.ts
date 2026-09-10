@@ -397,6 +397,14 @@ export async function getEmployee(id: string): Promise<Employe | null> {
 const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> => {
     const data = { ...employeeData };
 
+    // Update combined name if firstName or lastName is provided
+    if (data.lastName !== undefined || data.firstName !== undefined) {
+        const full = `${data.lastName || ''} ${data.firstName || ''}`.trim();
+        if (full) {
+            data.name = full;
+        }
+    }
+
     // Si l'employé est actif, n'a pas de date de départ, mais a une date de naissance
     if (data.status === 'Actif' && !data.Date_Depart && data.Date_Naissance) {
         try {
@@ -422,6 +430,11 @@ const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> =
             (data as any)[field] = isNaN(num) ? 0 : num;
         }
     });
+
+    // Remove client-only UI calculated fields
+    delete (data as any).calculatedRetirementDate;
+    delete (data as any).age;
+    delete (data as any).retirementNotificationSent;
 
     Object.keys(data).forEach(key => {
         if ((data as any)[key] === undefined) {
@@ -578,37 +591,41 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
         const hasSalaryChange = salaryFields.some(field => updateData[field] !== undefined);
 
         if (hasSalaryChange) {
-            // If salary events exist, update the "origin" salary (previous_* of the first event)
-            // and recalculate the entire chain
-            const history = await getEmployeeHistory(employeeId);
-            const salaryEventTypes = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Autre'];
-            const salaryEvents = history
-                .filter(e => salaryEventTypes.includes(e.eventType as any) && e.details)
-                .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime());
+            try {
+                // If salary events exist, update the "origin" salary (previous_* of the first event)
+                // and recalculate the entire chain
+                const history = await getEmployeeHistory(employeeId);
+                const salaryEventTypes = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Autre'];
+                const salaryEvents = history
+                    .filter(e => salaryEventTypes.includes(e.eventType as any) && e.details)
+                    .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime());
 
-            if (salaryEvents.length > 0) {
-                // Get the refreshed employee data (after the updateDoc above)
-                const refreshedEmployee = await getEmployee(employeeId);
-                if (refreshedEmployee) {
-                    // Update the first event's previous_* fields with the new "origin" salary
-                    const firstEvent = salaryEvents[0];
-                    const firstEventRef = doc(db, `employees/${employeeId}/history`, firstEvent.id);
-                    const originUpdates: Record<string, any> = {};
+                if (salaryEvents.length > 0) {
+                    // Get the refreshed employee data (after the updateDoc above)
+                    const refreshedEmployee = await getEmployee(employeeId);
+                    if (refreshedEmployee) {
+                        // Update the first event's previous_* fields with the new "origin" salary
+                        const firstEvent = salaryEvents[0];
+                        const firstEventRef = doc(db, `employees/${employeeId}/history`, firstEvent.id);
+                        const originUpdates: Record<string, any> = {};
 
-                    for (const field of salaryFields) {
-                        originUpdates[`details.previous_${field}`] = Number((refreshedEmployee as any)[field] || 0);
+                        for (const field of salaryFields) {
+                            originUpdates[`details.previous_${field}`] = Number((refreshedEmployee as any)[field] || 0);
+                        }
+
+                        await updateDoc(firstEventRef, originUpdates);
+
+                        // Now recalculate the full chain
+                        await recalculateSalaryChain(employeeId);
                     }
-
-                    await updateDoc(firstEventRef, originUpdates);
-
-                    // Now recalculate the full chain
-                    await recalculateSalaryChain(employeeId);
                 }
+            } catch (historyError) {
+                console.warn("[EmployeeService] Non-blocking salary history recalculation failed:", historyError);
             }
         }
     } catch (error: any) {
         if (error.code === 'permission-denied') {
-            throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier l'employé ${employeeDataToUpdate.name}.`, { operation: 'update', path: `employees/${employeeId}` });
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier cet employé.`, { operation: 'update', path: `employees/${employeeId}` });
         }
         if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
         if (error instanceof FirestoreTimeoutError) throw error;

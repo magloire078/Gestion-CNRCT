@@ -206,6 +206,9 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     setIsSubmitting(true);
     try {
       const dataToSave = { ...formData };
+      if (dataToSave.lastName || dataToSave.firstName) {
+        dataToSave.name = `${dataToSave.lastName || ''} ${dataToSave.firstName || ''}`.trim() || dataToSave.name;
+      }
       if (typeof dataToSave.skills === 'string') {
         dataToSave.skills = (dataToSave.skills as string).split(',').map(s => s.trim()).filter(Boolean);
       }
@@ -217,12 +220,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       });
       router.push(`/employees/${employee.id}`);
       router.refresh();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Failed to update employee:", err);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de mettre à jour l'employé.",
+        description: err?.message || "Impossible de mettre à jour l'employé.",
       });
     } finally {
       setIsSubmitting(false);

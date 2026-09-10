@@ -1,12 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import type { Village } from "@/types/village";
 import { cn } from "@/lib/utils";
+
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    const t1 = setTimeout(() => map.invalidateSize(), 150);
+    const t2 = setTimeout(() => map.invalidateSize(), 600);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [map]);
+  return null;
+}
 
 // Fix Leaflet icons
 if (typeof window !== "undefined") {
@@ -57,7 +70,7 @@ export default function VillagesMap({ villages, onVillageClick, height = "100%" 
   const mappable = villages.filter((v) => v.latitude && v.longitude);
 
   if (!isMounted) {
-    return <div style={{ height, width: "100%" }} className="bg-slate-800 animate-pulse rounded-2xl" />;
+    return <div style={{ height, minHeight: height === '100%' ? '500px' : height, width: "100%" }} className="bg-slate-800 animate-pulse rounded-2xl" />;
   }
 
   return (
@@ -65,11 +78,12 @@ export default function VillagesMap({ villages, onVillageClick, height = "100%" 
       center={defaultCenter}
       zoom={6}
       scrollWheelZoom
-      style={{ height, width: "100%", zIndex: 0 }}
+      style={{ height, minHeight: height === '100%' ? '500px' : height, width: "100%", zIndex: 0 }}
     >
+      <MapResizer />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
       <MarkerClusterGroup

@@ -315,12 +315,12 @@ export function PressConflictGISMap({
     }, [mapReady]);
 
     if (typeof window === 'undefined' || !isClient) {
-        return <div className={cn("bg-slate-50 relative", className)} style={{ minHeight: height }} />;
+        return <div className={cn("bg-slate-50 relative", className)} style={{ height, minHeight: typeof height === 'number' ? `${height}px` : height, width: '100%' }} />;
     }
 
     return (
-        <div className={cn("bg-slate-50 relative group rounded-xl overflow-hidden shadow-2xl border border-slate-200", className)} style={{ minHeight: height }}>
-            <div key={instanceId} ref={mapContainerRef} className="absolute inset-0 z-0" id={instanceId} />
+        <div className={cn("bg-slate-50 relative group rounded-xl overflow-hidden shadow-2xl border border-slate-200", className)} style={{ height, minHeight: typeof height === 'number' ? `${height}px` : height, width: '100%' }}>
+            <div key={instanceId} ref={mapContainerRef} className="absolute inset-0 z-0 h-full w-full" id={instanceId} />
 
             {/* Loading Overlay */}
             {!mapReady && (

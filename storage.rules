@@ -2,38 +2,68 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Default deny all access
+
+    // --- HELPER FUNCTIONS ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Validation des images : types autorisés et taille max 10 Mo
+    function isValidImage() {
+      return request.resource.contentType.matches('image/(jpeg|jpg|png|webp|gif|svg\\+xml)') &&
+             request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // Validation des documents : formats bureautiques + PDF + images, max 25 Mo
+    function isValidDocument() {
+      return (
+        request.resource.contentType.matches('application/pdf') ||
+        request.resource.contentType.matches('application/msword') ||
+        request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.*') ||
+        request.resource.contentType.matches('application/vnd.ms-excel') ||
+        request.resource.contentType.matches('image/.*')
+      ) && request.resource.size < 25 * 1024 * 1024;
+    }
+
+    // Par défaut : Tout accès interdit
     match /{allPaths=**} {
       allow read, write: if false;
     }
     
-    // Allow read access to organization logos for everyone
+    // Logos de l'organisation : lecture publique, écriture sécurisée (images valides uniquement)
     match /organization/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create, update: if isSignedIn() && isValidImage();
+      allow delete: if isSignedIn();
     }
     
-    // Allow authenticated users to manage their own photos
+    // Photos de profil des utilisateurs : modifiables uniquement par leur propriétaire
     match /user_photos/{userId}/{allPaths=**} {
-        allow read: if request.auth != null;
-        allow write: if request.auth.uid == userId;
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.auth.uid == userId && isValidImage();
+      allow delete: if isSignedIn() && request.auth.uid == userId;
     }
 
-    // Allow authenticated users to manage employee photos (could be restricted to admins)
+    // Photos des employés : lecture authentifiée, écriture sécurisée d'images
     match /employee_photos/{employeeId}/{allPaths=**} {
-        allow read: if request.auth != null;
-        allow write: if request.auth != null; 
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidImage();
+      allow delete: if isSignedIn();
     }
     
-     // Allow authenticated users to manage chief photos (could be restricted to admins)
+    // Photos des chefs traditionnels : lecture authentifiée, écriture sécurisée d'images
     match /chief_photos/{chiefId}/{allPaths=**} {
-        allow read: if request.auth != null;
-        allow write: if request.auth != null;
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidImage();
+      allow delete: if isSignedIn();
     }
 
-    // Allow authenticated users to manage documents in the repository
+    // Documents du répertoire : lecture authentifiée, téléversement de documents légitimes
     match /repository/{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidDocument();
+      allow delete: if isSignedIn();
     }
   }
 }

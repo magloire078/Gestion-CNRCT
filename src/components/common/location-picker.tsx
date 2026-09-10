@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import 'leaflet/dist/leaflet.css';
 import { Search, MapPin, Navigation, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +37,12 @@ export function LocationPicker({
         
         const initLeaflet = async () => {
             const Leaflet = (await import('leaflet')).default;
+            delete (Leaflet.Icon.Default.prototype as any)._getIconUrl;
+            Leaflet.Icon.Default.mergeOptions({
+                iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+            });
             setL(Leaflet);
         };
         initLeaflet();
@@ -71,6 +78,19 @@ export function LocationPicker({
 
         mapRef.current = map;
 
+        // Invalidate size on load (critical for sheets and tabs)
+        const t1 = setTimeout(() => map.invalidateSize(), 150);
+        const t2 = setTimeout(() => map.invalidateSize(), 500);
+
+        // Observer container size changes (e.g. animated drawer opening)
+        let ro: ResizeObserver | null = null;
+        if (typeof ResizeObserver !== 'undefined' && container) {
+            ro = new ResizeObserver(() => {
+                map.invalidateSize();
+            });
+            ro.observe(container);
+        }
+
         // Créer un marqueur si coordonnées initiales
         if (initialLat && initialLng) {
             markerRef.current = L.marker([initialLat, initialLng], {
@@ -90,6 +110,11 @@ export function LocationPicker({
             onLocationSelectAction(lat, lng);
         });
 
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+            if (ro) ro.disconnect();
+        };
     }, [L, initialLat, initialLng]);
 
     const updateMarker = (lat: number, lng: number, zoomLevel?: number) => {

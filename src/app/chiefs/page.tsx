@@ -668,8 +668,8 @@ function ChiefsPageContent() {
                             </td>
                             <td className="p-4 align-middle">
                                 <div className="flex flex-col">
-                                    <span className="text-sm md:text-xs font-bold text-slate-600">{chief.village}</span>
-                                    <span className="text-base md:text-sm text-slate-400">{chief.region} / {chief.department}</span>
+                                    <span className="text-sm md:text-xs font-bold text-slate-600">{chief.village || (chief as any).Village || (chief as any).localite || (chief as any).villageName || "—"}</span>
+                                    <span className="text-base md:text-sm text-slate-400">{chief.region || (chief as any).Region} / {chief.department || (chief as any).Departement}</span>
                                 </div>
                             </td>
                             <td className="p-4 align-middle text-sm md:text-xs font-medium text-slate-500 italic">{chief.phone || chief.contact || "—"}</td>

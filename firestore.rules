@@ -9,8 +9,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function hasUserDoc() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRoleDoc(roleId) {
+      return roleId != null && exists(/databases/$(database)/documents/roles/$(roleId));
     }
 
     function getRoleData(roleId) {
@@ -21,8 +29,8 @@ service cloud.firestore {
     
     function isSuperAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == 'magloire078@gmail.com' ||
-        getUserData().roleId in ['super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president']
+        request.auth.token.email in ['magloire078@gmail.com', 'admin@cnrct.ci'] ||
+        (hasUserDoc() && getUserData().get('roleId', '') in ['super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'administrateur', 'admin'])
       );
     }
     
@@ -31,15 +39,16 @@ service cloud.firestore {
     function can(resource, action) {
       return isSignedIn() && (
         isSuperAdmin() ||
-        checkResource(getUserData(), resource, action)
+        (hasUserDoc() && checkResource(getUserData(), resource, action))
       );
     }
 
     function checkResource(user, res, act) {
       return user.get(['resourcePermissions', res, act], null) == true || 
         (user.get(['resourcePermissions', res, act], null) == null && 
-         user.roleId != null && 
-         getRoleData(user.roleId).get(['resourcePermissions', res, act], null) == true);
+         user.get('roleId', null) != null && 
+         hasRoleDoc(user.get('roleId', null)) &&
+         getRoleData(user.get('roleId', null)).get(['resourcePermissions', res, act], null) == true);
     }
 
     // --- TEMPORARY DEBUG ACCESS ---

@@ -21,12 +21,11 @@ import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { useToast } from "@/hooks/use-toast";
 import dynamic from 'next/dynamic';
 
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
+const HeritageItemMap = dynamic(() => import('@/components/heritage/heritage-item-map'), { 
+    ssr: false,
+    loading: () => <div className="rounded-2xl border-8 border-white shadow-2xl h-[400px] w-full bg-slate-100 animate-pulse flex items-center justify-center text-xs font-bold text-slate-400">Chargement de la carte...</div>
+});
 
-import 'leaflet/dist/leaflet.css';
 import { HeritageGallery } from "@/components/heritage/heritage-gallery";
 import { OralHistoryPlayer } from "@/components/heritage/oral-history-player";
 import { cn } from "@/lib/utils";
@@ -251,27 +250,12 @@ export default function HeritageDetailPage() {
                         </div>
                         
                         {item.latitude && item.longitude ? (
-                            <div className="rounded-2xl overflow-hidden border-8 border-white shadow-2xl h-[400px] relative">
-                                <MapContainer 
-                                    center={[item.latitude, item.longitude]} 
-                                    zoom={13} 
-                                    style={{ height: '100%', width: '100%', zIndex: 0 }}
-                                    zoomControl={false}
-                                >
-                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                    <Marker position={[item.latitude, item.longitude]}>
-                                        <Popup>
-                                            <div className="font-bold">{item.name}</div>
-                                            <div className="text-[10px] uppercase text-slate-400">{item.village}</div>
-                                        </Popup>
-                                    </Marker>
-                                </MapContainer>
-                                <div className="absolute top-6 right-6 z-[400]">
-                                    <Button size="icon" className="h-12 w-12 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 shadow-2xl border-none">
-                                        <Maximize2 className="h-6 w-6" />
-                                    </Button>
-                                </div>
-                            </div>
+                            <HeritageItemMap 
+                                latitude={item.latitude} 
+                                longitude={item.longitude} 
+                                name={item.name} 
+                                village={item.village} 
+                            />
                         ) : (
                             <div className="h-[200px] rounded-xl bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 text-slate-400">
                                 <Globe className="h-10 w-10 opacity-20" />

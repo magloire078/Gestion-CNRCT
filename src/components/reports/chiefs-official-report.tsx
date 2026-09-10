@@ -174,11 +174,12 @@ export function ChiefsOfficialReport({
                                             <th className="p-3 w-[40px] text-center border-r border-slate-700">N°</th>
                                             {columnsToPrint?.includes('photoUrl') && <th className="p-3 w-[60px] text-center border-r border-slate-700">Photo</th>}
                                             <th className="p-3 text-left border-r border-slate-700">Identité & Titre</th>
-                                            {!commonDept && <th className="p-3 text-left border-r border-slate-700">Département</th>}
-                                            {!commonSP && <th className="p-3 text-left border-r border-slate-700">Sous-Préfecture</th>}
-                                            <th className="p-3 text-left border-r border-slate-700">Localité</th>
-                                            <th className="p-3 text-left border-r border-slate-700 whitespace-nowrap">Contacts</th>
-                                            <th className="p-3 text-center whitespace-nowrap">Statut</th>
+                                            {!commonDept && (!columnsToPrint || columnsToPrint.includes('Departement')) && <th className="p-3 text-left border-r border-slate-700">Département</th>}
+                                            {!commonSP && (!columnsToPrint || columnsToPrint.includes('subPrefecture')) && <th className="p-3 text-left border-r border-slate-700">Sous-Préfecture</th>}
+                                            {(!columnsToPrint || columnsToPrint.includes('Village')) && <th className="p-3 text-left border-r border-slate-700">Localité</th>}
+                                            {(!columnsToPrint || columnsToPrint.includes('contact') || columnsToPrint.includes('email')) && <th className="p-3 text-left border-r border-slate-700 whitespace-nowrap">Contacts</th>}
+                                            {columnsToPrint?.includes('Num_Decision') && <th className="p-3 text-center border-r border-slate-700 whitespace-nowrap">Référence</th>}
+                                            {(!columnsToPrint || columnsToPrint.includes('status')) && <th className="p-3 text-center whitespace-nowrap">Statut</th>}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -219,51 +220,62 @@ export function ChiefsOfficialReport({
                                                                 <span className="text-[9px] font-bold text-[#D4AF37] uppercase italic">{chief.title || 'Chef de Village'}</span>
                                                             </div>
                                                         </td>
-                                                        {!commonDept && (
+                                                        {!commonDept && (!columnsToPrint || columnsToPrint.includes('Departement')) && (
                                                             <td className="p-3 border-r border-slate-200 uppercase font-bold text-slate-700 tracking-tighter align-middle text-left bg-slate-50/50">
                                                                 {dept}
                                                             </td>
                                                         )}
-                                                        {!commonSP && (
+                                                        {!commonSP && (!columnsToPrint || columnsToPrint.includes('subPrefecture')) && (
                                                             <td className="p-3 border-r border-slate-200 uppercase font-bold text-slate-600 align-middle text-left bg-slate-50/30">
                                                                 {sp}
                                                             </td>
                                                         )}
-                                                        <td className="p-3 border-r border-slate-200 uppercase italic text-[11px] text-slate-800">
-                                                            {chief.village}
-                                                        </td>
-                                                <td className="p-3 border-r border-slate-200">
-                                                    <div className="flex flex-col gap-1">
-                                                        {(chief.phone || chief.contact) && (
-                                                            <div className="flex items-center gap-1.5 whitespace-nowrap">
-                                                                <Phone className="h-2.5 w-2.5 text-slate-400" />
-                                                                <span className="font-bold">{chief.phone || chief.contact}</span>
-                                                            </div>
+                                                        {(!columnsToPrint || columnsToPrint.includes('Village') || columnsToPrint.includes('village')) && (
+                                                            <td className="p-3 border-r border-slate-200 uppercase italic text-[11px] text-slate-800">
+                                                                {chief.village || (chief as any).Village || (chief as any).localite || (chief as any).Localite || (chief as any).villageName || '—'}
+                                                            </td>
                                                         )}
-                                                        {chief.email && (
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Mail className="h-2.5 w-2.5 text-slate-400" />
-                                                                <span className="text-[9px] lowercase">{chief.email}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="p-3 text-center">
-                                                    <span className={cn(
-                                                        "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                                                        chief.status === 'archive' || chief.status === 'décédé' 
-                                                            ? "bg-slate-100 text-slate-500 border-slate-200"
-                                                            : chief.status === 'intérimaire'
-                                                            ? "bg-orange-50 text-orange-600 border-orange-200"
-                                                            : "bg-emerald-50 text-emerald-600 border-emerald-200"
-                                                    )}>
-                                                        {chief.status === 'a_vie' ? 'À Vie' : 
-                                                         chief.status === 'intérimaire' ? 'Intérimaire' :
-                                                         chief.status === 'décédé' ? 'Décédé' :
-                                                         chief.status === 'archive' ? 'Archivé' :
-                                                         chief.status || 'Actif'}
-                                                    </span>
-                                                </td>
+                                                {(!columnsToPrint || columnsToPrint.includes('contact') || columnsToPrint.includes('email')) && (
+                                                    <td className="p-3 border-r border-slate-200">
+                                                        <div className="flex flex-col gap-1">
+                                                            {(chief.phone || chief.contact) && (
+                                                                <div className="flex items-center gap-1.5 whitespace-nowrap">
+                                                                    <Phone className="h-2.5 w-2.5 text-slate-400" />
+                                                                    <span className="font-bold">{chief.phone || chief.contact}</span>
+                                                                </div>
+                                                            )}
+                                                            {chief.email && (
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <Mail className="h-2.5 w-2.5 text-slate-400" />
+                                                                    <span className="text-[9px] lowercase">{chief.email}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                )}
+                                                {columnsToPrint?.includes('Num_Decision') && (
+                                                    <td className="p-3 text-center border-r border-slate-200 uppercase font-mono text-[9px] text-slate-600">
+                                                        {chief.officialDocuments || chief.CNRCTRegistrationNumber || '---'}
+                                                    </td>
+                                                )}
+                                                {(!columnsToPrint || columnsToPrint.includes('status')) && (
+                                                    <td className="p-3 text-center">
+                                                        <span className={cn(
+                                                            "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
+                                                            chief.status === 'archive' || chief.status === 'décédé' 
+                                                                ? "bg-slate-100 text-slate-500 border-slate-200"
+                                                                : chief.status === 'intérimaire'
+                                                                ? "bg-orange-50 text-orange-600 border-orange-200"
+                                                                : "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                                        )}>
+                                                            {chief.status === 'a_vie' ? 'À Vie' : 
+                                                             chief.status === 'intérimaire' ? 'Intérimaire' :
+                                                             chief.status === 'décédé' ? 'Décédé' :
+                                                             chief.status === 'archive' ? 'Archivé' :
+                                                             chief.status || 'Actif'}
+                                                        </span>
+                                                    </td>
+                                                )}
                                             </tr>
                                         );
                                     })})()}

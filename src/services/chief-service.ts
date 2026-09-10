@@ -122,6 +122,24 @@ export async function initializeDefaultChiefs() {
 }
 
 
+export function normalizeChiefDoc(docOrData: any): Chief {
+    const data = typeof docOrData?.data === 'function' ? docOrData.data() : docOrData;
+    const id = docOrData?.id || data?.id || '';
+    return {
+        ...data,
+        id,
+        name: data.name || `${data.lastName || ''} ${data.firstName || ''}`.trim() || 'Autorité Traditionnelle',
+        lastName: data.lastName || data.name?.split(' ')[0] || '',
+        firstName: data.firstName || data.name?.split(' ').slice(1).join(' ') || '',
+        village: (data.village || data.Village || data.localite || data.Localite || data.villageName || data.VillageName || '').trim(),
+        region: (data.region || data.Region || '').trim(),
+        department: (data.department || data.Departement || '').trim(),
+        subPrefecture: (data.subPrefecture || data.sousPrefecture || data.SousPrefecture || data.sub_prefecture || '').trim(),
+        contact: data.contact || data.phone || data.Phone || data.telephone || data.Telephone || data.mobile || data.email || '',
+        phone: data.phone || data.Phone || data.contact || data.telephone || data.Telephone || data.mobile || '',
+    } as Chief;
+}
+
 const sortChiefs = (chiefs: Chief[]): Chief[] => {
     return chiefs.sort((a, b) => {
         const lastNameCompare = (a.lastName || '').localeCompare(b.lastName || '');
@@ -140,10 +158,7 @@ export function subscribeToChiefs(
     const q = query(chiefsCollection, orderBy("lastName", "asc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const chiefs = snapshot.docs.map((doc: any) => ({
-                id: doc.id,
-                ...doc.data()
-            } as Chief));
+            const chiefs = snapshot.docs.map((doc: any) => normalizeChiefDoc(doc));
             callback(sortChiefs(chiefs));
         },
         (error) => {
@@ -158,10 +173,7 @@ export async function getChiefs(): Promise<Chief[]> {
     try {
         await initializeDefaultChiefs();
         const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc")));
-        const chiefs = snapshot.docs.map((doc: any) => ({
-            id: doc.id,
-            ...doc.data()
-        } as Chief));
+        const chiefs = snapshot.docs.map((doc: any) => normalizeChiefDoc(doc));
         const sorted = sortChiefs(chiefs);
 
         if (typeof window !== 'undefined') {
@@ -190,7 +202,7 @@ export async function getChief(id: string): Promise<Chief | null> {
     const chiefDocRef = doc(db, 'chiefs', id);
     const docSnap = await getDoc(chiefDocRef);
     if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as Chief;
+        return normalizeChiefDoc(docSnap);
     }
     return null;
 }

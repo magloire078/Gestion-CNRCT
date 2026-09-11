@@ -20,6 +20,7 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 
 export default function LandingPage() {
     const { settings, loading: settingsLoading } = useSettings();
+    const [mounted, setMounted] = useState(false);
     const [directoireMembers, setDirectoireMembers] = useState<Employe[]>([]);
     const [regionalCommittees, setRegionalCommittees] = useState<RegionalCommittee[]>([]);
     const [allDirectors, setAllDirectors] = useState<Employe[]>([]);
@@ -28,6 +29,10 @@ export default function LandingPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [conflicts, setConflicts] = useState<Conflict[]>([]);
     const [pastDirectors, setPastDirectors] = useState<Employe[]>([]);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         // En mode neutre, on n'a besoin d'aucune donnée institutionnelle.
@@ -130,7 +135,7 @@ export default function LandingPage() {
         fetchData();
     }, [settingsLoading, settings.whiteLabelMode]);
 
-    if (settingsLoading) {
+    if (!mounted || settingsLoading) {
         return <div className="min-h-screen bg-white" />;
     }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowUp, ArrowDown, GripVertical, Monitor, Layout, Maximize2, Minimize2, Printer, Settings, ListChecks, ArrowUpCircle, ArrowDownCircle, Info } from "lucide-react";
+import { ArrowUp, ArrowDown, GripVertical, Monitor, Layout, Maximize2, Minimize2, Printer, Download, Settings, ListChecks, ArrowUpCircle, ArrowDownCircle, Info } from "lucide-react";
 import type { ColumnKeys } from "@/lib/constants/employee";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,10 +13,11 @@ interface PrintDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onPrint: (selectedColumns: ColumnKeys[], orientation: 'portrait' | 'landscape') => void;
+  onExportPdf?: (selectedColumns: ColumnKeys[], orientation: 'portrait' | 'landscape') => void;
   allColumns: Partial<Record<ColumnKeys, string>>;
 }
 
-export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialogProps) {
+export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns }: PrintDialogProps) {
   const [selectedColumns, setSelectedColumns] = useState<Partial<Record<ColumnKeys, boolean>>>({});
   const [columnOrder, setColumnOrder] = useState<ColumnKeys[]>([]);
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('landscape');
@@ -84,19 +85,35 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
     );
   };
 
+  const savePreferences = (selected: ColumnKeys[]) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        columnOrder,
+        selectedColumns,
+        orientation
+      }));
+    } catch (e) {
+      console.error('Failed to save print preferences', e);
+    }
+  };
+
   const handlePrintClick = () => {
     const selected = columnOrder.filter((key) => selectedColumns[key]);
     if (selected.length > 0) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          columnOrder,
-          selectedColumns,
-          orientation
-        }));
-      } catch (e) {
-        console.error('Failed to save print preferences', e);
-      }
+      savePreferences(selected);
       onPrint(selected, orientation);
+    }
+  };
+
+  const handleExportPdfClick = () => {
+    const selected = columnOrder.filter((key) => selectedColumns[key]);
+    if (selected.length > 0) {
+      savePreferences(selected);
+      if (onExportPdf) {
+        onExportPdf(selected, orientation);
+      } else {
+        onPrint(selected, orientation);
+      }
     }
   };
 
@@ -228,24 +245,35 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
           </ScrollArea>
         </div>
 
-        <DialogFooter className="p-5 sm:p-6 bg-white border-t border-slate-100 relative z-30 flex flex-row gap-3 sm:gap-4 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+        <DialogFooter className="p-4 sm:p-5 bg-white border-t border-slate-100 relative z-30 flex flex-row items-center gap-2 sm:gap-3 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
           <Button 
             type="button" 
             variant="ghost" 
             onClick={onClose}
-            className="h-12 flex-1 rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+            className="h-11 px-4 rounded-xl font-bold uppercase tracking-wider text-[10px] text-slate-500 hover:text-slate-900 hover:bg-slate-100"
           >
             Fermer
           </Button>
-          <Button 
-            type="button" 
-            onClick={handlePrintClick} 
-            disabled={!Object.values(selectedColumns).some(Boolean)}
-            className="h-12 flex-[2] rounded-xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] sm:text-[11px] hover:bg-black shadow-2xl shadow-slate-900/20 group transition-all"
-          >
-            <Printer className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-            Générer le rapport
-          </Button>
+          <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3">
+            <Button 
+              type="button" 
+              onClick={handleExportPdfClick} 
+              disabled={!Object.values(selectedColumns).some(Boolean)}
+              className="h-11 px-4 sm:px-5 rounded-xl bg-emerald-700 text-white font-black uppercase tracking-wider text-[10px] sm:text-[11px] hover:bg-emerald-800 shadow-lg shadow-emerald-900/10 group transition-all"
+            >
+              <Download className="mr-1.5 sm:mr-2 h-4 w-4 text-white group-hover:scale-110 transition-transform" />
+              Télécharger PDF
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handlePrintClick} 
+              disabled={!Object.values(selectedColumns).some(Boolean)}
+              className="h-11 px-4 sm:px-5 rounded-xl bg-slate-900 text-white font-black uppercase tracking-wider text-[10px] sm:text-[11px] hover:bg-black shadow-xl shadow-slate-900/20 group transition-all"
+            >
+              <Printer className="mr-1.5 sm:mr-2 h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+              Imprimer le rapport
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

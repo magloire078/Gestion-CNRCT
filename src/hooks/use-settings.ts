@@ -14,33 +14,34 @@ const defaultSettings: OrganizationSettings = {
     whiteLabelMode: false
 };
 
-function getInitialSettings(): { settings: OrganizationSettings; hasCache: boolean } {
-    if (typeof window !== "undefined") {
+export function useSettings() {
+    const [settings, setSettings] = useState<OrganizationSettings>(defaultSettings);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        // 1. Lire le cache localStorage dès le montage client (sans casser l'hydratation SSR)
         try {
             const cached = localStorage.getItem(SETTINGS_CACHE_KEY);
             if (cached) {
                 const parsed = JSON.parse(cached);
-                return { settings: { ...defaultSettings, ...parsed }, hasCache: true };
+                if (isMounted) {
+                    setSettings(prev => ({ ...prev, ...parsed }));
+                    setLoading(false);
+                }
             }
         } catch (e) {
             // ignore JSON parse error
         }
-    }
-    return { settings: defaultSettings, hasCache: false };
-}
 
-export function useSettings() {
-    const [initialState] = useState(() => getInitialSettings());
-    const [settings, setSettings] = useState<OrganizationSettings>(initialState.settings);
-    const [loading, setLoading] = useState(!initialState.hasCache);
-
-    useEffect(() => {
-        let isMounted = true;
+        // 2. Récupérer les paramètres à jour depuis Firestore
         async function fetchSettings() {
             try {
                 const data = await getOrganizationSettings();
                 if (isMounted) {
                     setSettings(data);
+                    setLoading(false);
                     try {
                         localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(data));
                     } catch (e) {

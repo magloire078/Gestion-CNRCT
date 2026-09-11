@@ -236,11 +236,11 @@ export default function LeavePage() {
   const approvedCount = useMemo(() => leaves.filter((l) => l.status === "Approuvé").length, [leaves]);
 
   return (
-    <PermissionGuard permission="page:leaves:view">
+    <PermissionGuard permission="page:leaves:view" allowPersonal>
       <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
-          Gestion des Congés
+          {hasPermission('page:leaves:view') ? "Gestion des Congés" : "Mon Espace Congés"}
         </h1>
         <div className="flex gap-2">
           {hasPermission('page:leaves:view') && (

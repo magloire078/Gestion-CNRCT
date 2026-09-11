@@ -243,21 +243,23 @@ export default function MissionsPage() {
   }, [missions]);
 
   return (
-    <PermissionGuard permission="page:missions:view">
+    <PermissionGuard permission="page:missions:view" allowPersonal>
       <div className="flex flex-col gap-6 pb-16 max-w-7xl mx-auto w-full">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md">
-                Direction des Opérations
+                {hasPermission('page:missions:view') ? "Direction des Opérations" : "Mon Espace Personnel"}
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 uppercase">
-              Missions & Déplacements
+              {hasPermission('page:missions:view') ? "Missions & Déplacements" : "Mes Missions & Déplacements"}
             </h1>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
-              Gestion et suivi des ordres de mission institutionnels du CNRCT
+              {hasPermission('page:missions:view') 
+                ? "Gestion et suivi des ordres de mission institutionnels du CNRCT" 
+                : "Consultez et suivez vos ordres de mission au CNRCT"}
             </p>
           </div>
 

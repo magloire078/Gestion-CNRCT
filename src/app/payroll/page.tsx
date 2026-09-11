@@ -215,7 +215,10 @@ export default function PayrollPage() {
         if (hasPermission('page:payroll:view')) {
           unsubscribe = subscribeToEmployees(onEmployeesFetched, onFetchError);
         } else if (user?.employeeId) {
-          unsubscribe = subscribeToEmployee(user.employeeId, (emp) => onEmployeesFetched([emp]), onFetchError);
+          unsubscribe = subscribeToEmployee(user.employeeId, (emp) => {
+            if (emp) onEmployeesFetched([emp]);
+            else onEmployeesFetched([]);
+          }, onFetchError);
         } else {
           setEmployees([]);
           setLoading(false);
@@ -232,7 +235,7 @@ export default function PayrollPage() {
       isMounted = false;
       if (unsubscribe) unsubscribe();
     };
-  }, [canViewSalaries]);
+  }, [canViewSalaries, user?.employeeId, hasPermission]);
 
   useEffect(() => {
     const processBulk = async () => {
@@ -452,11 +455,13 @@ export default function PayrollPage() {
 
 
   return (
-    <PermissionGuard permission="page:payroll:view">
+    <PermissionGuard permission="page:payroll:view" allowPersonal>
       <div className={isProcessingBulk ? 'print-hidden' : ''}>
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold tracking-tight">Gestion de la Paie</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {canViewSalaries ? "Gestion de la Paie" : "Mon Espace Paie & Bulletins"}
+            </h1>
             {canViewSalaries && (
               <Button onClick={() => setIsBulkPrintDialogOpen(true)} disabled={filteredEmployees.length === 0} className="gap-2">
                 <Printer className="h-4 w-4" />

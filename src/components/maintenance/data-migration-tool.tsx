@@ -377,6 +377,36 @@ export function DataMigrationTool() {
         }
     };
 
+    const [cleaningVillages, setCleaningVillages] = useState(false);
+
+    const handleCleanVillages = async () => {
+        setCleaningVillages(true);
+        try {
+            const res = await fetch('/api/clean-villages', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                toast({
+                    title: "Nettoyage terminé !",
+                    description: `${data.cleanedNamesCount} noms nettoyés, ${data.deletedDuplicatesCount} doublons fusionnés/supprimés, ${data.chiefsUpdatedCount} chefs mis à jour.`,
+                });
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Erreur",
+                    description: data.error || "Échec du nettoyage des villages.",
+                });
+            }
+        } catch (e: any) {
+            toast({
+                variant: "destructive",
+                title: "Erreur réseau",
+                description: e.message,
+            });
+        } finally {
+            setCleaningVillages(false);
+        }
+    };
+
     return (
         <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-xl rounded-xl overflow-hidden">
             <CardHeader className="bg-slate-900 text-white p-5">
@@ -412,9 +442,28 @@ export function DataMigrationTool() {
                                 <p className="text-slate-500 font-medium mb-6 max-w-md">
                                     Cette opération va scanner toute la base de données et corriger les fautes d'orthographe sur les régions et départements pour correspondre à la nomenclature officielle.
                                 </p>
-                                <Button onClick={analyzeData} className="h-14 px-6 rounded-2xl bg-slate-900 font-black uppercase tracking-widest text-xs hover:bg-slate-800">
-                                    Lancer l'analyse
-                                </Button>
+                                <div className="flex flex-wrap items-center justify-center gap-4">
+                                    <Button onClick={analyzeData} className="h-14 px-6 rounded-2xl bg-slate-900 font-black uppercase tracking-widest text-xs hover:bg-slate-800">
+                                        Lancer l'analyse
+                                    </Button>
+                                    <Button 
+                                        onClick={handleCleanVillages} 
+                                        disabled={cleaningVillages}
+                                        className="h-14 px-6 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-600/20"
+                                    >
+                                        {cleaningVillages ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Nettoyage en cours...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <RefreshCw className="mr-2 h-4 w-4" />
+                                                Nettoyer & Dédupliquer Villages
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </>
                         )}
 

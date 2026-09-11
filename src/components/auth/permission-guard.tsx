@@ -12,21 +12,23 @@ interface PermissionGuardProps {
   permission: string;
   children: React.ReactNode;
   fallback?: React.ReactNode;
+  allowPersonal?: boolean;
 }
 
 /**
  * Gardien de permission universel.
  * @param permission Format supporté par useAuth (ex: 'page:employees:view' ou 'feature:supplies:import')
+ * @param allowPersonal Si vrai, autorise également l'accès aux agents ayant un compte employé (user.employeeId)
  */
-export function PermissionGuard({ permission, children, fallback }: PermissionGuardProps) {
-  const { hasPermission, loading } = useAuth();
+export function PermissionGuard({ permission, children, fallback, allowPersonal = false }: PermissionGuardProps) {
+  const { hasPermission, loading, user } = useAuth();
   const router = useRouter();
 
   if (loading) {
     return null; // On attend que l'auth soit chargée
   }
 
-  const allowed = hasPermission(permission);
+  const allowed = hasPermission(permission) || (allowPersonal && !!user?.employeeId);
 
   if (!allowed) {
     if (fallback) return <>{fallback}</>;

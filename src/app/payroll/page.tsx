@@ -3,7 +3,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2, Landmark, Download, Coins } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2, Landmark, Download, Coins, Lock, FileText, CheckCircle2, User, Building, CreditCard, Calendar } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -156,11 +157,11 @@ export default function PayrollPage() {
 
     const initData = async () => {
       try {
-        // Fetch metadata ONCE
+        // Fetch metadata safely
         const [deps, dirs, servs] = await Promise.all([
-          getDepartments(),
-          getDirections(),
-          getServices()
+          getDepartments().catch(() => []),
+          getDirections().catch(() => []),
+          getServices().catch(() => [])
         ]);
 
         if (!isMounted) return;
@@ -171,7 +172,7 @@ export default function PayrollPage() {
 
         const onEmployeesFetched = async (fetchedEmployees: Employe[]) => {
           if (!isMounted) return;
-          let payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
+          let payrollEmployees = (fetchedEmployees || []).filter(e => e && (e.status === 'Actif' || e.status === 'En congé'));
 
           // Data-level filtering: If not admin/HR, only show the user's own profile
           const canManagePayroll = hasPermission('page:payroll:update') || hasPermission('page:payroll:create') || hasPermission('page:payroll:delete');
@@ -179,36 +180,33 @@ export default function PayrollPage() {
             payrollEmployees = payrollEmployees.filter(e => e.id === user.employeeId);
           }
 
-          if (canViewSalaries) {
-            const today = new Date();
-            const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
+          const today = new Date();
+          const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
 
-            const employeesWithSalary = await Promise.all(
-              payrollEmployees.map(async (emp) => {
-                try {
-                  const details = await getPayslipDetails(emp, lastDayOfCurrentMonth, {
-                    departments: deps, // reusing the fetched array
-                    directions: dirs,
-                    services: servs
-                  });
-                  return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
-                } catch {
-                  return { ...emp, netSalary: 0, grossSalary: 0 };
-                }
-              })
-            );
-            setEmployees(employeesWithSalary);
-          } else {
-            setEmployees(payrollEmployees);
-          }
-
+          const employeesWithSalary = await Promise.all(
+            payrollEmployees.map(async (emp) => {
+              try {
+                const details = await getPayslipDetails(emp, lastDayOfCurrentMonth, {
+                  departments: deps,
+                  directions: dirs,
+                  services: servs
+                });
+                return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
+              } catch {
+                return { ...emp, netSalary: 0, grossSalary: 0 };
+              }
+            })
+          );
+          setEmployees(employeesWithSalary);
           setError(null);
           setLoading(false);
         };
 
         const onFetchError = (err: Error) => {
-          setError("Impossible de charger les données des employés. Veuillez vérifier votre connexion et les permissions Firestore.");
-          console.error(err);
+          console.error("[PayrollPage] fetch error:", err);
+          if (employees.length === 0) {
+            setError("Impossible de charger les données de paie. Veuillez vérifier vos accès.");
+          }
           setLoading(false);
         };
 
@@ -529,210 +527,324 @@ export default function PayrollPage() {
           )}
 
 
-          <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden">
-            <CardHeader className="border-b border-border/50 bg-primary/5">
-              <CardTitle className="text-xl font-bold">Employés sur la Paie</CardTitle>
-              <CardDescription className="text-xs font-medium">
-                Gérez le salaire et les informations financières de tous les employés actifs.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
-                <div className="relative flex-1 min-w-[200px]">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <DebouncedInput
-                    placeholder="Rechercher par nom, matricule..."
-                    className="pl-10"
-                    value={searchTerm}
-                    onChange={(val) => {
-                      setSearchTerm(val);
-                      setDebouncedSearchTerm(val);
-                    }}
-                  />
-                </div>
-                <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                  <SelectTrigger className="flex-1 min-w-[180px]">
-                    <SelectValue placeholder="Filtrer par service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les services</SelectItem>
-                    {departments.map(dep => <SelectItem key={dep.id} value={dep.id}>{dep.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="flex-1 min-w-[180px]">
-                    <SelectValue placeholder="Filtrer par statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="Actif">Actif</SelectItem>
-                    <SelectItem value="En congé">En congé</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={cnpsFilter} onValueChange={setCnpsFilter}>
-                  <SelectTrigger className="flex-1 min-w-[180px]">
-                    <SelectValue placeholder="Filtrer par CNPS" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les régimes (CNPS)</SelectItem>
-                    <SelectItem value="declared">Déclarés CNPS</SelectItem>
-                    <SelectItem value="undeclared">Non déclarés CNPS</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={bankFilter} onValueChange={setBankFilter}>
-                  <SelectTrigger className="flex-1 min-w-[180px]">
-                    <SelectValue placeholder="Filtrer par banque" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes les banques</SelectItem>
-                    <SelectItem value="none">Non spécifié / Trésor</SelectItem>
-                    {uniqueBanks.map(bank => (
-                      <SelectItem key={bank.value} value={bank.value}>
-                        {bank.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {!canViewSalaries ? (
+            <div className="max-w-4xl mx-auto w-full flex flex-col gap-6">
+              <Card className="border-border/60 shadow-xl bg-card/60 backdrop-blur-md overflow-hidden">
+                <div className="h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900" />
+                <CardHeader className="p-6 md:p-8 bg-muted/20 border-b border-border/40">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 rounded-md">
+                          Mon Espace Personnel
+                        </span>
+                        <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                          Dernier Bulletin de Salaire
+                        </span>
+                      </div>
+                      <CardTitle className="text-2xl md:text-3xl font-black tracking-tight text-foreground">
+                        Mon Espace Paie
+                      </CardTitle>
+                      <CardDescription className="text-xs md:text-sm font-medium mt-1">
+                        Consultez et imprimez votre dernier bulletin de paie officiel délivré par le CNRCT.
+                      </CardDescription>
+                    </div>
 
-              <div className="mb-4 text-sm text-muted-foreground">
-                {filteredEmployees.length} résultat(s) trouvé(s).
-              </div>
+                    {employees[0] && (
+                      <Button
+                        size="lg"
+                        onClick={() => {
+                          const today = new Date();
+                          const lastDay = lastDayOfMonth(today);
+                          const formattedDate = lastDay.toISOString().split('T')[0];
+                          router.push(`/payroll/${employees[0].id}?payslipDate=${formattedDate}`);
+                        }}
+                        className="font-bold gap-2 shadow-lg shadow-primary/20 bg-slate-900 text-white hover:bg-slate-800 h-12 px-6 rounded-xl"
+                      >
+                        <Eye className="h-5 w-5" />
+                        Consulter mon dernier bulletin
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
 
-              {error && <p className="text-destructive text-center py-4">{error}</p>}
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader className="bg-muted/50">
-                    <TableRow className="border-border/50">
-                      <TableHead className="w-[50px] font-black uppercase text-[10px] tracking-wider text-center">N°</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Employé</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Poste</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Date d'embauche</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Banque</TableHead>
-                      {canViewSalaries && <TableHead className="text-right font-black uppercase text-[10px] tracking-wider">Salaire Net</TableHead>}
-                      <TableHead className="sr-only">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={i} className="border-border/40">
-                          <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                          {canViewSalaries && <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>}
-                          <TableCell><Skeleton className="h-8 w-8 rounded-md ml-auto" /></TableCell>
-                        </TableRow>
-                      ))
-                    ) : paginatedEmployees.length > 0 ? (
-                      paginatedEmployees.map((employee, index) => (
-                        <TableRow key={employee.id} className="border-border/40 hover:bg-primary/5 transition-colors group">
-                          <TableCell className="text-center font-bold text-muted-foreground">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                          <TableCell>
-                            <div className="font-bold text-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
-                            <div className="text-[10px] text-muted-foreground font-mono">{employee.matricule}</div>
-                          </TableCell>
-                          <TableCell className="font-medium text-muted-foreground">{employee.poste}</TableCell>
-                          <TableCell className="text-sm">{employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</TableCell>
-                          <TableCell className="text-xs font-semibold text-muted-foreground uppercase">{employee.banque || "TRÉSOR PUBLIC"}</TableCell>
-                          {canViewSalaries && <TableCell className="text-right font-mono font-bold text-primary">{formatCurrency(employee.netSalary)}</TableCell>}
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost" className="h-8 w-8 rounded-full">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Toggle menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50">Actions</DropdownMenuLabel>
-                                {canViewSalaries && (
-                                  <DropdownMenuItem onSelect={() => openEditSheet(employee)} className="font-bold">
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Modifier la paie
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onSelect={() => openDateDialog(employee)} className="font-bold">
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  Voir le bulletin
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : null}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:hidden">
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
-                  ))
-                ) : paginatedEmployees.length > 0 ? (
-                  paginatedEmployees.map((employee, index) => (
-                    <Card key={employee.id}>
-                      <CardHeader>
-                        <CardTitle className="text-base">
-                          {(currentPage - 1) * itemsPerPage + index + 1}. {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}
-                        </CardTitle>
-                        <CardDescription>{employee.poste}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <div className="mt-2 space-y-1 text-sm">
-                          <p><span className="font-medium">Embauche:</span> {employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</p>
-                          {canViewSalaries && <p><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>}
+                <CardContent className="p-6 md:p-8">
+                  {loading ? (
+                    <div className="space-y-4">
+                      <Skeleton className="h-24 w-full rounded-2xl" />
+                      <Skeleton className="h-32 w-full rounded-2xl" />
+                    </div>
+                  ) : employees[0] ? (
+                    <div className="flex flex-col gap-6">
+                      <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/30 border border-slate-200/80 dark:border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-16 w-16 rounded-2xl border-2 border-white shadow-md">
+                            <AvatarImage src={employees[0].photoUrl} />
+                            <AvatarFallback className="bg-slate-900 text-white font-bold text-lg">
+                              {employees[0].lastName?.[0] || 'E'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="text-lg font-black text-foreground">
+                              {`${employees[0].lastName || ''} ${employees[0].firstName || ''}`.trim()}
+                            </h3>
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              <span className="font-mono text-xs font-bold text-muted-foreground bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-border/50">
+                                Matricule : {employees[0].matricule || 'N/A'}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {employees[0].poste}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </CardContent>
-                      <CardFooter className="flex justify-end p-4 pt-0">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="sm" variant="outline">
-                              Actions <MoreHorizontal className="ml-2 h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            {canViewSalaries && (
-                              <DropdownMenuItem onSelect={() => openEditSheet(employee)}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Modifier
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onSelect={() => openDateDialog(employee)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Bulletin
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </CardFooter>
-                    </Card>
-                  ))
-                ) : null}
-              </div>
-              {!loading && filteredEmployees.length === 0 && !error && (
-                <div className="text-center py-5 text-muted-foreground">
-                  Aucun employé correspondant aux filtres.
+
+                        {employees[0].netSalary !== undefined && employees[0].netSalary > 0 && (
+                          <div className="md:text-right bg-white dark:bg-slate-800/80 p-4 rounded-xl border border-border/50 shadow-sm min-w-[200px]">
+                            <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Salaire Net (Dernier Mois)</p>
+                            <p className="text-2xl font-black text-primary mt-0.5">{formatCurrency(employees[0].netSalary)}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="p-4 rounded-xl border border-border/50 bg-background/50">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Date d'embauche</span>
+                          <p className="text-sm font-bold text-foreground mt-1">
+                            {employees[0].dateEmbauche ? format(parseISO(employees[0].dateEmbauche), 'dd/MM/yyyy') : 'Non renseignée'}
+                          </p>
+                        </div>
+                        <div className="p-4 rounded-xl border border-border/50 bg-background/50">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Banque / Règlement</span>
+                          <p className="text-sm font-bold text-foreground mt-1 uppercase">
+                            {employees[0].banque || "Trésor Public"}
+                          </p>
+                        </div>
+                        <div className="p-4 rounded-xl border border-border/50 bg-background/50">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Statut</span>
+                          <p className="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
+                            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                            {employees[0].status || "Actif"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Lock className="size-10 mx-auto text-muted-foreground/50 mb-3" />
+                      <p className="font-semibold">Aucun profil employé n'est rattaché à votre compte.</p>
+                      <p className="text-xs text-muted-foreground mt-1">Veuillez contacter le service RH ou l'administrateur système.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden">
+              <CardHeader className="border-b border-border/50 bg-primary/5">
+                <CardTitle className="text-xl font-bold">Employés sur la Paie</CardTitle>
+                <CardDescription className="text-xs font-medium">
+                  Gérez le salaire et les informations financières de tous les employés actifs.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <DebouncedInput
+                      placeholder="Rechercher par nom, matricule..."
+                      className="pl-10"
+                      value={searchTerm}
+                      onChange={(val) => {
+                        setSearchTerm(val);
+                        setDebouncedSearchTerm(val);
+                      }}
+                    />
+                  </div>
+                  <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                    <SelectTrigger className="flex-1 min-w-[180px]">
+                      <SelectValue placeholder="Filtrer par service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les services</SelectItem>
+                      {departments.map(dep => <SelectItem key={dep.id} value={dep.id}>{dep.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="flex-1 min-w-[180px]">
+                      <SelectValue placeholder="Filtrer par statut" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les statuts</SelectItem>
+                      <SelectItem value="Actif">Actif</SelectItem>
+                      <SelectItem value="En congé">En congé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={cnpsFilter} onValueChange={setCnpsFilter}>
+                    <SelectTrigger className="flex-1 min-w-[180px]">
+                      <SelectValue placeholder="Filtrer par CNPS" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les régimes (CNPS)</SelectItem>
+                      <SelectItem value="declared">Déclarés CNPS</SelectItem>
+                      <SelectItem value="undeclared">Non déclarés CNPS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={bankFilter} onValueChange={setBankFilter}>
+                    <SelectTrigger className="flex-1 min-w-[180px]">
+                      <SelectValue placeholder="Filtrer par banque" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les banques</SelectItem>
+                      <SelectItem value="none">Non spécifié / Trésor</SelectItem>
+                      {uniqueBanks.map(bank => (
+                        <SelectItem key={bank.value} value={bank.value}>
+                          {bank.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+
+                <div className="mb-4 text-sm text-muted-foreground">
+                  {filteredEmployees.length} résultat(s) trouvé(s).
+                </div>
+
+                {error && <p className="text-destructive text-center py-4">{error}</p>}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader className="bg-muted/50">
+                      <TableRow className="border-border/50">
+                        <TableHead className="w-[50px] font-black uppercase text-[10px] tracking-wider text-center">N°</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Employé</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Poste</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Date d'embauche</TableHead>
+                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Banque</TableHead>
+                        {canViewSalaries && <TableHead className="text-right font-black uppercase text-[10px] tracking-wider">Salaire Net</TableHead>}
+                        <TableHead className="sr-only">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                          <TableRow key={i} className="border-border/40">
+                            <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                            {canViewSalaries && <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>}
+                            <TableCell><Skeleton className="h-8 w-8 rounded-md ml-auto" /></TableCell>
+                          </TableRow>
+                        ))
+                      ) : paginatedEmployees.length > 0 ? (
+                        paginatedEmployees.map((employee, index) => (
+                          <TableRow key={employee.id} className="border-border/40 hover:bg-primary/5 transition-colors group">
+                            <TableCell className="text-center font-bold text-muted-foreground">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                            <TableCell>
+                              <div className="font-bold text-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
+                              <div className="text-[10px] text-muted-foreground font-mono">{employee.matricule}</div>
+                            </TableCell>
+                            <TableCell className="font-medium text-muted-foreground">{employee.poste}</TableCell>
+                            <TableCell className="text-sm">{employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</TableCell>
+                            <TableCell className="text-xs font-semibold text-muted-foreground uppercase">{employee.banque || "TRÉSOR PUBLIC"}</TableCell>
+                            {canViewSalaries && <TableCell className="text-right font-mono font-bold text-primary">{formatCurrency(employee.netSalary)}</TableCell>}
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button aria-haspopup="true" size="icon" variant="ghost" className="h-8 w-8 rounded-full">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                  <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50">Actions</DropdownMenuLabel>
+                                  {canViewSalaries && (
+                                    <DropdownMenuItem onSelect={() => openEditSheet(employee)} className="font-bold">
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      Modifier la paie
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuItem onSelect={() => openDateDialog(employee)} className="font-bold">
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Voir le bulletin
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : null}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
+                    ))
+                  ) : paginatedEmployees.length > 0 ? (
+                    paginatedEmployees.map((employee, index) => (
+                      <Card key={employee.id}>
+                        <CardHeader>
+                          <CardTitle className="text-base">
+                            {(currentPage - 1) * itemsPerPage + index + 1}. {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}
+                          </CardTitle>
+                          <CardDescription>{employee.poste}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                          <div className="mt-2 space-y-1 text-sm">
+                            <p><span className="font-medium">Embauche:</span> {employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</p>
+                            {canViewSalaries && <p><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>}
+                          </div>
+                        </CardContent>
+                        <CardFooter className="flex justify-end p-4 pt-0">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="sm" variant="outline">
+                                Actions <MoreHorizontal className="ml-2 h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              {canViewSalaries && (
+                                <DropdownMenuItem onSelect={() => openEditSheet(employee)}>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Modifier
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem onSelect={() => openDateDialog(employee)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Bulletin
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </CardFooter>
+                      </Card>
+                    ))
+                  ) : null}
+                </div>
+                {!loading && filteredEmployees.length === 0 && !error && (
+                  <div className="text-center py-5 text-muted-foreground">
+                    Aucun employé correspondant aux filtres.
+                  </div>
+                )}
+              </CardContent>
+              {totalPages > 1 && (
+                <CardFooter>
+                  <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                    totalItems={filteredEmployees.length}
+                    isPending={false}
+                  />
+                </CardFooter>
               )}
-            </CardContent>
-            {totalPages > 1 && (
-              <CardFooter>
-                <PaginationControls
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={(page) => setCurrentPage(page)}
-                  itemsPerPage={itemsPerPage}
-                  onItemsPerPageChange={setItemsPerPage}
-                  totalItems={filteredEmployees.length}
-                  isPending={false}
-                />
-              </CardFooter>
-            )}
-          </Card>
+            </Card>
+          )}
         </div>
 
         {selectedEmployee && (

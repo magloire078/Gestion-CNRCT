@@ -89,6 +89,10 @@ service cloud.firestore {
     
     match /employees/{employeeId} {
       allow read: if can('employees', 'read') || 
+                   (isSignedIn() && (
+                     employeeId == getUserData().get('employeeId', '') ||
+                     resource.data.get('userId', '') == request.auth.uid
+                   )) ||
                    (resource.data.status == 'Actif' && (
                      resource.data.departmentId == '9ywKFDgVMS86rZLPYhpm' || 
                      resource.data.poste in ['Président', 'Secrétaire Général', 'Membre du Directoire']

@@ -28,7 +28,7 @@ export default function PayslipDetailPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { toast } = useToast();
-    const { user, hasPermission } = useAuth();
+    const { user, hasPermission, loading: authLoading } = useAuth();
     
     // In this app, /payroll/[id] refers to an employee ID
     const employeeId = params.id as string;
@@ -39,16 +39,30 @@ export default function PayslipDetailPage() {
     const [loading, setLoading] = useState(true);
     const [isPrinting, setIsPrinting] = useState(false);
 
+    const isHrAdmin = hasPermission('page:payroll:view');
+
     useEffect(() => {
-        if (!employeeId) return;
+        if (authLoading || !employeeId) return;
+
+        // Restriction de sécurité : un utilisateur sans rôle RH ne peut voir QUE son propre bulletin
+        if (!isHrAdmin && user?.employeeId && user.employeeId !== employeeId) {
+            toast({
+                variant: "destructive",
+                title: "Accès Refusé",
+                description: "Vous ne pouvez consulter que votre propre bulletin de paie."
+            });
+            router.replace("/payroll");
+            return;
+        }
 
         async function fetchData() {
             try {
                 const employeeDoc = await getEmployee(employeeId);
                 
                 if (employeeDoc) {
-                    if (endDate) {
-                        // Period mode: Generate multiple payslips
+                    // Les utilisateurs non-RH ne peuvent générer qu'un seul bulletin (le dernier)
+                    if (endDate && isHrAdmin) {
+                        // Period mode: Generate multiple payslips (RH uniquement)
                         const start = parseISO(payslipDate);
                         const end = parseISO(endDate);
                         const dates: string[] = [];
@@ -63,7 +77,7 @@ export default function PayslipDetailPage() {
                         const results = await Promise.all(detailsPromises);
                         setAllPayslips(results);
                     } else {
-                        // Single mode
+                        // Single mode (Dernier bulletin)
                         const details = await getPayslipDetails(employeeDoc, payslipDate);
                         setAllPayslips([details]);
                     }

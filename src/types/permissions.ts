@@ -50,6 +50,7 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
     { id: 'evaluations', label: 'Évaluations', icon: 'ClipboardList', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:personnel' },
     { id: 'indemnities', label: 'Indemnités', icon: 'Calculator', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:personnel' },
 
+    { id: 'management', label: 'Hub Gestion', icon: 'Zap', availableActions: ['read'], parentId: 'group:operations' },
     { id: 'missions', label: 'Missions', icon: 'MapPin', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
     { id: 'conflicts', label: 'Conflits', icon: 'AlertTriangle', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
     { id: 'supplies', label: 'Fournitures', icon: 'Package', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
@@ -108,7 +109,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
     'administrateur': buildDefault({
         dashboard: ALL_READ, employees: ALL_CRUD, payroll: ALL_CRUD,
         leaves: ALL_CRUD, missions: ALL_CRUD, conflicts: ALL_CRUD,
-        supplies: ALL_CRUD, 'it-assets': ALL_CRUD, fleet: ALL_CRUD,
+        management: ALL_READ, supplies: ALL_CRUD, 'it-assets': ALL_CRUD, fleet: ALL_CRUD,
         news: ALL_CRUD, repository: ALL_CRUD, budget: ALL_CRUD,
         evaluations: ALL_CRUD, tickets: ALL_CRUD, chiefs: ALL_CRUD,
         'chiefs-career': ALL_CRUD, 'chiefs-audit': ALL_CRUD,
@@ -152,7 +153,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         dashboard: ALL_READ, employees: ALL_READ, payroll: ALL_READ,
         leaves: ALL_READ, missions: ALL_READ, conflicts: ALL_READ,
         budget: ALL_READ, evaluations: ALL_READ, news: ALL_READ,
-        repository: ALL_READ, chiefs: ALL_READ, 
+        repository: ALL_READ, chiefs: ALL_READ, management: ALL_READ,
         'chiefs-career': ALL_READ, 'chiefs-audit': ALL_READ,
         mapping: ALL_READ,
         assistant: ALL_READ, settings: ALL_READ, admin: ALL_READ,
@@ -180,15 +181,15 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
     }),
     'responsable-it': buildDefault({
         dashboard: ALL_READ, 'it-assets': ALL_CRUD, fleet: ALL_CRUD,
-        supplies: ALL_CRUD, tickets: ALL_CRUD, repository: READ_CREATE,
+        supplies: ALL_CRUD, management: ALL_READ, tickets: ALL_CRUD, repository: READ_CREATE,
         assistant: ALL_READ, documents: READ_CREATE, mails: ALL_CRUD,
     }),
     'gestionnaire-stock': buildDefault({
-        dashboard: ALL_READ, supplies: ALL_CRUD, repository: READ_CREATE,
+        dashboard: ALL_READ, supplies: ALL_CRUD, management: ALL_READ, repository: READ_CREATE,
         tickets: ALL_READ, assistant: ALL_READ,
     }),
     'gestionnaire-carburant': buildDefault({
-        dashboard: ALL_READ, fuel: ALL_CRUD, repository: READ_CREATE,
+        dashboard: ALL_READ, fuel: ALL_CRUD, management: ALL_READ, repository: READ_CREATE,
         tickets: ALL_READ, assistant: ALL_READ,
     }),
     'directoire-central': buildDefault({

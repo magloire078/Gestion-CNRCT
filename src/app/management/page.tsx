@@ -36,7 +36,7 @@ type ActionButton = {
 
 export default function ManagementHub() {
     return (
-        <PermissionGuard permission="page:supplies:view">
+        <PermissionGuard permission="page:management:view">
             <ManagementHubContent />
         </PermissionGuard>
     );

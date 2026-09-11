@@ -234,13 +234,20 @@ export default function MissionsPage() {
 
   const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
 
+  const userMissions = useMemo(() => {
+    if (!hasPermission('page:missions:view') && user?.employeeId) {
+      return missions.filter(m => (m.participants || []).some(p => p.employeeId === user.employeeId));
+    }
+    return missions;
+  }, [missions, hasPermission, user?.employeeId]);
+
   const stats = useMemo(() => {
-    const total = missions.length;
-    const ongoing = missions.filter(m => m.status === 'En cours').length;
-    const planned = missions.filter(m => m.status === 'Planifiée').length;
-    const completed = missions.filter(m => m.status === 'Terminée').length;
+    const total = userMissions.length;
+    const ongoing = userMissions.filter(m => m.status === 'En cours').length;
+    const planned = userMissions.filter(m => m.status === 'Planifiée').length;
+    const completed = userMissions.filter(m => m.status === 'Terminée').length;
     return { total, ongoing, planned, completed };
-  }, [missions]);
+  }, [userMissions]);
 
   return (
     <PermissionGuard permission="page:missions:view" allowPersonal>

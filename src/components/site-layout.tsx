@@ -98,6 +98,7 @@ const getRequiredPermission = (path: string): string | undefined => {
 
   // Fallback for paths not explicitly in menu
   if (purePath.startsWith('/admin')) return "page:admin:view";
+  if (purePath.startsWith('/management')) return "page:management:view";
   if (purePath.startsWith('/payroll')) return "page:payroll:view";
   if (purePath.startsWith('/leave')) return "page:leaves:view";
   if (purePath.startsWith('/missions')) return "page:missions:view";

@@ -63,7 +63,7 @@ export interface MenuItem {
 export const ALL_MENU_ITEMS: MenuItem[] = [
   { href: "/intranet", label: "Accueil", icon: LayoutDashboard, permission: "page:intranet:view" },
   { href: "/helpdesk", label: "Assistance IT", icon: LifeBuoy, permission: "page:tickets:view" },
-  { href: "/management", label: "Gestion", icon: Zap, permission: "page:supplies:view" },
+  { href: "/management", label: "Gestion", icon: Zap, permission: "page:management:view" },
   { href: "/dashboard", label: "Tableau de Bord RH", icon: ShieldCheck, permission: "page:dashboard:view" },
   {
     isCollapsible: true,

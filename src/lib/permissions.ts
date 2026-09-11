@@ -14,6 +14,7 @@ export const allPermissions = {
   "Gestion du Budget": "page:budget:view",
   "Gestion des Conflits": "page:conflicts:view",
   "Gestion des Fournitures": "page:supplies:view",
+  "Hub de Gestion": "page:management:view",
   "Gestion des Actifs TI": "page:it-assets:view",
   "Gestion de la Flotte": "page:fleet:view",
   "Gestion des Documents": "page:documents:view",

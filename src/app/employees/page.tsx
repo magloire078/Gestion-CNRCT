@@ -476,8 +476,14 @@ export default function EmployeesPage() {
     const now = new Date();
     setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
 
-    const logos = await getOrganizationSettings();
-    setOrganizationLogos(logos);
+    if (!organizationLogos) {
+      try {
+        const logos = await getOrganizationSettings();
+        setOrganizationLogos(logos);
+      } catch (e) {
+        console.error("Failed to load logos before print", e);
+      }
+    }
 
     setIsPrintDialogOpen(false);
     setIsPrinting(true);

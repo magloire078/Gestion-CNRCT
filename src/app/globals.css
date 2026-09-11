@@ -441,17 +441,17 @@
       padding: 0 !important;
     }
 
-    /* Only hide top-level elements if they don't contain the print section */
-    body > *:not(:has(#print-section)):not(#print-section) {
+    /* Direct child isolation without expensive :has() DOM traversal */
+    body > *:not(#print-section) {
       display: none !important;
     }
 
-    /* Additional cleanup for rogue icons/UI elements */
+    /* Additional cleanup for UI elements */
     .print-hidden, 
     [role="tooltip"],
     [role="status"],
-    .fixed:has(.lucide),
-    .absolute:has(.lucide) {
+    [role="dialog"]:not(#print-section),
+    .no-print {
       display: none !important;
     }
 

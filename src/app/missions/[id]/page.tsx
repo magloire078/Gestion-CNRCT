@@ -69,6 +69,14 @@ export default function MissionDetailPage() {
                     getOrganizationSettings()
                 ]);
                 if (data) {
+                    // Restriction de sécurité : un agent ne peut voir que les missions auxquelles il participe
+                    if (!hasPermission('page:missions:view') && user?.employeeId) {
+                        const isParticipant = (data.participants || []).some((p: any) => p.employeeId === user.employeeId);
+                        if (!isParticipant) {
+                            router.replace('/missions');
+                            return;
+                        }
+                    }
                     setMission(data);
                 }
                 if (orgSettings) {
@@ -81,7 +89,7 @@ export default function MissionDetailPage() {
             }
         }
         fetchMission();
-    }, [id]);
+    }, [id, hasPermission, user?.employeeId, router]);
 
     useEffect(() => {
         if (!mission?.participants) return;

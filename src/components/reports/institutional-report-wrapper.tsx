@@ -37,11 +37,11 @@ export function InstitutionalReportWrapper({
         document.body.classList.add('print-landscape');
       }
 
-      // Small delay to ensure the portal is fully rendered in the DOM
+      // Minimal delay to ensure DOM portal is mounted and styles applied
       const timer = setTimeout(() => {
         setIsPreparing(false);
         
-        // Final buffer before print
+        // Final quick tick before triggering native print
         setTimeout(() => {
           window.print();
           
@@ -50,8 +50,8 @@ export function InstitutionalReportWrapper({
           }
           
           if (onAfterPrint) onAfterPrint();
-        }, 150);
-      }, 600);
+        }, 50);
+      }, 120);
 
       return () => {
         clearTimeout(timer);
@@ -98,21 +98,7 @@ export function InstitutionalReportWrapper({
             visibility: visible !important;
             width: 100% !important;
             background: white !important;
-          }
-          
-          /* Professional Watermark */
-          #print-section::before {
-            content: "CNRCT - DOCUMENT OFFICIEL";
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 5rem;
-            font-weight: 900;
-            color: rgba(0, 96, 57, 0.03) !important;
-            pointer-events: none;
-            z-index: -1;
-            white-space: nowrap;
+            color: black !important;
           }
         }
       `}</style>

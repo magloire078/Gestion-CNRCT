@@ -7,7 +7,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
   try {
     const settings = await getOrganizationSettings();
 
-    const mainLogo = settings.mainLogoUrl || '/icon-192x192.png'; // Fallback icon
+    const mainLogo = settings.mainLogoUrl || '/assets/logo-cnrct.png'; // Fallback icon
 
     return {
       name: 'Intranet CNRCT',
@@ -39,7 +39,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
       display: 'standalone',
       icons: [
         {
-          src: '/icon-192x192.png',
+          src: '/assets/logo-cnrct.png',
           sizes: '192x192',
           type: 'image/png',
         },

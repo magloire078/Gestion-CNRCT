@@ -34,13 +34,14 @@ export function usePermissions(): UsePermissionsReturn {
             // Fetch effective permissions (merged Role + User specific overrides)
             const perms = await getEffectivePermissions(user.id, user.roleId);
             setPermissions(perms);
-        } catch (err) {
-            console.warn('[usePermissions] Failed to load permissions:', err);
-            setPermissions(emptyPermissions);
+        } catch {
+            const rolePerms = user.role?.resourcePermissions || DEFAULT_ROLE_PERMISSIONS[user.roleId] || {};
+            const userPerms = user.resourcePermissions || {};
+            setPermissions({ ...emptyPermissions, ...rolePerms, ...userPerms });
         } finally {
             setLoading(false);
         }
-    }, [user?.id, user?.roleId]);
+    }, [user?.id, user?.roleId, user?.resourcePermissions, user?.role]);
 
     useEffect(() => {
         loadPermissions();

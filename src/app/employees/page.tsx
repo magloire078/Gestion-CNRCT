@@ -481,6 +481,7 @@ export default function EmployeesPage() {
 
 
   const handlePrint = async (selectedColumns: ColumnKeys[], orientation: 'portrait' | 'landscape') => {
+    setIsPrintDialogOpen(false);
     setColumnsToPrint(selectedColumns);
     setPrintOrientation(orientation);
     const now = new Date();
@@ -495,8 +496,9 @@ export default function EmployeesPage() {
       }
     }
 
-    setIsPrintDialogOpen(false);
-    setIsPrinting(true);
+    startTransition(() => {
+      setIsPrinting(true);
+    });
   };
 
   const getAvatarBgClass = (sexe?: 'Homme' | 'Femme' | 'Autre') => {

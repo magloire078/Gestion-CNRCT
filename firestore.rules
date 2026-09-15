@@ -85,6 +85,11 @@ service cloud.firestore {
       allow create: if isSignedIn();
     }
 
+    match /print_logs/{id} {
+      allow read, create: if isSignedIn();
+      allow update, delete: if isSuperAdmin();
+    }
+
     // --- EMPLOYEES & HR ---
     
     match /employees/{employeeId} {

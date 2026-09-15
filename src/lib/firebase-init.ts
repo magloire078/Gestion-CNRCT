@@ -61,9 +61,9 @@ if (typeof window !== 'undefined' && isConfigValid) {
         isTokenAutoRefreshEnabled: true
       });
       console.log("[Firebase] App Check initialisé avec succès.");
-      if (process.env.NODE_ENV === 'development') {
-        console.info("[Firebase] Clé reCAPTCHA non configurée (App Check optionnel désactivé).");
-      }
+    } else if (process.env.NODE_ENV === 'development') {
+      console.info("[Firebase] Clé reCAPTCHA non configurée (App Check optionnel désactivé).");
+    }
   } catch (error) {
     console.warn("[Firebase] Échec de l'initialisation AppCheck", error);
   }

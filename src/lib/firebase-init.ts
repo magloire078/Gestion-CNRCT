@@ -76,7 +76,7 @@ try {
     localCache: typeof window !== 'undefined' 
       ? persistentLocalCache({ tabManager: persistentMultipleTabManager() })
       : memoryLocalCache(),
-    experimentalForceLongPolling: true
+    experimentalAutoDetectLongPolling: true
   });
 } catch (error: any) {
   if (error.code === 'failed-precondition' || (error.message && error.message.includes('initializeFirestore'))) {

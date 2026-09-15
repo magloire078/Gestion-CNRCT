@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getOrganizationSettings } from "@/services/organization-service";
 import type { OrganizationSettings } from "@/types/common";
+import { cn } from "@/lib/utils";
 
 interface InstitutionalHeaderProps {
   title?: string;
@@ -13,6 +14,7 @@ interface InstitutionalHeaderProps {
   settings?: OrganizationSettings | null;
   children?: React.ReactNode;
   showDivider?: boolean;
+  compact?: boolean;
 }
 
 export function InstitutionalHeader({ 
@@ -23,7 +25,8 @@ export function InstitutionalHeader({
   showService = true,
   settings: initialSettings,
   children,
-  showDivider = true
+  showDivider = true,
+  compact = false
 }: InstitutionalHeaderProps) {
   const [settings, setSettings] = useState<OrganizationSettings | null>(initialSettings || null);
 
@@ -37,26 +40,34 @@ export function InstitutionalHeader({
 
   return (
     <div className={`flex justify-between items-start relative break-inside-avoid ${
-      showDivider ? "border-b-2 border-slate-900 pb-5 mb-12" : "pb-4 mb-6"
+      compact 
+        ? (showDivider ? "border-b-2 border-slate-900 pb-3 mb-4" : "pb-2 mb-2")
+        : (showDivider ? "border-b-2 border-slate-900 pb-5 mb-8" : "pb-4 mb-4")
     }`}>
       {/* Left Column: Local Institution Details */}
-      <div className="flex flex-col items-center gap-0.5 text-slate-800 font-black uppercase text-[10px] leading-tight tracking-tighter w-[30%] text-center">
-        <span className="text-sm">Chambre Nationale des Rois</span>
-        <span className="text-sm">et Chefs Traditionnels</span>
+      <div className={cn(
+        "flex flex-col items-center gap-0.5 text-slate-800 font-black uppercase text-center",
+        compact ? "text-[8px] leading-none w-[28%]" : "text-[10px] leading-tight tracking-tighter w-[30%]"
+      )}>
+        <span className={compact ? "text-xs font-black" : "text-sm"}>Chambre Nationale des Rois</span>
+        <span className={compact ? "text-xs font-black" : "text-sm"}>et Chefs Traditionnels</span>
         
         {settings?.mainLogoUrl && (
-          <div className="my-2">
+          <div className={compact ? "my-1" : "my-2"}>
             <img 
               src={settings.mainLogoUrl} 
               alt="Logo CNRCT" 
-              className="h-16 w-auto object-contain"
+              className={compact ? "h-12 w-auto object-contain" : "h-16 w-auto object-contain"}
             />
           </div>
         )}
 
         <div className="w-12 h-0.5 bg-slate-900 my-1 rounded-full" />
         
-        <div className="flex flex-col gap-0.5 mt-1 font-bold text-slate-500 normal-case italic w-full">
+        <div className={cn(
+          "flex flex-col gap-0.5 font-bold text-slate-500 normal-case italic w-full",
+          compact ? "mt-0.5 text-[8px]" : "mt-1 text-[9px]"
+        )}>
           <span>Le Directoire</span>
           <span>………………</span>
           <span>Le Président</span>
@@ -93,20 +104,33 @@ export function InstitutionalHeader({
       )}
 
       {/* Right Column: Republic Details */}
-      <div className="flex flex-col items-center gap-1 w-[30%] text-center">
-        <span className="font-black text-slate-900 text-sm uppercase tracking-wider">République de Côte d'Ivoire</span>
+      <div className={cn(
+        "flex flex-col items-center gap-1 text-center",
+        compact ? "w-[28%]" : "w-[30%]"
+      )}>
+        <span className={cn(
+          "font-black text-slate-900 uppercase tracking-wider",
+          compact ? "text-xs" : "text-sm"
+        )}>
+          République de Côte d'Ivoire
+        </span>
         
         {settings?.secondaryLogoUrl && (
-          <div className="my-2">
+          <div className={compact ? "my-1" : "my-2"}>
             <img 
               src={settings.secondaryLogoUrl} 
               alt="Armoiries RCI" 
-              className="h-14 w-auto object-contain"
+              className={compact ? "h-11 w-auto object-contain" : "h-14 w-auto object-contain"}
             />
           </div>
         )}
         
-        <span className="italic text-[10px] font-bold text-slate-500">Union – Discipline – Travail</span>
+        <span className={cn(
+          "italic font-bold text-slate-500",
+          compact ? "text-[8px]" : "text-[10px]"
+        )}>
+          Union – Discipline – Travail
+        </span>
       </div>
     </div>
   );

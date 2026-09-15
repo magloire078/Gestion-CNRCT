@@ -356,10 +356,12 @@ function ChiefsPageContent() {
             <Printer className="mr-2 h-4 w-4" />
             Imprimer PDF
           </Button>
-          <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 rounded-lg h-10 px-6 font-bold shadow-xl shadow-slate-200">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Ajouter un Chef
-          </Button>
+          {hasPermission('chiefs:create') && (
+            <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 rounded-lg h-10 px-6 font-bold shadow-xl shadow-slate-200">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Ajouter un Chef
+            </Button>
+          )}
         </div>
       </div>
 
@@ -604,8 +606,8 @@ function ChiefsPageContent() {
                       key={chief.id} 
                       chief={chief} 
                       onClick={() => handleShowQuickView(chief)} 
-                      onEdit={(e) => { e.stopPropagation(); router.push(`/chiefs/${chief.id}/edit`); }}
-                      onLink={(e) => { e.stopPropagation(); setLinkChief(chief); }}
+                      onEdit={hasPermission('chiefs:update') ? (e) => { e.stopPropagation(); router.push(`/chiefs/${chief.id}/edit`); } : undefined}
+                      onLink={hasPermission('chiefs:update') ? (e) => { e.stopPropagation(); setLinkChief(chief); } : undefined}
                     />
                 )}
               />
@@ -689,16 +691,22 @@ function ChiefsPageContent() {
                                         >
                                             <Eye className="mr-2 h-4 w-4 text-blue-500" /> Dossier Individuel
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem 
-                                            onSelect={() => router.push(`/chiefs/${chief.id}/edit`)} 
-                                            className="rounded-lg m-1 cursor-pointer flex items-center"
-                                        >
-                                            <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier la Fiche
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="rounded-lg m-1 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
-                                            <Trash2 className="mr-2 h-4 w-4" /> Retirer du Registre
-                                        </DropdownMenuItem>
+                                        {hasPermission('chiefs:update') && (
+                                            <DropdownMenuItem 
+                                                onSelect={() => router.push(`/chiefs/${chief.id}/edit`)} 
+                                                className="rounded-lg m-1 cursor-pointer flex items-center"
+                                            >
+                                                <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier la Fiche
+                                            </DropdownMenuItem>
+                                        )}
+                                        {hasPermission('chiefs:delete') && (
+                                            <>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="rounded-lg m-1 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Retirer du Registre
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </td>

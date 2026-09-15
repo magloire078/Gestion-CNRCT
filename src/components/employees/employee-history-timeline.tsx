@@ -13,6 +13,8 @@ interface EmployeeHistoryTimelineProps {
   events: EmployeeEvent[];
   onEdit: (event: EmployeeEvent) => void;
   onDelete: (event: EmployeeEvent) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
 const eventTypeConfig = {
@@ -85,13 +87,17 @@ const TimelineItem = React.memo(({
     index, 
     events, 
     onEdit, 
-    onDelete 
+    onDelete,
+    canEdit = true,
+    canDelete = true,
 }: { 
     event: EmployeeEvent; 
     index: number; 
     events: EmployeeEvent[]; 
     onEdit: (e: EmployeeEvent) => void; 
     onDelete: (e: EmployeeEvent) => void;
+    canEdit?: boolean;
+    canDelete?: boolean;
 }) => {
     const config = eventTypeConfig[event.eventType] || eventTypeConfig.Autre;
     const isSalaryEvent = salaryEventTypes.includes(event.eventType as any) && event.details;
@@ -187,14 +193,20 @@ const TimelineItem = React.memo(({
                       </div>
                     </div>
                     
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm hover:bg-slate-100" onClick={() => onEdit(event)}>
-                          <Pencil className="h-4 w-4 text-slate-500" />
-                      </Button>
-                      <Button variant="ghost" size="icon" title="Annuler cette modification" className="h-8 w-8 rounded-sm hover:bg-rose-50" onClick={() => onDelete(event)}>
-                          <Trash2 className="h-4 w-4 text-rose-500" />
-                      </Button>
-                    </div>
+                    {(canEdit || canDelete) && (
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                        {canEdit && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm hover:bg-slate-100" onClick={() => onEdit(event)}>
+                              <Pencil className="h-4 w-4 text-slate-500" />
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button variant="ghost" size="icon" title="Annuler cette modification" className="h-8 w-8 rounded-sm hover:bg-rose-50" onClick={() => onDelete(event)}>
+                              <Trash2 className="h-4 w-4 text-rose-500" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <p className="mt-1.5 text-sm font-medium text-slate-600 leading-relaxed border-l-2 border-slate-100 pl-3">{event.description}</p>
@@ -286,7 +298,13 @@ const TimelineItem = React.memo(({
     );
 });
 
-export const EmployeeHistoryTimeline = React.memo(function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHistoryTimelineProps) {
+export const EmployeeHistoryTimeline = React.memo(function EmployeeHistoryTimeline({ 
+  events, 
+  onEdit, 
+  onDelete,
+  canEdit = true,
+  canDelete = true,
+}: EmployeeHistoryTimelineProps) {
   const sortedEvents = useMemo(() => {
     return [...events].sort((a, b) => {
       const dateA = a.effectiveDate ? parseISO(a.effectiveDate).getTime() : 0;
@@ -319,7 +337,9 @@ export const EmployeeHistoryTimeline = React.memo(function EmployeeHistoryTimeli
             index={index} 
             events={sortedEvents} 
             onEdit={onEdit} 
-            onDelete={onDelete} 
+            onDelete={onDelete}
+            canEdit={canEdit}
+            canDelete={canDelete}
           />
         ))}
       </ul>

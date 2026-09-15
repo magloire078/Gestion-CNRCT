@@ -605,13 +605,15 @@ export default function EmployeesPage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              <Button 
-                onClick={() => setTimeout(() => setIsAddSheetOpen(true), 50)} 
-                className="h-11 px-6 rounded-lg bg-slate-900 shadow-xl shadow-slate-900/10 font-black uppercase tracking-widest text-sm md:text-xs hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
-              >
-                <PlusCircle className="mr-2 h-4 w-4 text-emerald-400" />
-                Intégrer Agent
-              </Button>
+              {hasPermission('employees:create') && (
+                <Button 
+                  onClick={() => setTimeout(() => setIsAddSheetOpen(true), 50)} 
+                  className="h-11 px-6 rounded-lg bg-slate-900 shadow-xl shadow-slate-900/10 font-black uppercase tracking-widest text-sm md:text-xs hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
+                >
+                  <PlusCircle className="mr-2 h-4 w-4 text-emerald-400" />
+                  Intégrer Agent
+                </Button>
+              )}
             </div>
           </div>
 
@@ -997,18 +999,22 @@ export default function EmployeesPage() {
                                       >
                                         <Eye className="mr-2 h-4 w-4 text-blue-500" /> Profil Complet
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem 
-                                        onSelect={() => router.push(`/employees/${employee.id}/edit`)} 
-                                        className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer"
-                                      >
-                                        <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier Données
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem 
-                                        onSelect={() => setTimeout(() => setDeleteTarget(employee), 50)} 
-                                        className="rounded-xl text-rose-600 font-bold py-2.5 px-3 focus:bg-rose-50 focus:text-rose-600 cursor-pointer"
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" /> Radiation Agent
-                                      </DropdownMenuItem>
+                                      {hasPermission('employees:update') && (
+                                        <DropdownMenuItem 
+                                          onSelect={() => router.push(`/employees/${employee.id}/edit`)} 
+                                          className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer"
+                                        >
+                                          <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier Données
+                                        </DropdownMenuItem>
+                                      )}
+                                      {hasPermission('employees:delete') && (
+                                        <DropdownMenuItem 
+                                          onSelect={() => setTimeout(() => setDeleteTarget(employee), 50)} 
+                                          className="rounded-xl text-rose-600 font-bold py-2.5 px-3 focus:bg-rose-50 focus:text-rose-600 cursor-pointer"
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" /> Radiation Agent
+                                        </DropdownMenuItem>
+                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </TableCell>

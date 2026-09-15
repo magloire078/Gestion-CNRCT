@@ -960,47 +960,68 @@ export const PermissionMatrix = React.memo(function PermissionMatrix({
             {/* Role Switcher Toolbar */}
             <div className="space-y-3 pb-2">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                        <SlidersHorizontal className="h-4 w-4 text-slate-500" />
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                            Sélectionner un Profil à Configurer :
-                        </span>
+                    <div className="flex items-center gap-2.5">
+                        <div className="p-1.5 rounded-md bg-slate-900 text-white shadow-sm">
+                            <SlidersHorizontal className="h-4 w-4 text-emerald-400" />
+                        </div>
+                        <div>
+                            <span className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                                Sélectionner un Profil à Configurer :
+                            </span>
+                            <span className="text-[11px] text-slate-500 font-bold ml-2">
+                                ({filteredRoles.length} {filteredRoles.length > 1 ? 'rôles' : 'rôle'})
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <div className="relative w-full sm:w-72">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                         <Input
-                            placeholder="Filtrer les rôles..."
+                            placeholder="Rechercher / Filtrer les rôles..."
                             value={roleSearch}
                             onChange={(e) => setRoleSearch(e.target.value)}
-                            className="pl-8 h-8 text-xs bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+                            className="pl-9 h-9 text-xs bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg shadow-sm font-medium"
                         />
+                        {roleSearch && (
+                            <button
+                                onClick={() => setRoleSearch('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                            >
+                                <X className="h-3.5 w-3.5" />
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                {/* Horizontal Scrollable Role Pills */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
-                    {filteredRoles.map(role => {
-                        const isSelected = role.id === activeRole?.id;
-                        return (
-                            <button
-                                key={role.id}
-                                type="button"
-                                onClick={() => handleSelectRole(role.id)}
-                                className={cn(
-                                    "px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 border",
-                                    isSelected
-                                        ? "bg-slate-900 text-white border-slate-900 shadow-md scale-[1.02]"
-                                        : "bg-white/80 dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 shadow-sm"
-                                )}
-                            >
-                                <span>{role.label}</span>
-                                {role.isSystem && (
-                                    <ShieldCheck className={cn("h-3.5 w-3.5", isSelected ? "text-emerald-400" : "text-slate-400")} />
-                                )}
-                            </button>
-                        );
-                    })}
+                {/* Fully Visible Wrapped Role Pills Grid */}
+                <div className="flex flex-wrap items-center gap-2 p-3 bg-white/50 dark:bg-slate-900/50 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-inner backdrop-blur-md">
+                    {filteredRoles.length === 0 ? (
+                        <div className="w-full py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            Aucun profil ne correspond à votre filtre &quot;{roleSearch}&quot;
+                        </div>
+                    ) : (
+                        filteredRoles.map(role => {
+                            const isSelected = role.id === activeRole?.id;
+                            return (
+                                <button
+                                    key={role.id}
+                                    type="button"
+                                    onClick={() => handleSelectRole(role.id)}
+                                    className={cn(
+                                        "px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-2 border shadow-sm select-none",
+                                        isSelected
+                                            ? "bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-emerald-500/50 scale-[1.02]"
+                                            : "bg-white hover:bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 border-slate-200/90 dark:border-slate-700 hover:border-slate-300"
+                                    )}
+                                >
+                                    <span>{role.label}</span>
+                                    {role.isSystem && (
+                                        <ShieldCheck className={cn("h-3.5 w-3.5 shrink-0", isSelected ? "text-emerald-400" : "text-emerald-600")} />
+                                    )}
+                                </button>
+                            );
+                        })
+                    )}
                 </div>
             </div>
 

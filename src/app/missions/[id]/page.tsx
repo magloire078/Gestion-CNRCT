@@ -59,7 +59,7 @@ export default function MissionDetailPage() {
     const [selectedParticipant, setSelectedParticipant] = useState<MissionParticipant | null>(null);
     const [employees, setEmployees] = useState<Record<string, any>>({});
 
-    const canEdit = hasPermission('page:missions:view') && can('missions', 'update');
+    const canEdit = can('missions', 'update') || hasPermission('missions:update') || hasPermission('page:missions:update') || hasPermission('page:missions:edit') || hasPermission('page:admin:view');
 
     useEffect(() => {
         async function fetchMission() {
@@ -69,8 +69,9 @@ export default function MissionDetailPage() {
                     getOrganizationSettings()
                 ]);
                 if (data) {
-                    // Restriction de sécurité : un agent ne peut voir que les missions auxquelles il participe
-                    if (!hasPermission('page:missions:view') && user?.employeeId) {
+                    // Restriction de sécurité : un agent sans droits étendus ne peut voir que les missions auxquelles il participe
+                    const canViewAll = hasPermission('page:missions:view') || can('missions', 'read') || can('missions', 'create');
+                    if (!canViewAll && user?.employeeId) {
                         const isParticipant = (data.participants || []).some((p: any) => p.employeeId === user.employeeId);
                         if (!isParticipant) {
                             router.replace('/missions');

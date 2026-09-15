@@ -98,6 +98,7 @@ export default function MissionsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { user, hasPermission } = useAuth();
+  const { can } = usePermissions();
   const [deleteTarget, setDeleteTarget] = useState<Mission | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -132,10 +133,15 @@ export default function MissionsPage() {
     }
   };
 
+  const canCreate = can('missions', 'create') || hasPermission('missions:create') || hasPermission('page:missions:create') || hasPermission('page:missions:add') || hasPermission('page:admin:view');
+  const canUpdate = can('missions', 'update') || hasPermission('missions:update') || hasPermission('page:missions:update') || hasPermission('page:missions:edit') || hasPermission('page:admin:view');
+  const canDelete = can('missions', 'delete') || hasPermission('missions:delete') || hasPermission('page:missions:delete') || hasPermission('page:admin:view');
+  const canManageAllMissions = hasPermission('page:missions:view') || can('missions', 'read') || canCreate;
+
   useEffect(() => {
     getOrganizationSettings().then(setLogos).catch(console.error);
 
-    const isAdmin = hasPermission('page:missions:view');
+    const isAdmin = canManageAllMissions;
     const unsubscribe = subscribeToMissions(
       (fetchedMissions) => {
         setMissions(fetchedMissions);
@@ -152,7 +158,7 @@ export default function MissionsPage() {
       isAdmin
     );
     return () => unsubscribe();
-  }, [user, hasPermission]);
+  }, [user, hasPermission, can]);
 
   const handleAddMission = async (newMissionData: Omit<Mission, "id">) => {
     try {
@@ -188,15 +194,10 @@ export default function MissionsPage() {
     }
   };
 
-  const { can } = usePermissions();
-  const canCreate = hasPermission('page:missions:view') && can('missions', 'create');
-  const canUpdate = hasPermission('page:missions:view') && can('missions', 'update');
-  const canDelete = hasPermission('page:missions:view') && can('missions', 'delete');
-
   const filteredMissions = useMemo(() => {
     return missions.filter(mission => {
-      // Data-level filtering: If not admin/HR, only show missions where user is a participant
-      if (!hasPermission('page:missions:view') && user?.employeeId) {
+      // Data-level filtering: If not admin/HR/manager, only show missions where user is a participant
+      if (!canManageAllMissions && user?.employeeId) {
         const isParticipant = (mission.participants || []).some(p => p.employeeId === user.employeeId);
         if (!isParticipant) return false;
       }
@@ -218,7 +219,7 @@ export default function MissionsPage() {
         mission.description.toLowerCase().includes(searchTermLower)
       );
     });
-  }, [missions, searchTerm, selectedStatus, hasPermission, user?.employeeId]);
+  }, [missions, searchTerm, selectedStatus, canManageAllMissions, user?.employeeId]);
 
   useEffect(() => {
     const maxPages = Math.max(1, Math.ceil(filteredMissions.length / itemsPerPage));
@@ -235,11 +236,11 @@ export default function MissionsPage() {
   const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
 
   const userMissions = useMemo(() => {
-    if (!hasPermission('page:missions:view') && user?.employeeId) {
+    if (!canManageAllMissions && user?.employeeId) {
       return missions.filter(m => (m.participants || []).some(p => p.employeeId === user.employeeId));
     }
     return missions;
-  }, [missions, hasPermission, user?.employeeId]);
+  }, [missions, canManageAllMissions, user?.employeeId]);
 
   const stats = useMemo(() => {
     const total = userMissions.length;
@@ -257,21 +258,21 @@ export default function MissionsPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md">
-                {hasPermission('page:missions:view') ? "Direction des Opérations" : "Mon Espace Personnel"}
+                {canManageAllMissions ? "Direction des Opérations" : "Mon Espace Personnel"}
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 uppercase">
-              {hasPermission('page:missions:view') ? "Missions & Déplacements" : "Mes Missions & Déplacements"}
+              {canManageAllMissions ? "Missions & Déplacements" : "Mes Missions & Déplacements"}
             </h1>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
-              {hasPermission('page:missions:view') 
+              {canManageAllMissions 
                 ? "Gestion et suivi des ordres de mission institutionnels du CNRCT" 
                 : "Consultez et suivez vos ordres de mission au CNRCT"}
             </p>
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            {hasPermission('page:missions:view') && (
+            {canManageAllMissions && (
               <Button 
                 variant="outline" 
                 asChild 

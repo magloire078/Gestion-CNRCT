@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2, Landmark, Download, Coins, Lock, FileText, CheckCircle2, User, Building, CreditCard, Calendar, ShieldCheck, ArrowRight, ExternalLink, History, Sparkles, BadgeCheck, PhoneCall, HelpCircle, ChevronRight, Briefcase } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2, Landmark, Download, Coins, Lock, FileText, CheckCircle2, User, Building, CreditCard, Calendar, ShieldCheck, ArrowRight, ExternalLink, History, Sparkles, BadgeCheck, PhoneCall, HelpCircle, ChevronRight, Briefcase, Calculator } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +46,7 @@ import { getServices } from "@/services/service-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
+import { SalarySimulatorDialog } from "@/components/payroll/salary-simulator-dialog";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -133,6 +134,7 @@ export default function PayrollPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const [printStats, setPrintStats] = useState({ total: 0, print: 0, pdf: 0 });
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
@@ -456,16 +458,26 @@ export default function PayrollPage() {
     <PermissionGuard permission="page:payroll:view" allowPersonal>
       <div className={isProcessingBulk ? 'print-hidden' : ''}>
         <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h1 className="text-3xl font-bold tracking-tight">
               {canViewSalaries ? "Gestion de la Paie" : "Mon Espace Paie & Bulletins"}
             </h1>
-            {canViewSalaries && (
-              <Button onClick={() => setIsBulkPrintDialogOpen(true)} disabled={filteredEmployees.length === 0} className="gap-2">
-                <Printer className="h-4 w-4" />
-                Actions Groupées
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Button 
+                onClick={() => setIsSimulatorOpen(true)} 
+                variant="outline" 
+                className="gap-2 bg-white/90 hover:bg-slate-100 border-slate-200 text-slate-800 shadow-sm font-bold text-xs uppercase tracking-wider"
+              >
+                <Calculator className="h-4 w-4 text-emerald-600" />
+                Simulateur de Salaire
               </Button>
-            )}
+              {canViewSalaries && (
+                <Button onClick={() => setIsBulkPrintDialogOpen(true)} disabled={filteredEmployees.length === 0} className="gap-2 font-bold text-xs uppercase tracking-wider">
+                  <Printer className="h-4 w-4" />
+                  Actions Groupées
+                </Button>
+              )}
+            </div>
           </div>
 
           {canViewSalaries && (
@@ -1220,6 +1232,13 @@ export default function PayrollPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Standalone Salary Simulator Dialog */}
+        <SalarySimulatorDialog
+          isOpen={isSimulatorOpen}
+          onClose={() => setIsSimulatorOpen(false)}
+          employees={employees}
+        />
       </div>
 
       {isProcessingBulk && bulkPayslips.length > 0 && (() => {

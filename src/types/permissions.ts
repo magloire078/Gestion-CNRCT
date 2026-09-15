@@ -138,7 +138,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
     }),
     'manager-rh': buildDefault({
         dashboard: ALL_READ, employees: READ_UPDATE, payroll: ALL_READ,
-        leaves: ALL_CRUD, missions: ALL_READ, evaluations: ALL_CRUD,
+        leaves: ALL_CRUD, missions: ALL_CRUD, evaluations: ALL_CRUD,
         repository: READ_CREATE, tickets: ALL_CRUD, assistant: ALL_READ,
         intranet: ALL_READ, 'organization-chart': ALL_READ,
         indemnities: ALL_READ, documents: READ_CREATE, mails: READ_CREATE,
@@ -165,7 +165,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
     }),
     'chef-de-service': buildDefault({
         dashboard: ALL_READ, employees: ALL_READ, leaves: ALL_CRUD,
-        missions: READ_CREATE, evaluations: ALL_CRUD, tickets: ALL_CRUD,
+        missions: ALL_CRUD, evaluations: ALL_CRUD, tickets: ALL_CRUD,
         repository: READ_CREATE, assistant: ALL_READ, documents: READ_CREATE, mails: ALL_CRUD,
     }),
     'employe': buildDefault({

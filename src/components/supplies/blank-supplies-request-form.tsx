@@ -185,7 +185,7 @@ export function BlankSuppliesRequestForm({
                     <div className="mt-4 pt-4">
                         <InstitutionalFooter 
                             signatoryName="SECRÉTARIAT GÉNÉRAL"
-                            signatoryTitle="Directeur DRHAS, CNRCT"
+                            signatoryTitle="Le Directeur DRHAS, CNRCT"
                             showCertification={false}
                             showSignatures={false}
                         />

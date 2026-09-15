@@ -14,13 +14,10 @@ import {
   Settings,
   Package,
   Crown,
-  MapIcon,
   MapPin,
   ClipboardCheck,
   Building,
   Globe,
-  UserSquare as UserSquareIcon,
-  ShieldHalf,
   Network,
   Archive,
   Mail,
@@ -31,16 +28,17 @@ import {
   LifeBuoy,
   ShieldCheck,
   Fuel,
-  Utensils,
-  Drama,
-  Music,
-  Gamepad2,
   HeartHandshake,
   Users2,
   History,
   Zap,
   HandshakeIcon,
   Newspaper,
+  MessageCircle,
+  FileBarChart,
+  FileCheck,
+  Map as MapIcon,
+  UserCheck,
 } from "lucide-react";
 import React from "react";
 
@@ -60,139 +58,151 @@ export interface MenuItem {
   subItems?: SubMenuItem[];
 }
 
+/**
+ * Source unique de vérité et hiérarchie épurée, dédupliquée et factorisée de la navigation.
+ */
 export const ALL_MENU_ITEMS: MenuItem[] = [
-  { href: "/intranet", label: "Accueil", icon: LayoutDashboard, permission: "page:intranet:view" },
-  { href: "/helpdesk", label: "Assistance IT", icon: LifeBuoy, permission: "page:tickets:view" },
-  { href: "/management", label: "Gestion", icon: Zap, permission: "page:management:view" },
-  { href: "/dashboard", label: "Tableau de Bord RH", icon: ShieldCheck, permission: "page:dashboard:view" },
+  // --- RACINE / ACCÈS DIRECTS ---
+  { 
+    href: "/intranet", 
+    label: "Accueil Intranet", 
+    icon: LayoutDashboard, 
+    permission: "page:intranet:view" 
+  },
+  { 
+    href: "/management", 
+    label: "Hub de Gestion", 
+    icon: Zap, 
+    permission: "page:management:view" 
+  },
+  { 
+    href: "/dashboard", 
+    label: "Tableau de Bord RH", 
+    icon: ShieldCheck, 
+    permission: "page:dashboard:view" 
+  },
+  { 
+    href: "/helpdesk", 
+    label: "Support IT & IA", 
+    icon: LifeBuoy, 
+    permission: "page:tickets:view" 
+  },
+
+  // --- L'INSTITUTION & GOUVERNANCE ---
   {
     isCollapsible: true,
     label: "L'Institution",
     icon: Landmark,
     permission: "page:organization-chart:view",
     subItems: [
-      { href: "/institution", label: "Présentation Visuelle", icon: Building2, permission: "page:organization-chart:view" },
-      { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
-      { href: "/employees?filter=directoire", label: "Bureau du Directoire", icon: Building, permission: "page:employees:view" },
-      { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
+      { href: "/institution", label: "Présentation Institutionnelle", icon: Building2, permission: "page:organization-chart:view" },
+      { href: "/organization-chart", label: "Organigramme Officiel", icon: Network, permission: "page:organization-chart:view" },
+      { href: "/employees?filter=directoire", label: "Directoire & Comités", icon: Building, permission: "page:employees:view" },
     ]
   },
+
+  // --- RESSOURCES HUMAINES & SOCIAL ---
   {
     isCollapsible: true,
-    label: "Cartographies",
-    icon: MapIcon,
-    permission: "page:mapping:view",
-    subItems: [
-      { href: "/map", label: "SIG National (Rois & Chefs)", icon: Crown, permission: "page:chiefs:view" },
-      { href: "/mapping", label: "Cartographie des Conflits", icon: Scale, permission: "page:mapping:view" },
-      { href: "/employees?filter=all-geo", label: "Bureaux Régionaux", icon: Globe, permission: "page:employees:view" },
-    ]
-  },
-  {
-    isCollapsible: true,
-    label: "Personnel",
+    label: "Personnel & RH",
     icon: Users,
     permission: "page:employees:view",
     subItems: [
-      { href: "/employees?filter=personnel-siege", label: "Personnel Siège", icon: Users, permission: "page:employees:view" },
-      { href: "/employees?filter=chauffeur-directoire", label: "Chauffeur Directoire", icon: Car, permission: "page:employees:view" },
-      { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
-      { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leaves:view" },
-      { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
-      { href: "/indemnities", label: "Indemnités", icon: Scale, permission: "page:indemnities:view" },
+      { href: "/employees", label: "Annuaire & Effectifs", icon: Users, permission: "page:employees:view" },
+      { href: "/payroll", label: "Fiches de Paie & Salaires", icon: Wallet, permission: "page:payroll:view" },
+      { href: "/leave", label: "Congés & Permissions", icon: CalendarOff, permission: "page:leaves:view" },
+      { href: "/evaluations", label: "Évaluations du Personnel", icon: ClipboardCheck, permission: "page:evaluations:view" },
+      { href: "/indemnities", label: "Indemnités & Avantages", icon: Scale, permission: "page:indemnities:view" },
     ]
   },
+
+  // --- CONFLITS & MÉDIATION ---
   {
     isCollapsible: true,
-    label: "Conflits",
+    label: "Conflits & Médiation",
     icon: Scale,
     permission: "page:conflicts:view",
     subItems: [
-      { href: "/conflicts", label: "Conflits CNRCT", icon: Scale, permission: "page:conflicts:view" },
-      { href: "/conflicts/press", label: "Tableau de Veille (Presse)", icon: Newspaper, permission: "page:conflicts:view" },
-      { href: "/conflicts/press/mapping", label: "SIG - Veille Presse", icon: Globe, permission: "page:conflicts:view" },
-      { href: "/mapping", label: "SIG - Conflits Globaux", icon: MapIcon, permission: "page:mapping:view" },
+      { href: "/conflicts", label: "Registre des Conflits", icon: Scale, permission: "page:conflicts:view" },
+      { href: "/conflicts/press", label: "Veille Médiatique & Presse", icon: Newspaper, permission: "page:conflicts:view" },
+      { href: "/mapping", label: "SIG & Cartographie des Conflits", icon: MapIcon, permission: "page:mapping:view" },
     ]
   },
+
+  // --- LOCALITÉS & CHEFFERIES ---
   {
     isCollapsible: true,
     label: "Localités & Autorités",
-    icon: Landmark,
+    icon: Crown,
     permission: "page:villages:view",
     subItems: [
-      { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
-      { href: "/kingdoms", label: "Grands Royaumes", icon: Crown, permission: "page:chiefs:view" },
-      { href: "/cantons", label: "Cantons", icon: Landmark, permission: "page:villages:view" },
-      { href: "/tribus", label: "Tribus", icon: Network, permission: "page:villages:view" },
-      { href: "/villages", label: "Villages", icon: MapPin, permission: "page:villages:view" },
+      { href: "/chiefs", label: "Rois & Chefs Traditionnels", icon: Crown, permission: "page:chiefs:view" },
+      { href: "/kingdoms", label: "Grands Royaumes", icon: Landmark, permission: "page:chiefs:view" },
+      { href: "/cantons", label: "Cantons & Tribus", icon: Network, permission: "page:villages:view" },
+      { href: "/villages", label: "Villages & Découpage", icon: MapPin, permission: "page:villages:view" },
+      { href: "/map", label: "SIG National des Chefferies", icon: Globe, permission: "page:chiefs:view" },
     ]
   },
+
+  // --- CULTURE & PATRIMOINE (Factorisé) ---
   {
     isCollapsible: true,
     label: "Culture & Patrimoine",
     icon: History,
     permission: "page:heritage:view",
     subItems: [
-      { href: "/heritage", label: "Aperçu Global", icon: LayoutDashboard, permission: "page:heritage:view" },
-      { href: "/us-et-coutumes", label: "Us & Coutumes", icon: BookText, permission: "page:us-et-coutumes:view" },
-      { href: "/ethnies", label: "Cartographie Ethnographique", icon: BookText, permission: "page:us-et-coutumes:view" },
-      { href: "/heritage/ethnies", label: "Ethnies & Groupes", icon: Users2, permission: "page:heritage:view" },
-      { href: "/heritage/culinaire", label: "Arts Culinaires", icon: Utensils, permission: "page:heritage:view" },
-      { href: "/heritage/masques", label: "Masques & Statues", icon: Drama, permission: "page:heritage:view" },
-      { href: "/heritage/danses", label: "Danses & Musiques", icon: Music, permission: "page:heritage:view" },
-      { href: "/heritage/jeux", label: "Jeux Traditionnels", icon: Gamepad2, permission: "page:heritage:view" },
-      { href: "/heritage/alliances", label: "Alliances Inter-ethnies", icon: HeartHandshake, permission: "page:heritage:view" },
+      { href: "/heritage", label: "Portail du Patrimoine", icon: History, permission: "page:heritage:view" },
+      { href: "/us-et-coutumes", label: "Us, Coutumes & Traditions", icon: BookText, permission: "page:us-et-coutumes:view" },
+      { href: "/ethnies", label: "Cartographie Ethnographique", icon: Globe, permission: "page:us-et-coutumes:view" },
+      { href: "/heritage/alliances", label: "Alliances Inter-ethniques", icon: HeartHandshake, permission: "page:heritage:view" },
     ]
   },
+
+  // --- OPÉRATIONS & LOGISTIQUE ---
   {
     isCollapsible: true,
-    label: "Opérations",
+    label: "Opérations & Logistique",
     icon: Briefcase,
     permission: "page:supplies:view",
     subItems: [
-      { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
-      { href: "/budget", label: "Budget", icon: Wallet, permission: "page:budget:view" },
-      { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
-      { href: "/fleet/fuel", label: "Cartes de carburant", icon: Fuel, permission: "page:fuel:view" },
-      { href: "/supplies", label: "Stock Fournitures", icon: Package, permission: "page:supplies:view" },
-      { href: "/management/supplies", label: "Validation Fournitures", icon: ShieldCheck, permission: "management:supplies:validate" },
+      { href: "/missions", label: "Ordres de Mission", icon: Briefcase, permission: "page:missions:view" },
+      { href: "/budget", label: "Budget & Engagements", icon: Wallet, permission: "page:budget:view" },
+      { href: "/fleet", label: "Flotte & Carburant", icon: Car, permission: "page:fleet:view" },
+      { href: "/supplies", label: "Stocks & Fournitures", icon: Package, permission: "page:supplies:view" },
       { href: "/procurement", label: "Marchés & Prestataires", icon: HandshakeIcon, permission: "page:procurement:view" },
-      { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
       { href: "/mails", label: "Gestion des Courriers", icon: Mail, permission: "page:mails:view" },
+      { href: "/documents", label: "Génération & Modèles", icon: FileText, permission: "page:repository:view" },
+      { href: "/repository", label: "Référentiel Documentaire", icon: Archive, permission: "page:repository:view" },
     ]
   },
+
+  // --- RAPPORTS CONSOLIDÉS ---
   {
     isCollapsible: true,
-    label: "Rapports",
-    icon: FileText,
-    href: "/reports",
+    label: "Rapports & Synthèses",
+    icon: FileBarChart,
     permission: "page:dashboard:view",
     subItems: [
-      { href: "/reports", label: "Vue d'ensemble", icon: LayoutDashboard, permission: "page:dashboard:view" },
-      { href: "/reports/employees", label: "Personnel", icon: Users, permission: "page:dashboard:view" },
-      { href: "/reports/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
-      { href: "/reports/supplies", label: "Logistique", icon: Package, permission: "page:supplies:view" },
-      { href: "/reports/assets", label: "Patrimoine", icon: Laptop, permission: "page:it-assets:view" },
-      { href: "/reports/disa", label: "DISA (Paie)", icon: FileText, permission: "page:reports:disa:view" },
-      { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
-      { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leaves:view" },
-      { href: "/missions/report", label: "Rapport Missions", icon: FileClock, permission: "page:missions:view" },
-      { href: "/conflicts/report", label: "Rapport Conflits", icon: FileClock, permission: "page:conflicts:view" },
+      { href: "/reports", label: "Observatoire & Synthèses", icon: FileBarChart, permission: "page:dashboard:view" },
+      { href: "/reports/nominative", label: "Tableau Nominatif & DISA", icon: FileCheck, permission: "page:reports:nominative:view" },
+      { href: "/reports/employees", label: "Bilan RH & Effectifs", icon: Users2, permission: "page:dashboard:view" },
+      { href: "/reports/supplies", label: "Logistique & Matériel", icon: Package, permission: "page:supplies:view" },
+      { href: "/reports/chiefs", label: "Chefferies & Conflits", icon: Crown, permission: "page:chiefs:view" },
     ]
   },
+
+  // --- ADMINISTRATION & SÉCURITÉ ---
   {
     isCollapsible: true,
     label: "Administration",
     icon: Shield,
     permission: "page:admin:view",
     subItems: [
-      { href: "/admin/news", label: "Actualités", icon: MessageSquare, permission: "page:news:view" },
-      { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:employees:view" },
-      { href: "/employees?filter=gendarme", label: "Gendarmes", icon: ShieldHalf, permission: "page:employees:view" },
-      { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
-      { href: "/documents", label: "Documents", icon: FileText, permission: "page:repository:view" },
+      { href: "/admin", label: "Sécurité & Habilitations", icon: ShieldCheck, permission: "page:admin:view" },
+      { href: "/it-assets", label: "Parc & Actifs Informatiques", icon: Laptop, permission: "page:it-assets:view" },
+      { href: "/admin/news", label: "Actualités & Diffusion", icon: MessageSquare, permission: "page:news:view" },
       { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
-      { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
+      { href: "/settings", label: "Paramètres Système", icon: Settings, permission: "page:admin:view" },
     ]
   },
 ];

@@ -168,7 +168,7 @@ export function ConflictsOfficialReport({
 
                     <InstitutionalFooter 
                         signatoryName="FATOGOMA Yeo"
-                        signatoryTitle="Secrétaire Général, CNRCT"
+                        signatoryTitle="Le Secrétaire Général, CNRCT"
                         showCertification={true}
                     />
                 </div>

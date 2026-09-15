@@ -177,7 +177,7 @@ export default function PayslipDetailPage() {
                         <Printer className="mr-2 h-4 w-4" /> Imprimer
                     </Button>
                     <Button 
-                        disabled
+                        onClick={handlePrint}
                         className="rounded-2xl h-12 px-6 bg-slate-900 text-white hover:bg-slate-800 font-bold transition-all shadow-xl shadow-slate-900/20"
                     >
                         <Download className="mr-2 h-4 w-4" /> Télécharger PDF

@@ -83,3 +83,51 @@ export function formatCurrency(amount: number | string | undefined | null): stri
     if (isNaN(value)) return "0 FCFA";
     return new Intl.NumberFormat('fr-FR').format(value) + ' FCFA';
 }
+
+/**
+ * Assure que le titre/poste du signataire sur les documents comporte l'article adéquat ("Le ", "La ", "L'").
+ * Ex: "Sécrétaire Général" -> "Le Sécrétaire Général"
+ *     "Secrétaire Général" -> "Le Secrétaire Général"
+ *     "Directeur de Cabinet" -> "Le Directeur de Cabinet"
+ *     "Directrice des RH" -> "La Directrice des RH"
+ *     "Auditeur Qualité" -> "L'Auditeur Qualité"
+ */
+export function formatSignataireTitle(title?: string | null): string {
+    if (!title || !title.trim()) return "Le Secrétaire Général";
+    const trimmed = title.trim();
+    const lower = trimmed.toLowerCase();
+
+    // Si le titre commence déjà par un article ou une formule de délégation, le conserver
+    if (
+        lower.startsWith("le ") ||
+        lower.startsWith("la ") ||
+        lower.startsWith("l'") ||
+        lower.startsWith("l’") ||
+        lower.startsWith("les ") ||
+        lower.startsWith("p. ") ||
+        lower.startsWith("p.o") ||
+        lower.startsWith("pour ")
+    ) {
+        return trimmed;
+    }
+
+    // Gestion des postes féminins courants
+    if (
+        lower.startsWith("directrice") ||
+        lower.startsWith("présidente") ||
+        lower.startsWith("presidente") ||
+        lower.startsWith("secrétaire adjointe") ||
+        lower.startsWith("secretaire adjointe") ||
+        lower.startsWith("responsable adjointe") ||
+        lower.startsWith("chef de service adjointe")
+    ) {
+        return `La ${trimmed}`;
+    }
+
+    // Gestion des postes débutant par une voyelle ou un 'h'
+    if (/^[aeiouyéèêëàâîïôùûh]/i.test(trimmed)) {
+        return `L'${trimmed}`;
+    }
+
+    return `Le ${trimmed}`;
+}

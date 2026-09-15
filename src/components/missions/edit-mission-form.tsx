@@ -42,7 +42,7 @@ import type { Mission, MissionParticipant, Employe, Fleet } from "@/lib/data";
 import { subscribeToEmployees } from "@/services/employee-service";
 import { getLatestNumeroOrdre, incrementOrderNumberString } from "@/services/mission-service";
 import { getVehicles } from "@/services/fleet-service";
-import { cn } from "@/lib/utils";
+import { cn, formatSignataireTitle } from "@/lib/utils";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Switch } from "@/components/ui/switch";
 import { formatEmployeeName } from "@/lib/normalization-utils";
@@ -150,7 +150,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         if (emp) {
             const label = formatEmployeeName(emp.lastName, emp.firstName, emp.name);
             setSignataireName(label);
-            setSignataireTitle(emp.poste || "");
+            setSignataireTitle(formatSignataireTitle(emp.poste || "Secrétaire Général"));
         }
     };
 
@@ -436,7 +436,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                             id="signataireTitle" 
                                             value={signataireTitle} 
                                             onChange={(e) => setSignataireTitle(e.target.value)} 
-                                            placeholder="Titre du signataire"
+                                            placeholder="Ex: Le Secrétaire Général"
                                             className="h-10 rounded-xl border-slate-200 bg-white/50 font-bold text-sm" 
                                         />
                                     </div>

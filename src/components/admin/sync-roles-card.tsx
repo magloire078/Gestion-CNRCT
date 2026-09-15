@@ -1,29 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldCheck, Loader2, RefreshCcw } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { ShieldCheck, Loader2, RefreshCcw, Sparkles, CheckCircle2 } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { syncDefaultRoles } from "@/services/role-service";
 
 export function SyncRolesCard() {
   const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const { toast } = useToast();
 
   const handleSync = async () => {
     setIsSyncing(true);
     try {
       await syncDefaultRoles();
+      setLastSynced(new Date());
       toast({
         title: "Synchronisation réussie",
-        description: "Les profils et permissions par défaut ont été mis à jour dans la base de données.",
+        description: "Les profils et permissions institutionnels par défaut ont été réalignés avec succès.",
       });
     } catch (error) {
       console.error(error);
       toast({
         title: "Erreur de synchronisation",
-        description: "Une erreur est survenue lors de la mise à jour des rôles.",
+        description: "Une erreur est survenue lors de la synchronisation des rôles.",
         variant: "destructive",
       });
     } finally {
@@ -32,48 +34,52 @@ export function SyncRolesCard() {
   };
 
   return (
-    <Card className="border-white/20 shadow-3xl transition-all hover:border-emerald-500/40 bg-white/40 backdrop-blur-xl group rounded-xl overflow-hidden relative">
+    <Card className="border-white/20 shadow-md transition-all hover:border-emerald-500/30 bg-white/40 backdrop-blur-xl rounded-lg overflow-hidden relative group">
       {/* Decorative institutional glow */}
-      <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-emerald-500/5 blur-[100px] pointer-events-none group-hover:bg-emerald-500/10 transition-colors duration-700" />
+      <div className="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none group-hover:bg-emerald-500/10 transition-colors duration-700" />
       
-      <CardHeader className="p-6 pb-6 relative z-10">
-        <div className="flex items-center gap-5">
-          <div className="p-4 rounded-[1.5rem] bg-emerald-500/10 border border-emerald-500/20 shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
-            <ShieldCheck className="h-7 w-7 text-emerald-600" />
+      <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-sm text-emerald-600 shrink-0">
+            <ShieldCheck className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-black uppercase tracking-tighter text-slate-900">Sécurité des Profils</CardTitle>
-            <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600/60 flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold uppercase tracking-tight text-slate-900">
+                Sécurité & Intégrité des Profils
+              </h3>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Intégrité du Système Géo-Tactique
-            </CardDescription>
+                Conforme
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed font-medium">
+              Réaligne automatiquement les habilitations avec les protocoles de sécurité institutionnels par défaut.
+              {lastSynced && (
+                <span className="block text-[11px] text-emerald-600 font-semibold mt-0.5">
+                  Dernière synchronisation effectuée aujourd'hui à {lastSynced.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.
+                </span>
+              )}
+            </p>
           </div>
         </div>
-      </CardHeader>
-      
-      <CardContent className="px-6 pb-5 relative z-10">
-        <div className="p-6 rounded-2xl bg-white/30 border border-white/40 shadow-inner backdrop-blur-sm">
-            <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-wide opacity-80">
-            Cette opération de synchronisation réaligne les habilitations avec les protocoles de sécurité institutionnels par défaut. Toute exception sera conservée.
-            </p>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <Button 
+            onClick={handleSync} 
+            disabled={isSyncing}
+            className="h-10 px-5 rounded-md bg-slate-900 hover:bg-black text-white transition-all font-bold uppercase tracking-wider text-xs shadow-md active:scale-95 group/btn flex items-center gap-2"
+          >
+            {isSyncing ? (
+              <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
+            ) : (
+              <RefreshCcw className="h-4 w-4 group-hover/btn:rotate-180 transition-transform duration-700 text-emerald-400" />
+            )}
+            <span>{isSyncing ? "Synchronisation en cours..." : "Synchroniser les Profils"}</span>
+          </Button>
         </div>
-      </CardContent>
-      
-      <CardFooter className="p-6 pt-0 relative z-10">
-        <Button 
-          onClick={handleSync} 
-          disabled={isSyncing}
-          variant="outline"
-          className="w-full h-14 rounded-2xl border-emerald-600/30 bg-white/50 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-500 font-black uppercase tracking-[0.25em] text-xs shadow-xl active:scale-95 group/btn"
-        >
-          {isSyncing ? (
-            <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-          ) : (
-            <RefreshCcw className="mr-3 h-5 w-5 group-hover/btn:rotate-180 transition-transform duration-700" />
-          )}
-          {isSyncing ? "Transmission..." : "Synchroniser les Profils"}
-        </Button>
-      </CardFooter>
+      </div>
     </Card>
   );
 }
+

@@ -6,6 +6,7 @@ import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Mission, MissionParticipant, OrganizationSettings } from "@/lib/data";
 import { formatEmployeeName } from "@/lib/normalization-utils";
+import { formatSignataireTitle } from "@/lib/utils";
 
 interface PrintProps {
     logos: OrganizationSettings;
@@ -390,7 +391,7 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
             <div className="flex justify-end mt-4 pr-6">
                 <div className="text-center w-80 space-y-1 font-signature-block">
                     <p className="font-bold text-black">P. Le Président du Directoire et P.O</p>
-                    <p className="font-bold text-black">{mission.signataireTitle || "Le Secrétaire Général"}</p>
+                    <p className="font-bold text-black">{formatSignataireTitle(mission.signataireTitle)}</p>
                     <div className="h-14"></div>
                     <div className="flex flex-col items-center justify-center leading-none">
                         <span className="font-bold text-black underline uppercase text-[12pt] whitespace-nowrap block leading-none">
@@ -575,7 +576,7 @@ export function CollectiveMissionOrderPrint({ mission, logos, onCloseAction }: G
                         <div className="h-24 mt-2 border border-dashed border-gray-300"></div>
                     </div>
                     <div className="text-center">
-                        <p className="font-bold underline uppercase">{mission.signataireTitle || "Le Secrétaire Général"}</p>
+                        <p className="font-bold underline uppercase">{formatSignataireTitle(mission.signataireTitle)}</p>
                         <p className="text-[10pt] uppercase mt-1">P. Le Président du Directoire et P.O</p>
                         <div className="h-24 mt-2 border border-dashed border-gray-300 flex items-center justify-center flex-col leading-none">
                             {mission.signataireName && <span className="font-bold mt-16 leading-none block">{mission.signataireName}</span>}
@@ -751,7 +752,7 @@ export function GroupedIndividualMissionsPrint({ mission, logos, onCloseAction }
                         <div className="flex justify-end mt-4 pr-6">
                             <div className="text-center w-80 space-y-1 font-signature-block">
                                 <p className="font-bold text-black">P. Le Président du Directoire et P.O</p>
-                                <p className="font-bold text-black">{mission.signataireTitle || "Le Secrétaire Général"}</p>
+                                <p className="font-bold text-black">{formatSignataireTitle(mission.signataireTitle)}</p>
                                 <div className="h-14"></div>
                                 <div className="flex flex-col items-center justify-center leading-none">
                                     <span className="font-bold text-black underline uppercase text-[12pt] whitespace-nowrap block leading-none">

@@ -245,9 +245,59 @@ service cloud.firestore {
       allow delete: if can('repository', 'delete'); 
     }
 
+    match /documents/{id} {
+      allow read: if can('documents', 'read') || can('repository', 'read');
+      allow create: if can('documents', 'create') || can('repository', 'create');
+      allow update: if can('documents', 'update') || can('repository', 'update');
+      allow delete: if can('documents', 'delete') || can('repository', 'delete');
+    }
+
+    match /mails/{id} {
+      allow read: if can('mails', 'read');
+      allow create: if can('mails', 'create');
+      allow update: if can('mails', 'update');
+      allow delete: if can('mails', 'delete');
+    }
+
+    match /providers/{id} {
+      allow read: if can('procurement', 'read');
+      allow create: if can('procurement', 'create');
+      allow update: if can('procurement', 'update');
+      allow delete: if can('procurement', 'delete');
+    }
+
+    match /contracts/{id} {
+      allow read: if can('procurement', 'read');
+      allow create: if can('procurement', 'create');
+      allow update: if can('procurement', 'update');
+      allow delete: if can('procurement', 'delete');
+    }
+
+    match /press_articles/{id} {
+      allow read: if can('conflicts', 'read');
+      allow create: if can('conflicts', 'create');
+      allow update: if can('conflicts', 'update');
+      allow delete: if can('conflicts', 'delete');
+    }
+
+    match /kingdoms/{id} {
+      allow read: if can('chiefs', 'read');
+      allow create, update, delete: if can('chiefs', 'update') || isSuperAdmin();
+    }
+
+    match /cantons/{id} {
+      allow read: if can('villages', 'read');
+      allow create, update, delete: if can('villages', 'update') || isSuperAdmin();
+    }
+
+    match /tribus/{id} {
+      allow read: if can('villages', 'read');
+      allow create, update, delete: if can('villages', 'update') || isSuperAdmin();
+    }
+
     match /complaints/{id} {
-      allow read: if can('mgp', 'read');
-      allow create: if can('mgp', 'create');
+      allow read: if can('mgp', 'read') || resource.data.get('trackingId', '') != '';
+      allow create: if true; // Soumission publique de plainte
       allow update: if can('mgp', 'update');
       allow delete: if can('mgp', 'delete');
     }

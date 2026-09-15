@@ -182,7 +182,7 @@ export function LeaveOfficialReport({
                     {/* Validation Area */}
                     <InstitutionalFooter 
                         signatoryName="YEO Fatogoma"
-                        signatoryTitle="Secrétaire Général de la CNRCT"
+                        signatoryTitle="Le Secrétaire Général de la CNRCT"
                         place="Yamoussoukro"
                     />
                 </div>

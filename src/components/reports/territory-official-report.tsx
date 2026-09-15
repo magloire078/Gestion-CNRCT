@@ -166,7 +166,7 @@ export function TerritoryOfficialReport({
                     </div>
 
                     <InstitutionalFooter 
-                        signatoryTitle="Directeur du Patrimoine, CNRCT"
+                        signatoryTitle="Le Directeur du Patrimoine, CNRCT"
                         showSignatures={true}
                         leftSignatureTitle="LE RESPONSABLE DES ÉTUDES"
                         rightSignatureTitle="LE DIRECTEUR DU PATRIMOINE"

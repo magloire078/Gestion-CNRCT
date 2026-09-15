@@ -465,6 +465,7 @@ export default function AdminPage() {
               <TabsContent value="security" className="outline-none focus-visible:ring-0">
                 <SecurityTab 
                   roles={safeRoles}
+                  users={safeUsers}
                   loading={loading}
                   currentUser={user}
                   onAddRoleAction={handleOpenAddRole}

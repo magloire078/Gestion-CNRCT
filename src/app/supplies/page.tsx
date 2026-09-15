@@ -1099,7 +1099,7 @@ export default function SuppliesPage() {
   
               <InstitutionalFooter 
                 signatoryName="COULIBALY Hamadou"
-                signatoryTitle="Contrôleur Interne et Qualité, CNRCT"
+                signatoryTitle="Le Contrôleur Interne et Qualité, CNRCT"
               />
             </div>
         )}

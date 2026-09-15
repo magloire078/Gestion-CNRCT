@@ -1,6 +1,7 @@
 "use client";
 
 import { Shield } from "lucide-react";
+import { formatSignataireTitle } from "@/lib/utils";
 
 interface InstitutionalFooterProps {
   place?: string;
@@ -21,7 +22,7 @@ export function InstitutionalFooter({
   place = "Yamoussoukro", 
   date, 
   signatoryName, 
-  signatoryTitle = "Contrôleur Interne et Qualité, CNRCT",
+  signatoryTitle = "Le Contrôleur Interne et Qualité, CNRCT",
   showCertification = true,
   showVisa = true,
   showSignatures = false,
@@ -32,6 +33,9 @@ export function InstitutionalFooter({
   signatorySubtitle
 }: InstitutionalFooterProps) {
   const displayDate = date || new Date().toLocaleDateString('fr-FR');
+  const formattedSignatoryTitle = signatoryTitle ? formatSignataireTitle(signatoryTitle) : "";
+  const formattedLeftSignatureTitle = leftSignatureTitle ? formatSignataireTitle(leftSignatureTitle) : "";
+  const formattedRightSignatureTitle = rightSignatureTitle ? formatSignataireTitle(rightSignatureTitle) : "";
 
   return (
     <div className="pt-12 border-t-2 border-slate-900 mt-16 print:mt-12 break-inside-avoid relative w-full">
@@ -41,7 +45,7 @@ export function InstitutionalFooter({
             {/* Dual Signature Layout */}
             <div className="flex-1 space-y-12">
               <div className="space-y-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{leftSignatureTitle}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{formattedLeftSignatureTitle}</p>
                 <div className="h-20" /> {/* Space for signature */}
                 <div className="flex flex-col gap-2">
                   <div className="h-1 w-40 bg-slate-900 rounded-full" />
@@ -55,7 +59,7 @@ export function InstitutionalFooter({
             <div className="flex-1 text-right space-y-12">
               <div className="space-y-4">
                 <p className="text-sm font-black text-slate-900 leading-none">Fait à {place}, le {displayDate}</p>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">{rightSignatureTitle}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">{formattedRightSignatureTitle}</p>
                 <div className="h-20" /> {/* Space for signature */}
                 <div className="flex flex-col items-end gap-2">
                   <div className="h-1 w-40 bg-slate-900 rounded-full" />
@@ -90,7 +94,7 @@ export function InstitutionalFooter({
             <div className="text-center md:text-right space-y-4 ml-auto">
               <div className="space-y-1 text-right">
                 <p className="text-sm font-black text-slate-900 leading-none">Fait à {place}, le {displayDate}</p>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{signatoryTitle}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{formattedSignatoryTitle}</p>
                 {signatorySubtitle && (
                   <p className="text-[9px] font-bold text-slate-400 italic mt-1">{signatorySubtitle}</p>
                 )}

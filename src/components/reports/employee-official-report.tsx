@@ -201,7 +201,7 @@ export function EmployeeOfficialReport({
                     <div className="mt-8 break-inside-avoid w-full">
                         <InstitutionalFooter 
                             signatoryName="YEO Fatogoma"
-                            signatoryTitle="Secrétaire Général de la CNRCT"
+                            signatoryTitle="Le Secrétaire Général de la CNRCT"
                             place="Yamoussoukro"
                             showCertification={false}
                             showVisa={false}

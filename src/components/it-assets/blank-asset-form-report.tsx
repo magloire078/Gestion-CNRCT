@@ -191,7 +191,7 @@ export function BlankAssetFormReport({
                     <div className="mt-4">
                         <InstitutionalFooter 
                             signatoryName="SECRÉTARIAT GÉNÉRAL"
-                            signatoryTitle="Directeur DINT, CNRCT"
+                            signatoryTitle="Le Directeur DINT, CNRCT"
                             showCertification={false}
                             showSignatures={false}
                         />

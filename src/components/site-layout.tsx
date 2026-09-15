@@ -104,12 +104,23 @@ const getRequiredPermission = (path: string): string | undefined => {
   if (purePath.startsWith('/missions')) return "page:missions:view";
   if (purePath.startsWith('/it-assets')) return "page:it-assets:view";
   if (purePath.startsWith('/documents')) return "page:repository:view";
+  if (purePath.startsWith('/repository')) return "page:repository:view";
   if (purePath.startsWith('/backup')) return "page:backup:view";
   if (purePath.startsWith('/budget')) return "page:budget:view";
   if (purePath.startsWith('/reports')) return "page:dashboard:view";
-  if (purePath.startsWith('/chiefs')) return "page:chiefs:view";
-  if (purePath.startsWith('/villages')) return "page:villages:view";
-  if (purePath.startsWith('/heritage')) return "page:heritage:view";
+  if (purePath.startsWith('/chiefs') || purePath.startsWith('/kingdoms') || purePath.startsWith('/map')) return "page:chiefs:view";
+  if (purePath.startsWith('/villages') || purePath.startsWith('/cantons') || purePath.startsWith('/tribus')) return "page:villages:view";
+  if (purePath.startsWith('/heritage') || purePath.startsWith('/us-et-coutumes') || purePath.startsWith('/ethnies')) return "page:heritage:view";
+  if (purePath.startsWith('/conflicts')) return "page:conflicts:view";
+  if (purePath.startsWith('/mapping')) return "page:mapping:view";
+  if (purePath.startsWith('/supplies')) return "page:supplies:view";
+  if (purePath.startsWith('/fleet')) return "page:fleet:view";
+  if (purePath.startsWith('/procurement')) return "page:procurement:view";
+  if (purePath.startsWith('/mails')) return "page:mails:view";
+  if (purePath.startsWith('/mgp')) return "page:mgp:view";
+  if (purePath.startsWith('/evaluations')) return "page:evaluations:view";
+  if (purePath.startsWith('/indemnities')) return "page:indemnities:view";
+  if (purePath.startsWith('/employees')) return "page:employees:view";
 
   return undefined;
 };
@@ -121,9 +132,13 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
 
   const { requiredPermission, isPersonalPage } = React.useMemo(() => {
     const purePath = pathname.split('?')[0];
+    const isPersonal = 
+      purePath === '/payroll' || purePath.startsWith('/payroll/') ||
+      purePath === '/leave' || purePath.startsWith('/leave/') ||
+      purePath === '/missions' || purePath.startsWith('/missions/');
     return {
       requiredPermission: getRequiredPermission(purePath),
-      isPersonalPage: ['/payroll', '/leave', '/missions'].includes(purePath)
+      isPersonalPage: isPersonal
     };
   }, [pathname]);
 
@@ -334,7 +349,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         ]
       };
 
-      const personnelIndex = items.findIndex((item: MenuItem) => item.label === "Personnel");
+      const personnelIndex = items.findIndex((item: MenuItem) => item.label === "Personnel" || item.label === "Personnel & RH");
       if (personnelIndex !== -1) {
         items.splice(personnelIndex, 0, monEspaceItem as any);
       } else {

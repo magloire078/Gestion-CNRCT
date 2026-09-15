@@ -246,7 +246,7 @@ export function BlankChiefFormReport({
                     <div className="mt-4">
                         <InstitutionalFooter 
                             signatoryName="SECRÉTARIAT GÉNÉRAL"
-                            signatoryTitle="Directeur DACT, CNRCT"
+                            signatoryTitle="Le Directeur DACT, CNRCT"
                             showCertification={false}
                             showSignatures={false}
                         />

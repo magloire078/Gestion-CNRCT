@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './use-auth';
 import { getResourcePermissions, getEffectivePermissions } from '@/services/permission-service';
 import type { ResourcePermissions, CrudAction } from '@/types/permissions';
-import { RESOURCES_CONFIG } from '@/types/permissions';
+import { RESOURCES_CONFIG, DEFAULT_ROLE_PERMISSIONS } from '@/types/permissions';
 
 interface UsePermissionsReturn {
     permissions: ResourcePermissions;

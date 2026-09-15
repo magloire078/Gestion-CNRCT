@@ -43,6 +43,8 @@ import { divisions } from "@/lib/ivory-coast-divisions";
 import dynamic from 'next/dynamic';
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { cn } from "@/lib/utils";
+import { Crown, Layers } from "lucide-react";
+import { getMemberChiefStatuses } from "@/lib/comites-regionaux-2026";
 
 const DirectoireMap = dynamic<{ members: any[]; className?: string }>(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
   ssr: false,
@@ -364,6 +366,26 @@ export default function EmployeesPage() {
     return sorted;
   }, [enrichedEmployees, deferredSearchTerm, deferredDepartmentFilter, deferredStatusFilter, deferredCnpsFilter, deferredSexeFilter, deferredPersonnelTypeFilter, deferredVillageFilter, isGeoTab, deferredRegionFilter, deferredGeoDepartementFilter, deferredSubPrefectureFilter, sortBy, sortOrder, deferredMandatFilter]);
 
+  const chiefMetrics = useMemo(() => {
+    let canton = 0;
+    let tribu = 0;
+    let village = 0;
+    let multi = 0;
+    let roi = 0;
+
+    const list = isGeoTab ? filteredEmployees : employees;
+    list.forEach(emp => {
+      const st = getMemberChiefStatuses(emp);
+      if (st.includes("Chef de Canton")) canton++;
+      if (st.includes("Chef de Tribu")) tribu++;
+      if (st.includes("Chef de Village")) village++;
+      if (st.includes("Roi") || st.includes("Chef de Province")) roi++;
+      if (st.length > 1) multi++;
+    });
+
+    return { canton, tribu, village, multi, roi };
+  }, [filteredEmployees, employees, isGeoTab]);
+
   // Adjust page safely
   const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -629,31 +651,63 @@ export default function EmployeesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {[
-              { label: "Effectif Total", value: employees.length, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
-              { label: "Agents Actifs", value: employees.filter(e => e.status === 'Actif').length, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
-              { label: "Nouveaux / 30j", value: employees.filter(e => e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
-              { label: "Parité H/F", value: `${Math.round((employees.filter(e => e.sexe === 'Homme').length / employees.length) * 100) || 0}%`, sub: "Ratio Hommes / Femmes", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
-            ].map((stat, i) => (
-              <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
-                <CardContent className="p-6 relative">
-                  <div className={cn("absolute -top-4 -right-4 h-16 w-16 rounded-full opacity-5 transition-transform group-hover:scale-150 duration-700", stat.bg)} />
-                  <div className="flex flex-col gap-3">
-                    <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shadow-inner border border-white/50", stat.bg)}>
-                      <stat.icon className={cn("h-5 w-5", stat.color)} />
-                    </div>
-                    <div>
-                      <p className="text-sm md:text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">{stat.label}</p>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
-                        <span className="text-sm md:text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.sub}</span>
+          {/* Customary Chiefs KPIs for Regional / Geo tabs vs Standard HR KPIs */}
+          <div className={cn(
+            "grid gap-4 mb-6",
+            isGeoTab ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+          )}>
+            {isGeoTab ? (
+              [
+                { label: "Effectif Total", value: filteredEmployees.length, sub: "Membres du périmètre", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
+                { label: "Chefs de Canton", value: chiefMetrics.canton, sub: "Autorités cantonales", icon: Crown, color: "text-amber-600", bg: "bg-amber-50/50" },
+                { label: "Chefs de Tribu", value: chiefMetrics.tribu, sub: "Autorités de tribu", icon: Shield, color: "text-blue-600", bg: "bg-blue-50/50" },
+                { label: "Chefs de Village", value: chiefMetrics.village, sub: "Autorités villageoises", icon: Building, color: "text-emerald-600", bg: "bg-emerald-50/50" },
+                { label: "Plusieurs Casquettes", value: chiefMetrics.multi, sub: "Cumul de mandats/titres", icon: Layers, color: "text-purple-600", bg: "bg-purple-50/50" },
+              ].map((stat, i) => (
+                <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
+                  <CardContent className="p-5 relative">
+                    <div className={cn("absolute -top-4 -right-4 h-16 w-16 rounded-full opacity-5 transition-transform group-hover:scale-150 duration-700", stat.bg)} />
+                    <div className="flex flex-col gap-2.5">
+                      <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center shadow-inner border border-white/50", stat.bg)}>
+                        <stat.icon className={cn("h-4 w-4", stat.color)} />
+                      </div>
+                      <div>
+                        <p className="text-[11px] md:text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 mb-0.5">{stat.label}</p>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{stat.sub}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              [
+                { label: "Effectif Total", value: employees.length, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
+                { label: "Agents Actifs", value: employees.filter(e => e.status === 'Actif').length, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
+                { label: "Nouveaux / 30j", value: employees.filter(e => e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
+                { label: "Parité H/F", value: `${Math.round((employees.filter(e => e.sexe === 'Homme').length / (employees.length || 1)) * 100) || 0}%`, sub: "Ratio Hommes / Femmes", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
+              ].map((stat, i) => (
+                <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
+                  <CardContent className="p-6 relative">
+                    <div className={cn("absolute -top-4 -right-4 h-16 w-16 rounded-full opacity-5 transition-transform group-hover:scale-150 duration-700", stat.bg)} />
+                    <div className="flex flex-col gap-3">
+                      <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shadow-inner border border-white/50", stat.bg)}>
+                        <stat.icon className={cn("h-5 w-5", stat.color)} />
+                      </div>
+                      <div>
+                        <p className="text-sm md:text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">{stat.label}</p>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
+                          <span className="text-sm md:text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.sub}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
@@ -943,6 +997,14 @@ export default function EmployeesPage() {
                                   <div className="flex flex-col">
                                     <span className="font-black text-slate-900 uppercase tracking-tight text-base md:text-sm group-hover:text-blue-600 transition-colors flex items-center gap-2">
                                       <span>{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</span>
+                                      {employee.sexe && (
+                                        <span className={cn(
+                                          "text-[9px] font-black uppercase px-1.5 py-0.2 rounded border shadow-2xs",
+                                          employee.sexe === 'Femme' ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-blue-50 text-blue-700 border-blue-200"
+                                        )}>
+                                          {employee.sexe === 'Femme' ? 'F' : 'H'}
+                                        </span>
+                                      )}
                                       {employee.calculatedGroup === 'garde-republicaine' && employee.Date_Depart && (
                                         (() => {
                                           const now = new Date();
@@ -977,7 +1039,16 @@ export default function EmployeesPage() {
                                 
                                 {isGeoTab ? (
                                   <>
-                                    <TableCell className="text-sm md:text-xs truncate max-w-[150px] font-bold text-slate-700">{employee.poste}</TableCell>
+                                    <TableCell className="text-sm md:text-xs max-w-[220px]">
+                                      <div className="font-bold text-slate-800 truncate">{employee.poste}</div>
+                                      <div className="flex flex-wrap gap-1 mt-1">
+                                        {getMemberChiefStatuses(employee).map(s => (
+                                          <span key={s} className="px-1.5 py-0.5 bg-amber-50 border border-amber-200/80 text-amber-800 rounded font-black text-[9px] uppercase tracking-wider whitespace-nowrap">
+                                            {s}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </TableCell>
                                     <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region || '-'}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement || '-'}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-700">{employee.resolvedVillage || employee.Village || employee.village || '-'}</TableCell>

@@ -43,11 +43,14 @@ import { Textarea } from "../ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
-import { getOfficialRegion, getOfficialDepartment } from "@/lib/normalization-utils";
+import { getOfficialRegion, getOfficialDepartment, getRegionFromDepartment } from "@/lib/normalization-utils";
+import { ALL_CHIEF_STATUSES, type ChiefStatusType } from "@/lib/comites-regionaux-2026";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { VillageCombobox } from "@/components/chiefs/village-combobox";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Crown, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AddEmployeeSheetProps {
@@ -84,6 +87,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
   const [departement, setDepartement] = useState("");
   const [subPrefecture, setSubPrefecture] = useState("");
   const [village, setVillage] = useState("");
+  const [statutChef, setStatutChef] = useState<string[]>([]);
   const [numDecision, setNumDecision] = useState("");
   const [cnps, setCnps] = useState(true);
   const [dateImmatriculation, setDateImmatriculation] = useState("");
@@ -241,6 +245,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
         Departement: departement,
         subPrefecture: subPrefecture,
         Village: village,
+        statutChef: statutChef.length > 0 ? statutChef : undefined,
         Num_Decision: numDecision,
         CNPS: cnps,
         Date_Immatriculation: cnps ? dateImmatriculation : undefined,
@@ -468,6 +473,48 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                       </div>
                     </div>
+
+                    {/* Section 3b: Statuts Coutumiers & Titres de Chef */}
+                    <div className="space-y-4 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <Crown className="h-5 w-5 text-amber-500" />
+                          <h3 className="text-base font-semibold text-slate-800">Statuts Coutumiers & Titres de Chef</h3>
+                        </div>
+                        {statutChef.length > 1 && (
+                          <Badge className="bg-amber-500 text-white font-black text-[9px] uppercase tracking-widest px-2.5 py-1">
+                            <Layers className="h-3 w-3 mr-1" />
+                            {statutChef.length} Casquettes
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Sélectionnez les titres coutumiers applicables (Chef de Canton, Chef de Tribu, Chef de Village, etc.) :
+                      </p>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {ALL_CHIEF_STATUSES.map(status => {
+                          const isSelected = statutChef.includes(status);
+                          return (
+                            <div
+                              key={status}
+                              onClick={() => {
+                                setStatutChef(prev => isSelected ? prev.filter(s => s !== status) : [...prev, status]);
+                              }}
+                              className={cn(
+                                "flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all cursor-pointer select-none text-xs font-bold",
+                                isSelected 
+                                  ? "bg-slate-900 border-slate-900 text-white shadow-sm" 
+                                  : "bg-slate-50/50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                              )}
+                            >
+                              <Checkbox checked={isSelected} className={cn("rounded-md pointer-events-none", isSelected ? "border-white data-[state=checked]:bg-white data-[state=checked]:text-slate-900" : "")} />
+                              <span className="uppercase text-[10px] tracking-tight">{status}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     {/* Section 4: Administrative status */}
                     <div className="space-y-5 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                       <div className="flex items-center gap-2 mb-2">

@@ -92,6 +92,8 @@ export type Employe = {
     // Chief & Village Link
     chiefId?: string; // Firestore doc ID in the 'chiefs' collection for this chief
     subPrefecture?: string; // Sub-prefecture for chiefs/regional committee members
+    statutChef?: string[]; // E.g., ['Chef de Canton', 'Chef de Village']
+    titresCoutumiers?: string[];
 
     // Calculated fields for UI display
     calculatedRetirementDate?: Date;

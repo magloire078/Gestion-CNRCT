@@ -360,3 +360,68 @@ export function findComiteRegionalMember(nameOrFullName: string, region?: string
 
   return undefined;
 }
+
+export type ChiefStatusType = "Chef de Canton" | "Chef de Tribu" | "Chef de Village" | "Roi" | "Chef de Province" | "Chef Central";
+
+export const ALL_CHIEF_STATUSES: ChiefStatusType[] = [
+  "Chef de Canton",
+  "Chef de Tribu",
+  "Chef de Village",
+  "Roi",
+  "Chef de Province",
+  "Chef Central"
+];
+
+export function extractChiefStatuses(text: string): ChiefStatusType[] {
+  if (!text) return [];
+  const norm = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const statuses = new Set<ChiefStatusType>();
+
+  if (norm.includes("canton") || norm.includes("caton")) {
+    statuses.add("Chef de Canton");
+  }
+  if (norm.includes("tribu")) {
+    statuses.add("Chef de Tribu");
+  }
+  if (norm.includes("village")) {
+    statuses.add("Chef de Village");
+  }
+  if (norm.includes("roi") || norm.includes("royaume")) {
+    statuses.add("Roi");
+  }
+  if (norm.includes("province")) {
+    statuses.add("Chef de Province");
+  }
+  if (norm.includes("central")) {
+    statuses.add("Chef Central");
+  }
+
+  // Fallback if mentioned chef but no specific level
+  if (statuses.size === 0 && norm.includes("chef")) {
+    statuses.add("Chef de Village");
+  }
+
+  return Array.from(statuses);
+}
+
+export function getMemberChiefStatuses(emp: any): ChiefStatusType[] {
+  if (Array.isArray(emp.statutChef) && emp.statutChef.length > 0) {
+    return emp.statutChef;
+  }
+  if (Array.isArray(emp.titresCoutumiers) && emp.titresCoutumiers.length > 0) {
+    return emp.titresCoutumiers;
+  }
+  if (Array.isArray(emp.additionalRoles) && emp.additionalRoles.length > 0) {
+    return emp.additionalRoles;
+  }
+  
+  const fullName = `${emp.lastName || ''} ${emp.firstName || ''}`.trim() || emp.name || '';
+  const comite = findComiteRegionalMember(fullName, emp.Region || emp.region, emp.Departement || emp.departement);
+  if (comite?.fonctionLocalite) {
+    const extracted = extractChiefStatuses(comite.fonctionLocalite);
+    if (extracted.length > 0) return extracted;
+  }
+  
+  const rawRole = emp.poste || emp.title || emp.role || emp.fonctionLocalite || '';
+  return extractChiefStatuses(rawRole);
+}

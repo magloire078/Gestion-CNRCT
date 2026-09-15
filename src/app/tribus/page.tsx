@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import Fuse from "fuse.js";
 import { 
     Search, 
@@ -37,6 +37,7 @@ export default function TribusPage() {
     const [loading, setLoading] = useState(true);
     
     const [searchQuery, setSearchQuery] = useState("");
+    const deferredSearchQuery = useDeferredValue(searchQuery);
     const [selectedRegion, setSelectedRegion] = useState<string>("all");
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
     const [selectedSubPrefecture, setSelectedSubPrefecture] = useState<string>("all");
@@ -147,9 +148,21 @@ export default function TribusPage() {
         return Array.from(tribusMap.values()).sort((a, b) => a.name.localeCompare(b.name));
     }, [villages, chiefs]);
 
+    // Fuse Instance for fuzzy searching
+    const fuseInstance = useMemo(() => {
+        return new Fuse(tribusData, {
+            keys: ["name", "region", "department", "subPrefecture", "canton"],
+            threshold: 0.3,
+        });
+    }, [tribusData]);
+
     // Filter and Search
     const filteredTribus = useMemo(() => {
         let result = tribusData;
+
+        if (deferredSearchQuery.trim()) {
+            result = fuseInstance.search(deferredSearchQuery.trim()).map(r => r.item);
+        }
 
         if (selectedRegion !== "all") {
             result = result.filter(t => t.region === selectedRegion);
@@ -161,16 +174,8 @@ export default function TribusPage() {
             result = result.filter(t => t.subPrefecture === selectedSubPrefecture);
         }
 
-        if (searchQuery.trim()) {
-            const fuse = new Fuse(result, {
-                keys: ["name", "region", "department", "subPrefecture", "canton"],
-                threshold: 0.3,
-            });
-            result = fuse.search(searchQuery).map(r => r.item);
-        }
-
         return result;
-    }, [tribusData, searchQuery, selectedRegion, selectedDepartment, selectedSubPrefecture]);
+    }, [tribusData, fuseInstance, deferredSearchQuery, selectedRegion, selectedDepartment, selectedSubPrefecture]);
 
     // Pagination
     const totalPages = Math.ceil(filteredTribus.length / itemsPerPage);

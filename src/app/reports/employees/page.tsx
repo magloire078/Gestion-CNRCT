@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { 
     Users, TrendingUp, UserCheck, UserX, 
     Download, Printer, Filter, Search,
@@ -59,6 +59,7 @@ export default function EmployeeReportsPage() {
     const [employees, setEmployees] = useState<Employe[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const deferredSearchTerm = useDeferredValue(searchTerm);
     const [statusFilter, setStatusFilter] = useState("all");
     const [isPrinting, setIsPrinting] = useState(false);
     const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
@@ -99,10 +100,12 @@ export default function EmployeeReportsPage() {
     }, [employees]);
 
     const filteredEmployees = useMemo(() => {
+        const term = deferredSearchTerm.toLowerCase().trim();
         return employees.filter(e => {
-            const matchesSearch = e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (e.department || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (e.poste || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = term === '' ||
+                e.name.toLowerCase().includes(term) ||
+                (e.department || '').toLowerCase().includes(term) ||
+                (e.poste || '').toLowerCase().includes(term);
             
             const isActive = e.status === 'Actif' || e.bActif;
             const matchesStatus = statusFilter === 'all' || 
@@ -111,7 +114,7 @@ export default function EmployeeReportsPage() {
 
             return matchesSearch && matchesStatus;
         });
-    }, [employees, searchTerm, statusFilter]);
+    }, [employees, deferredSearchTerm, statusFilter]);
 
     const handleExportCsv = () => {
         if (!hasPermission('page:admin:view')) return;

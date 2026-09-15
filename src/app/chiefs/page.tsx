@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, forwardRef } from "react";
+import { useState, useEffect, useMemo, useDeferredValue, forwardRef } from "react";
 import Fuse from "fuse.js";
 import { TableVirtuoso, VirtuosoGrid } from "react-virtuoso";
 import { 
@@ -83,6 +83,7 @@ function ChiefsPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const deferredSearchTerm = useDeferredValue(searchTerm);
   const { toast } = useToast();
   const router = useRouter();
   const { hasPermission } = useAuth();
@@ -207,9 +208,10 @@ function ChiefsPageContent() {
   const filteredChiefs = useMemo(() => {
     let baseChiefs = chiefs;
 
-    // 1. Search Filter (Fuzzy)
-    if (searchTerm.trim() !== '') {
-      const results = fuseInstance.search(searchTerm);
+    // 1. Search Filter (Fuzzy with deferred search term for 0ms input lag)
+    const term = deferredSearchTerm.trim();
+    if (term !== '') {
+      const results = fuseInstance.search(term);
       baseChiefs = results.map(result => result.item);
     }
 
@@ -236,7 +238,7 @@ function ChiefsPageContent() {
     });
 
     // Default sorting: Alphabetical by Region -> Department -> SubPrefecture -> Village -> Name
-    if (searchTerm.trim() === '') {
+    if (term === '') {
         baseChiefs.sort((a, b) => {
             const regA = (a.region || '').toLowerCase();
             const regB = (b.region || '').toLowerCase();
@@ -261,7 +263,7 @@ function ChiefsPageContent() {
     }
 
     return baseChiefs;
-  }, [chiefs, fuseInstance, searchTerm, selectedRole, selectedRegion, selectedDepartment, selectedSubPrefecture, selectedCanton, selectedTribu, selectedStatus, selectedAffiliation, selectedKingdom]);
+  }, [chiefs, fuseInstance, deferredSearchTerm, selectedRole, selectedRegion, selectedDepartment, selectedSubPrefecture, selectedCanton, selectedTribu, selectedStatus, selectedAffiliation, selectedKingdom]);
 
   const departments = useMemo(() => {
       if (selectedRegion === 'all' || !selectedRegion || !divisions[selectedRegion]) return [];

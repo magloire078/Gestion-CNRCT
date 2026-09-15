@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useTransition } from "react";
+import { useState, useEffect, useMemo, useDeferredValue, useTransition } from "react";
 import { 
     Crown, Map as MapIcon, Users, Building2,
     Download, Printer, Search, Filter,
@@ -72,6 +72,7 @@ export default function ChiefsReportsPage() {
     const [villages, setVillages] = useState<Village[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const deferredSearchTerm = useDeferredValue(searchTerm);
     const [roleFilter, setRoleFilter] = useState("all");
     const [viewMode, setViewMode] = useState<"list" | "map" | "analytics">("map");
     const [isPrinting, setIsPrinting] = useState(false);
@@ -150,12 +151,14 @@ export default function ChiefsReportsPage() {
     }, [villages, chiefs]);
 
     const filteredChiefs = useMemo(() => {
+        const term = deferredSearchTerm.toLowerCase().trim();
         return chiefs.filter(c => {
-            const matchesSearch = (c.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (c.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (c.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (c.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (c.village || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = term === '' || 
+                (c.lastName || '').toLowerCase().includes(term) ||
+                (c.firstName || '').toLowerCase().includes(term) ||
+                (c.region || '').toLowerCase().includes(term) ||
+                (c.title || '').toLowerCase().includes(term) ||
+                (c.village || '').toLowerCase().includes(term);
             
             const chiefRole = (c.role || c.title || '').toLowerCase();
             const matchesRole = roleFilter === 'all' 
@@ -174,7 +177,7 @@ export default function ChiefsReportsPage() {
 
             return matchesSearch && matchesRole;
         });
-    }, [chiefs, searchTerm, roleFilter]);
+    }, [chiefs, deferredSearchTerm, roleFilter]);
 
     const handleExportCsv = () => {
         const csv = Papa.unparse(chiefs.map(c => ({

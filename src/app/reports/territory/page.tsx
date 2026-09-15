@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { 
     Compass, MapPin, Users, Building2,
     Download, Printer, Search, Filter,
@@ -45,6 +45,7 @@ export default function TerritoryReportPage() {
     const [villages, setVillages] = useState<Village[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const deferredSearchTerm = useDeferredValue(searchTerm);
     const [regionFilter, setRegionFilter] = useState("all");
     const [typeFilter, setTypeFilter] = useState<"all" | "village" | "campement">("village");
     const [isPrinting, setIsPrinting] = useState(false);
@@ -73,10 +74,12 @@ export default function TerritoryReportPage() {
     }, [villages]);
 
     const filteredVillages = useMemo(() => {
+        const term = deferredSearchTerm.toLowerCase().trim();
         return villages.filter(v => {
-            const matchesSearch = v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 v.subPrefecture.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 v.department.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = term === '' || 
+                                 v.name.toLowerCase().includes(term) ||
+                                 v.subPrefecture.toLowerCase().includes(term) ||
+                                 v.department.toLowerCase().includes(term);
             const matchesRegion = regionFilter === "all" || v.region === regionFilter;
             
             const vType = v.type || "village"; // default to village
@@ -84,7 +87,7 @@ export default function TerritoryReportPage() {
 
             return matchesSearch && matchesRegion && matchesType;
         });
-    }, [villages, searchTerm, regionFilter, typeFilter]);
+    }, [villages, deferredSearchTerm, regionFilter, typeFilter]);
 
     const stats = useMemo(() => {
         if (filteredVillages.length === 0) return {

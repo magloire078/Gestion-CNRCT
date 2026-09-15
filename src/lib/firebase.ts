@@ -1,14 +1,18 @@
 
 import { app, db, auth, storage, isConfigValid, config, appCheck } from './firebase-init';
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
-// Initialize Analytics lazily
-if (isConfigValid && typeof window !== 'undefined') {
-  try {
-    getAnalytics(app);
-  } catch (error) {
-    // Silently fail analytics
-  }
+// Initialize Analytics lazily and safely in supported browser environments
+if (isConfigValid && typeof window !== 'undefined' && config.measurementId) {
+  isSupported().then((supported) => {
+    if (supported) {
+      try {
+        getAnalytics(app);
+      } catch (error) {
+        // Silently fail analytics
+      }
+    }
+  }).catch(() => {});
 }
 
 if (typeof window !== 'undefined') {

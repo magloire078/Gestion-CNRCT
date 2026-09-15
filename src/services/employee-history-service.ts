@@ -69,9 +69,23 @@ export async function recalculateSalaryChain(employeeId: string): Promise<void> 
         const eventRef = doc(db, `employees/${employeeId}/history`, event.id);
 
         if (i === 0) {
-            // First event: its previous_* values are the "origin" salary.
-            // We keep them as-is — they were set correctly when the first event was created
-            // with no prior events existing (or they represent the manually set origin).
+            // Check if first event's previous_* was contaminated by future events
+            // (e.g. previous_baseSalary matches a subsequent event's baseSalary)
+            const futureEvents = salaryEvents.slice(1);
+            const isContaminatedByFuture = futureEvents.some(
+                fe => Number(fe.details?.baseSalary || 0) === Number(event.details?.previous_baseSalary || 0) &&
+                      Number(fe.details?.baseSalary || 0) > 0
+            );
+
+            if (isContaminatedByFuture) {
+                const cleanedValues: Record<string, any> = {};
+                for (const field of SALARY_FIELDS) {
+                    cleanedValues[`details.previous_${field}`] = 0;
+                }
+                cleanedValues['details.previous_primeAnciennete'] = 0;
+                batch.update(eventRef, cleanedValues);
+                hasChanges = true;
+            }
             continue;
         }
 
@@ -202,19 +216,15 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
             .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
 
         // Determine the base values for previous_* fields:
-        // If there's a preceding event, use its NEW salary values
-        // Otherwise, use the employee's current fields (which represent the origin salary if no events exist)
-        let baseValues: Record<string, any>;
+        let baseValues: Record<string, any> = {};
 
         if (precedingEvent?.details) {
             // Use the salary values from the preceding event
-            baseValues = {};
             for (const field of SALARY_FIELDS) {
                 baseValues[field] = Number(precedingEvent.details[field] || 0);
             }
-        } else {
-            // No preceding event — this is the new first event.
-            // Use the employee's raw salary fields as the "origin" salary.
+        } else if (salaryEvents.length === 0) {
+            // No events exist at all yet — use the employee's raw salary fields as the "origin" salary.
             baseValues = {
                 baseSalary: employee.baseSalary || 0,
                 indemniteTransportImposable: employee.indemniteTransportImposable || 0,
@@ -226,6 +236,11 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
                 transportNonImposable: employee.transportNonImposable || 0,
                 primeAnciennete: employee.primeAnciennete || 0,
             };
+        } else {
+            // Events exist after this date, but none before: previous_* is unknown (0), not the future salary
+            for (const field of SALARY_FIELDS) {
+                baseValues[field] = 0;
+            }
         }
 
         const previousValues: Record<string, any> = {};

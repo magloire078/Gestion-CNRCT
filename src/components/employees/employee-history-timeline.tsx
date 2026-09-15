@@ -96,6 +96,50 @@ const TimelineItem = React.memo(({
     const config = eventTypeConfig[event.eventType] || eventTypeConfig.Autre;
     const isSalaryEvent = salaryEventTypes.includes(event.eventType as any) && event.details;
     
+    // Find the chronologically preceding salary event (appears AFTER this index in descending sorted array)
+    const precedingSalaryEvent = useMemo(() => {
+        if (!isSalaryEvent) return null;
+        return events.slice(index + 1).find(e => salaryEventTypes.includes(e.eventType as any) && e.details);
+    }, [isSalaryEvent, events, index]);
+
+    // Build the resolved previous details:
+    const resolvedPreviousDetails = useMemo(() => {
+        if (!isSalaryEvent || !event.details) return null;
+        
+        if (precedingSalaryEvent?.details) {
+            // Exact previous state comes from the preceding chronological event
+            const prev: Record<string, any> = {
+                ...event.details,
+                employeeHireDate: event.details.employeeHireDate || precedingSalaryEvent.details.employeeHireDate,
+                eventEffectiveDate: precedingSalaryEvent.effectiveDate,
+                cnpsEnabled: event.details.cnpsEnabled !== undefined ? event.details.cnpsEnabled : precedingSalaryEvent.details.cnpsEnabled,
+            };
+            for (const field of indemnityFields) {
+                prev[field] = Number(precedingSalaryEvent.details[field] || 0);
+            }
+            return prev;
+        }
+
+        // Earliest event in history: check if previous_* is valid and not contaminated by subsequent events
+        const futureSalaryEvents = events.slice(0, index).filter(e => salaryEventTypes.includes(e.eventType as any) && e.details);
+        const isContaminated = futureSalaryEvents.some(
+            fe => Number(fe.details?.baseSalary || 0) === Number(event.details?.previous_baseSalary || 0) && Number(fe.details?.baseSalary || 0) > 0
+        );
+
+        if (isContaminated || Number(event.details.previous_baseSalary || 0) === 0) {
+            return null; // No valid previous baseline before this initial event
+        }
+
+        const prev: Record<string, any> = {
+            ...event.details,
+            eventEffectiveDate: event.details.employeeHireDate || event.effectiveDate,
+        };
+        for (const field of indemnityFields) {
+            prev[field] = Number(event.details[`previous_${field}`] || 0);
+        }
+        return prev;
+    }, [isSalaryEvent, event.details, precedingSalaryEvent, events, index]);
+    
     const eventDetailsWithContext = useMemo(() => ({
       ...event.details,
       eventEffectiveDate: event.effectiveDate,
@@ -106,22 +150,20 @@ const TimelineItem = React.memo(({
     , [isSalaryEvent, eventDetailsWithContext]);
     
     const { brut: oldBrut, net: oldNet } = useMemo(() => 
-        isSalaryEvent ? calculateTotals(eventDetailsWithContext, 'previous_') : { brut: 0, net: 0 }
-    , [isSalaryEvent, eventDetailsWithContext]);
+        resolvedPreviousDetails ? calculateTotals(resolvedPreviousDetails, '') : { brut: 0, net: 0 }
+    , [resolvedPreviousDetails]);
     
     const oldPeriod = useMemo(() => {
-        if(!isSalaryEvent) return null;
+        if (!isSalaryEvent) return null;
         
         const currentEventDate = parseISO(event.effectiveDate);
-        const previousEvent = events[index + 1];
         const employeeHireDate = event.details?.employeeHireDate ? parseISO(event.details.employeeHireDate) : null;
+        const startDate = precedingSalaryEvent ? parseISO(precedingSalaryEvent.effectiveDate) : employeeHireDate;
         
-        const startDate = previousEvent ? parseISO(previousEvent.effectiveDate) : employeeHireDate;
-        
-        if (!startDate || !isValid(startDate)) return null;
+        if (!startDate || !isValid(startDate) || !isValid(currentEventDate)) return null;
 
         return `(du ${format(startDate, 'dd/MM/yy')} au ${format(currentEventDate, 'dd/MM/yy')})`;
-    }, [isSalaryEvent, event.effectiveDate, event.details?.employeeHireDate, events, index]);
+    }, [isSalaryEvent, event.effectiveDate, event.details?.employeeHireDate, precedingSalaryEvent]);
 
     return (
       <li className="relative group animate-in slide-in-from-left duration-500">
@@ -177,14 +219,15 @@ const TimelineItem = React.memo(({
                               <Wallet className="h-4 w-4 text-blue-400" />
                               <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Revalorisation Salariale</h5>
                           </div>
-                          <span className="text-[8px] font-black uppercase tracking-tighter text-slate-500 italic">{oldPeriod}</span>
+                          {oldPeriod && <span className="text-[8px] font-black uppercase tracking-tighter text-slate-500 italic">{oldPeriod}</span>}
                       </div>
 
                       <div className="space-y-2">
                           {indemnityFields.map(key => {
-                              const oldValue = event.details![`previous_${key}`];
-                              const newValue = event.details![key];
-                              if (newValue !== undefined && oldValue !== undefined && Math.round(oldValue) !== Math.round(newValue)) {
+                              const newValue = Number(event.details?.[key] || 0);
+                              const oldValue = resolvedPreviousDetails ? Number(resolvedPreviousDetails[key] || 0) : undefined;
+                              
+                              if (oldValue !== undefined && oldValue > 0 && Math.round(oldValue) !== Math.round(newValue)) {
                                   return (
                                        <div key={key} className="grid grid-cols-4 gap-4 items-center">
                                           <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 col-span-1">{indemnityLabels[key]}</span>
@@ -194,7 +237,16 @@ const TimelineItem = React.memo(({
                                             <span className="text-right font-black font-mono text-white tracking-widest text-xs">{formatCurrency(newValue)} <span className="text-[8px] opacity-40">FCFA</span></span>
                                           </div>
                                       </div>
-                                  )
+                                  );
+                              } else if (newValue > 0 && (!resolvedPreviousDetails || oldValue === undefined || oldValue === 0)) {
+                                  return (
+                                       <div key={key} className="grid grid-cols-4 gap-4 items-center">
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 col-span-1">{indemnityLabels[key]}</span>
+                                          <div className="flex items-center gap-3 col-span-3">
+                                            <span className="text-right font-black font-mono text-white tracking-widest text-xs">{formatCurrency(newValue)} <span className="text-[8px] opacity-40">FCFA</span></span>
+                                          </div>
+                                      </div>
+                                  );
                               }
                               return null;
                           })}
@@ -205,12 +257,14 @@ const TimelineItem = React.memo(({
                               <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">Impact Brut</p>
                               <div className="flex items-baseline gap-2">
                                 <span className="text-sm font-bold text-white tracking-widest">{formatCurrency(newBrut)}</span>
-                                <span className={cn(
-                                  "text-[8px] font-black px-1.5 py-0.5 rounded-sm",
-                                  newBrut > oldBrut ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
-                                )}>
-                                  {newBrut > oldBrut ? '+' : ''}{oldBrut > 0 ? Math.round(((newBrut - oldBrut)/oldBrut)*100) : 100}%
-                                </span>
+                                {oldBrut > 0 && (
+                                  <span className={cn(
+                                    "text-[8px] font-black px-1.5 py-0.5 rounded-sm",
+                                    newBrut >= oldBrut ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
+                                  )}>
+                                    {newBrut >= oldBrut ? '+' : ''}{Math.round(((newBrut - oldBrut)/oldBrut)*100)}%
+                                  </span>
+                                )}
                               </div>
                           </div>
                           <div className="space-y-1">
@@ -233,9 +287,15 @@ const TimelineItem = React.memo(({
 });
 
 export const EmployeeHistoryTimeline = React.memo(function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHistoryTimelineProps) {
-  const memoizedEvents = useMemo(() => events, [events]);
+  const sortedEvents = useMemo(() => {
+    return [...events].sort((a, b) => {
+      const dateA = a.effectiveDate ? parseISO(a.effectiveDate).getTime() : 0;
+      const dateB = b.effectiveDate ? parseISO(b.effectiveDate).getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [events]);
 
-  if (memoizedEvents.length === 0) {
+  if (sortedEvents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-6 bg-slate-50/50 rounded-sm border-2 border-dashed border-slate-200">
         <div className="h-10 w-10 bg-white rounded-sm flex items-center justify-center shadow-sm mb-3">
@@ -252,12 +312,12 @@ export const EmployeeHistoryTimeline = React.memo(function EmployeeHistoryTimeli
       <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-slate-200 via-slate-100 to-transparent" />
       
       <ul className="space-y-4">
-        {memoizedEvents.map((event, index) => (
+        {sortedEvents.map((event, index) => (
           <TimelineItem 
             key={event.id} 
             event={event} 
             index={index} 
-            events={memoizedEvents} 
+            events={sortedEvents} 
             onEdit={onEdit} 
             onDelete={onDelete} 
           />

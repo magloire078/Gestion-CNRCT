@@ -88,12 +88,12 @@ interface DirectoireMapProps {
     subtitle?: string;
 }
 
-export const DirectoireMap: React.FC<DirectoireMapProps> = ({ 
+export const DirectoireMap: React.FC<DirectoireMapProps> = React.memo(function DirectoireMap({ 
     members, 
     className,
     title = "Cartographie du Directoire",
     subtitle = "Localisation géographique des membres et autorités"
-}) => {
+}) {
     const { canSeeGovernanceStatus } = usePermissions();
     const showStatus = canSeeGovernanceStatus();
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -395,4 +395,4 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
             ` }} />
         </div>
     );
-};
+});

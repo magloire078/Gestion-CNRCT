@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue, useTransition } from "react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
 import { format, parseISO, differenceInYears } from "date-fns";
@@ -41,7 +41,6 @@ import { EmployeeAnalytics } from "@/components/employees/employee-analytics";
 
 import { divisions } from "@/lib/ivory-coast-divisions";
 import dynamic from 'next/dynamic';
-import { useTransition } from "react";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { cn } from "@/lib/utils";
 
@@ -262,61 +261,73 @@ export default function EmployeesPage() {
     return (emp.Commune || '').trim();
   };
 
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const deferredVillageFilter = useDeferredValue(villageFilter);
+  const deferredRegionFilter = useDeferredValue(regionFilter);
+  const deferredGeoDepartementFilter = useDeferredValue(geoDepartementFilter);
+  const deferredSubPrefectureFilter = useDeferredValue(subPrefectureFilter);
+  const deferredDepartmentFilter = useDeferredValue(departmentFilter);
+  const deferredPersonnelTypeFilter = useDeferredValue(personnelTypeFilter);
+  const deferredStatusFilter = useDeferredValue(statusFilter);
+  const deferredCnpsFilter = useDeferredValue(cnpsFilter);
+  const deferredSexeFilter = useDeferredValue(sexeFilter);
+  const deferredMandatFilter = useDeferredValue(mandatFilter);
+
+  const availableRegions = useMemo(() => Object.keys(divisions).sort(), []);
+  const availableGeoDepartments = useMemo(() => {
+    if (regionFilter === 'all' || !divisions[regionFilter]) return [];
+    return Object.keys(divisions[regionFilter]).sort();
+  }, [regionFilter]);
+
   const enrichedEmployees = useMemo(() => {
     return employees.map(emp => {
-      const resolvedVillage = resolveEmployeeVillage(emp);
+      const resolvedVillage = resolveEmployeeVillage(emp) || emp.Village || emp.village || '';
+      const normFullName = ((emp.lastName || '') + ' ' + (emp.firstName || '')).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normName = (emp.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normMatricule = (emp.matricule || '').toLowerCase();
+      const normVillage = resolvedVillage.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normPoste = (emp.poste || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normRegion = (emp.Region || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normDept = (emp.Departement || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normSubPref = (emp.subPrefecture || emp.Commune || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
       return {
         ...emp,
         calculatedGroup: getEmployeeGroup(emp, departments),
-        resolvedVillage: resolvedVillage || (emp.Village || emp.village || '')
+        resolvedVillage,
+        _searchTokens: [normFullName, normName, normMatricule, normVillage, normPoste, normRegion, normDept, normSubPref],
+        _normVillage: normVillage
       };
     });
   }, [employees, departments, chiefLookup]);
 
   const filteredEmployees = useMemo(() => {
+    const searchTerms = deferredSearchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(' ').filter(Boolean);
+    const normalizedVillageFilter = deferredVillageFilter.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
     const filtered = enrichedEmployees.filter(employee => {
-      const searchTerms = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(' ').filter(Boolean);
-      
-      const normalizedFullName = ((employee.lastName || '') + ' ' + (employee.firstName || '')).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedName = (employee.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedMatricule = (employee.matricule || '').toLowerCase();
-      const normalizedVillage = (employee.resolvedVillage || employee.Village || employee.village || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedPoste = (employee.poste || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedRegion = (employee.Region || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedDept = (employee.Departement || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedSubPref = (employee.subPrefecture || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      
       const matchesSearchTerm = searchTerms.length === 0 || searchTerms.every(term => 
-        normalizedFullName.includes(term) || 
-        normalizedName.includes(term) ||
-        normalizedMatricule.includes(term) ||
-        normalizedVillage.includes(term) ||
-        normalizedPoste.includes(term) ||
-        normalizedRegion.includes(term) ||
-        normalizedDept.includes(term) ||
-        normalizedSubPref.includes(term)
+        employee._searchTokens.some(token => token.includes(term))
       );
-      const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
-      const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
-      const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
-      const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
+      const matchesDepartment = deferredDepartmentFilter === 'all' || employee.departmentId === deferredDepartmentFilter;
+      const matchesStatus = deferredStatusFilter === 'all' || employee.status === deferredStatusFilter;
+      const matchesCnps = deferredCnpsFilter === 'all' || employee.CNPS === deferredCnpsFilter;
+      const matchesSexe = deferredSexeFilter === 'all' || employee.sexe === deferredSexeFilter;
 
-      const matchesPersonnelType = personnelTypeFilter === 'all' || 
-                                   (personnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional' || employee.calculatedGroup === 'garde-republicaine') : personnelTypeFilter === employee.calculatedGroup);
+      const matchesPersonnelType = deferredPersonnelTypeFilter === 'all' || 
+                                   (deferredPersonnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional' || employee.calculatedGroup === 'garde-republicaine') : deferredPersonnelTypeFilter === employee.calculatedGroup);
 
-      const matchesRegion = !isGeoTab || regionFilter === 'all' || employee.Region === regionFilter;
-      const matchesGeoDept = !isGeoTab || geoDepartementFilter === 'all' || employee.Departement === geoDepartementFilter;
-      const matchesSubPref = !isGeoTab || subPrefectureFilter === 'all' || employee.subPrefecture === subPrefectureFilter || employee.Commune === subPrefectureFilter;
+      const matchesRegion = !isGeoTab || deferredRegionFilter === 'all' || employee.Region === deferredRegionFilter;
+      const matchesGeoDept = !isGeoTab || deferredGeoDepartementFilter === 'all' || employee.Departement === deferredGeoDepartementFilter;
+      const matchesSubPref = !isGeoTab || deferredSubPrefectureFilter === 'all' || employee.subPrefecture === deferredSubPrefectureFilter || employee.Commune === deferredSubPrefectureFilter;
       
-      const normalizedVillageFilter = villageFilter.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedEmpVillage = (employee.resolvedVillage || employee.Village || employee.village || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const matchesVillageFiltered = !isGeoTab || normalizedVillageFilter === "" || normalizedEmpVillage.includes(normalizedVillageFilter);
+      const matchesVillageFiltered = !isGeoTab || normalizedVillageFilter === "" || employee._normVillage.includes(normalizedVillageFilter);
 
       let matchesMandat = true;
       if (isGeoTab) {
-        if (mandatFilter === 'actuelle') {
+        if (deferredMandatFilter === 'actuelle') {
           matchesMandat = employee.estRenouvele !== false; // Active mandate if not explicitly archived
-        } else if (mandatFilter === 'precedente') {
+        } else if (deferredMandatFilter === 'precedente') {
           matchesMandat = employee.estRenouvele === false; // Previous mandate
         }
       }
@@ -350,18 +361,17 @@ export default function EmployeesPage() {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    if (currentPage > Math.ceil(sorted.length / itemsPerPage) && sorted.length > 0) {
-      setCurrentPage(1);
-    }
     return sorted;
-  }, [enrichedEmployees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, villageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter, sortBy, sortOrder, mandatFilter]);
+  }, [enrichedEmployees, deferredSearchTerm, deferredDepartmentFilter, deferredStatusFilter, deferredCnpsFilter, deferredSexeFilter, deferredPersonnelTypeFilter, deferredVillageFilter, isGeoTab, deferredRegionFilter, deferredGeoDepartementFilter, deferredSubPrefectureFilter, sortBy, sortOrder, deferredMandatFilter]);
+
+  // Adjust page safely
+  const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / itemsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const paginatedEmployees = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
+    const startIndex = (safeCurrentPage - 1) * itemsPerPage;
     return filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredEmployees, currentPage, itemsPerPage]);
-
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  }, [filteredEmployees, safeCurrentPage, itemsPerPage]);
 
   const downloadFile = (content: string, fileName: string, contentType: string) => {
     const blob = new Blob([content], { type: contentType });
@@ -795,7 +805,7 @@ export default function EmployeesPage() {
                             </SelectTrigger>
                             <SelectContent className="rounded-lg border-slate-100 shadow-xl max-h-[300px]">
                               <SelectItem value="all" className="font-medium">Toutes les régions</SelectItem>
-                              {Object.keys(divisions).sort().map(reg => (
+                              {availableRegions.map(reg => (
                                 <SelectItem key={reg} value={reg} className="font-medium">{reg}</SelectItem>
                               ))}
                             </SelectContent>
@@ -815,7 +825,7 @@ export default function EmployeesPage() {
                             </SelectTrigger>
                             <SelectContent className="rounded-lg border-slate-100 shadow-xl max-h-[300px]">
                               <SelectItem value="all" className="font-medium">Tous les départements</SelectItem>
-                              {Object.keys(divisions[regionFilter] || {}).sort().map(dep => (
+                              {availableGeoDepartments.map(dep => (
                                 <SelectItem key={dep} value={dep} className="font-medium">{dep}</SelectItem>
                               ))}
                             </SelectContent>

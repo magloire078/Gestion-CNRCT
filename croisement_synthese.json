@@ -1,0 +1,3556 @@
+{
+  "statsSummary": {
+    "totalPostesFournis": 222,
+    "totalReconduits": 132,
+    "totalNouveaux": 88,
+    "totalNouveauxPourvusPourPostesVacants": 44,
+    "totalRemplacementsDirects": 44,
+    "totalPostesVacantsRestants": 2
+  },
+  "deptDiffs": [
+    {
+      "region": "AGNEBY-TIASSA",
+      "department": "Agboville",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 1,
+          "oldNum": 7,
+          "oldName": "KAREKE CHRISTOPHE",
+          "oldObservation": "RAS",
+          "newName": "ADOU N'gbesso",
+          "newProfile": "Nouveau",
+          "newContact": "0777880631",
+          "newFonction": "Chef du village de Grand Morié",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KAREKE CHRISTOPHE\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 2,
+          "oldNum": 8,
+          "oldName": "MOUSSO TCHIMOU",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KAREKE Christophe",
+          "newProfile": "Reconduit",
+          "newContact": "5460777190",
+          "newFonction": "Chef du village d'Oress - Krobou",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "AGNEBY-TIASSA",
+      "department": "Sikensi",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 3,
+          "oldNum": 13,
+          "oldName": "SASSOU N’GUESSAN ANTOINE",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "DIBY Gnahoua Joseph",
+          "newProfile": "Nouveau",
+          "newContact": "0707005499",
+          "newFonction": "Chef du village de Sahuyé",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 4,
+          "oldNum": 14,
+          "oldName": "ESSEHI M’BO MICHEL",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KACOU Aka Bénoît",
+          "newProfile": "Nouveau",
+          "newContact": "0707476995",
+          "newFonction": "Chef du village de Bakanou B",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "AGNEBY-TIASSA",
+      "department": "Taabo",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 5,
+          "oldNum": 11,
+          "oldName": "KOUAME KOUAME KAN",
+          "oldObservation": "RAS",
+          "newName": "EKEFFOU Amos Koffi",
+          "newProfile": "Nouveau",
+          "newContact": "0707537722",
+          "newFonction": "Chef du village  d'Amani Menou",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KOUAME KOUAME KAN\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 6,
+          "oldNum": 12,
+          "oldName": "N’DRI KOUASSI",
+          "oldObservation": "RAS",
+          "newName": "N'DRI Kouassi",
+          "newProfile": "Reconduit",
+          "newContact": "0504590315",
+          "newFonction": "Chef du village de Singrobo",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0504590315) et fonction (Chef du village de Singrobo)"
+        }
+      ]
+    },
+    {
+      "region": "AGNEBY-TIASSA",
+      "department": "Tiassalé",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 7,
+          "oldNum": 9,
+          "oldName": "BITTY SOUHO GEORGES",
+          "oldObservation": "RAS",
+          "newName": "BOKA Yao",
+          "newProfile": "Nouveau",
+          "newContact": "0758477037",
+          "newFonction": "Chef du village de N'douci",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"BITTY SOUHO GEORGES\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 8,
+          "oldNum": 10,
+          "oldName": "ASSI ETIEN",
+          "oldObservation": "RAS",
+          "newName": "NIKEBIE Gnamba",
+          "newProfile": "Nouveau",
+          "newContact": "0708518585",
+          "newFonction": "Chef du village d'Akoungou",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"ASSI ETIEN\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "BAFING",
+      "department": "Koro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 9,
+          "oldNum": 17,
+          "oldName": "BAKAYOKO KASSIMOU",
+          "oldObservation": "RAS",
+          "newName": "BAKAYOKO Kassimou",
+          "newProfile": "Reconduit",
+          "newContact": "0757790954",
+          "newFonction": "Chef de village de Koro",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0757790954) et fonction (Chef de village de Koro)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 10,
+          "oldNum": 18,
+          "oldName": "DIOMANDE DAOUDA",
+          "oldObservation": "RAS",
+          "newName": "DIOMANDE Daouda",
+          "newProfile": "Reconduit",
+          "newContact": "0748000823",
+          "newFonction": "Chef de village Booko",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0748000823) et fonction (Chef de village Booko)"
+        }
+      ]
+    },
+    {
+      "region": "BAFING",
+      "department": "Ouaninou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 11,
+          "oldNum": 19,
+          "oldName": "BAMBA LANCINE",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "BAMBA Soty",
+          "newProfile": "Nouveau",
+          "newContact": "0709160203",
+          "newFonction": "Chef de Canton/ Kawa",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709160203) et fonction (Chef de Canton/ Kawa)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 12,
+          "oldNum": 20,
+          "oldName": "DIOMANDE LACINA",
+          "oldObservation": "RAS",
+          "newName": "DIOMANDE Lacine",
+          "newProfile": "Reconduit",
+          "newContact": "0707426058",
+          "newFonction": "Chef de Canton/ Toubako",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707426058) et fonction (Chef de Canton/ Toubako)"
+        }
+      ]
+    },
+    {
+      "region": "BAFING",
+      "department": "Touba",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 13,
+          "oldNum": 16,
+          "oldName": "DIOMANDE VASSE",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "DIOMANDE Zoumana",
+          "newProfile": "Nouveau",
+          "newContact": "0708925350",
+          "newFonction": "Chef de canton/ Candessi",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708925350) et fonction (Chef de canton/ Candessi)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 14,
+          "oldNum": 15,
+          "oldName": "FADIGA KARAMOKO",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "FADIGA Famoussa",
+          "newProfile": "Nouveau",
+          "newContact": "0757896488",
+          "newFonction": "Chef de Canton/Touba",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0757896488) et fonction (Chef de Canton/Touba)"
+        }
+      ]
+    },
+    {
+      "region": "BAGOUE",
+      "department": "Boundiali",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 15,
+          "oldNum": 21,
+          "oldName": "BAMBA ISSA",
+          "oldObservation": "RAS",
+          "newName": "BAMBA Lassana",
+          "newProfile": "Reconduit",
+          "newContact": "0555686898",
+          "newFonction": "Chef du Canton Gbatoh",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0555686898) et fonction (Chef du Canton Gbatoh)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 16,
+          "oldNum": 22,
+          "oldName": "KONE NAFOLOSSION",
+          "oldObservation": "RAS",
+          "newName": "KONE Nofolossion",
+          "newProfile": "Reconduit",
+          "newContact": "0701877661",
+          "newFonction": "Chef du village de Gbemou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0701877661) et fonction (Chef du village de Gbemou)"
+        }
+      ]
+    },
+    {
+      "region": "BAGOUE",
+      "department": "Kouto",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 17,
+          "oldNum": 26,
+          "oldName": "KONE SOUHOUROU",
+          "oldObservation": "RAS",
+          "newName": "KONE Souhourou",
+          "newProfile": "Reconduit",
+          "newContact": "0101668289",
+          "newFonction": "Chef Canton Kouto",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0101668289) et fonction (Chef Canton Kouto)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 18,
+          "oldNum": 25,
+          "oldName": "LOZENI TOURE",
+          "oldObservation": "RAS",
+          "newName": "LOZENI Toure",
+          "newProfile": "Reconduit",
+          "newContact": "0708240204",
+          "newFonction": "Chef Canton Kolia",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708240204) et fonction (Chef Canton Kolia)"
+        }
+      ]
+    },
+    {
+      "region": "BAGOUE",
+      "department": "Tengréla",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 19,
+          "oldNum": 23,
+          "oldName": "BAKARI KONE",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "COULIBALY Issa",
+          "newProfile": "Nouveau",
+          "newContact": "0747656126",
+          "newFonction": "Chef Canton de Tengrela",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 20,
+          "oldNum": 24,
+          "oldName": "KONE ISSA",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "OUATTARA Fankere",
+          "newProfile": "Nouveau",
+          "newContact": "0749155590",
+          "newFonction": "Chef central de Tengrela",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "BELIER",
+      "department": "Didiévi",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 21,
+          "oldNum": 33,
+          "oldName": "KOMOE KOUADIO",
+          "oldObservation": "RAS",
+          "newName": "KOMOE Kouadio",
+          "newProfile": "Reconduit",
+          "newContact": "0709116097",
+          "newFonction": "Chef de village de Mbankassê",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709116097) et fonction (Chef de village de Mbankassê)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 22,
+          "oldNum": 34,
+          "oldName": "YAO AKISSI ALICE",
+          "oldObservation": "RAS",
+          "newName": "N'DOLI Yao N'Guessan R.",
+          "newProfile": "Reconduit",
+          "newContact": "0778469793",
+          "newFonction": "Chef de Tribu Molonou-Blé",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"YAO AKISSI ALICE\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "BELIER",
+      "department": "Djékanou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 23,
+          "oldNum": 32,
+          "oldName": "KOUAME YAO DANIEL",
+          "oldObservation": "RAS",
+          "newName": "KOUAME Yao Daniel",
+          "newProfile": "Reconduit",
+          "newContact": "0749700576",
+          "newFonction": "Chef de Village/Djékanou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0749700576) et fonction (Chef de Village/Djékanou)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 24,
+          "oldNum": 31,
+          "oldName": "M’BRA KOUAKOU REMI",
+          "oldObservation": "RAS",
+          "newName": "M'BRA Kouakou Remi",
+          "newProfile": "Reconduit",
+          "newContact": "0749184947",
+          "newFonction": "Chef de Village/Angbavia",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0749184947) et fonction (Chef de Village/Angbavia)"
+        }
+      ]
+    },
+    {
+      "region": "BELIER",
+      "department": "Tiébissou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 25,
+          "oldNum": 27,
+          "oldName": "KOFFI KOUAME",
+          "oldObservation": "RAS",
+          "newName": "KOFFI Kouame",
+          "newProfile": "Nouveau",
+          "newContact": "0545059898",
+          "newFonction": "Chef de canton Ahitou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0545059898) et fonction (Chef de canton Ahitou)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 26,
+          "oldNum": 28,
+          "oldName": "YAO KOUAME",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KOUAKOU Amoin  Amélie",
+          "newProfile": "Nouveau",
+          "newContact": "0778833046",
+          "newFonction": "Cheffe de tribu Grogro",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "BELIER",
+      "department": "Toumodi",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 27,
+          "oldNum": 29,
+          "oldName": "RAPHAEL ABO QUADIO",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KOFFI Kouadio Désiré",
+          "newProfile": "Nouveau",
+          "newContact": "0708262154",
+          "newFonction": "Chef de Village/Tchimoukro",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 28,
+          "oldNum": 30,
+          "oldName": "KOUAKOU KOUADIO",
+          "oldObservation": "RAS",
+          "newName": "KOUAKOU Kouadio",
+          "newProfile": "Reconduit",
+          "newContact": "0749643528",
+          "newFonction": "Chef de Village/Dida-Kouadiokro",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0749643528) et fonction (Chef de Village/Dida-Kouadiokro)"
+        }
+      ]
+    },
+    {
+      "region": "BERE",
+      "department": "Dianra",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 29,
+          "oldNum": 38,
+          "oldName": "DAO KASSIMOU",
+          "oldObservation": "RAS",
+          "newName": "DAO Kassimou",
+          "newProfile": "Reconduit",
+          "newContact": "0504400194",
+          "newFonction": "Chef de village de Kafegue",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0504400194) et fonction (Chef de village de Kafegue)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 30,
+          "oldNum": 37,
+          "oldName": "KONE DOTEME",
+          "oldObservation": "RAS",
+          "newName": "KONE Doteme",
+          "newProfile": "Reconduit",
+          "newContact": "0556272435",
+          "newFonction": "Chef de Canton/ Gbatoh",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0556272435) et fonction (Chef de Canton/ Gbatoh)"
+        }
+      ]
+    },
+    {
+      "region": "BERE",
+      "department": "Kounahiri",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 31,
+          "oldNum": 39,
+          "oldName": "BAGATE MEBOUA",
+          "oldObservation": "RAS",
+          "newName": "BAGATE Meboua",
+          "newProfile": "Reconduit",
+          "newContact": "0747532191",
+          "newFonction": "Chef de Canton/ Tofesso",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747532191) et fonction (Chef de Canton/ Tofesso)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 32,
+          "oldNum": 40,
+          "oldName": "KAWA BOMISSO",
+          "oldObservation": "RAS",
+          "newName": "KAWA Bomisso",
+          "newProfile": "Reconduit",
+          "newContact": "0142510833",
+          "newFonction": "Chef de Canton/ Kounahiri",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0142510833) et fonction (Chef de Canton/ Kounahiri)"
+        }
+      ]
+    },
+    {
+      "region": "BERE",
+      "department": "Mankono",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 33,
+          "oldNum": 36,
+          "oldName": "KANDE AMARA",
+          "oldObservation": "RAS",
+          "newName": "KANDE Amara",
+          "newProfile": "Reconduit",
+          "newContact": "0101589030",
+          "newFonction": "Chef de Canton/ Ouedallah",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0101589030) et fonction (Chef de Canton/ Ouedallah)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 34,
+          "oldNum": 35,
+          "oldName": "TIOTE MAMADOU",
+          "oldObservation": "RAS",
+          "newName": "TIOTE Mamadou",
+          "newProfile": "Reconduit",
+          "newContact": "0707569941",
+          "newFonction": "Chef de Canton/ Pokoutou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707569941) et fonction (Chef de Canton/ Pokoutou)"
+        }
+      ]
+    },
+    {
+      "region": "BOUNKANI",
+      "department": "Bouna",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 35,
+          "oldNum": 41,
+          "oldName": "OUATTARA BELEGNONOU",
+          "oldObservation": "RAS",
+          "newName": "OUATTARA Belegnonou",
+          "newProfile": "Reconduit",
+          "newContact": "0505226424",
+          "newFonction": "Chef de village / Koflandé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0505226424) et fonction (Chef de village / Koflandé)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 36,
+          "oldNum": 42,
+          "oldName": "OUATTARA HINISSIEKOUN",
+          "oldObservation": "RAS",
+          "newName": "OUATTARA Hinissiekoun",
+          "newProfile": "Reconduit",
+          "newContact": "0708507259",
+          "newFonction": "Chef de village / Yallo",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708507259) et fonction (Chef de village / Yallo)"
+        }
+      ]
+    },
+    {
+      "region": "BOUNKANI",
+      "department": "Doropo",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 37,
+          "oldNum": 43,
+          "oldName": "OUATTARA BOGNORY",
+          "oldObservation": "RAS",
+          "newName": "(Non pourvu / Poste vide)",
+          "newProfile": "A pourvoir",
+          "newContact": "-",
+          "newFonction": "-",
+          "changeType": "RESTE_A_POURVOIR",
+          "note": "Le poste reste vacant dans la nouvelle liste."
+        },
+        {
+          "slotNum": 2,
+          "newNum": 38,
+          "oldNum": 44,
+          "oldName": "OUATTARA GOUMIDJI",
+          "oldObservation": "RAS",
+          "newName": "(Non pourvu / Poste vide)",
+          "newProfile": "A pourvoir",
+          "newContact": "-",
+          "newFonction": "-",
+          "changeType": "RESTE_A_POURVOIR",
+          "note": "Le poste reste vacant dans la nouvelle liste."
+        }
+      ]
+    },
+    {
+      "region": "BOUNKANI",
+      "department": "Nassian",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 39,
+          "oldNum": 46,
+          "oldName": "KOBENAN YAO KINDO ALAIN",
+          "oldObservation": "RAS",
+          "newName": "KOBENAN Yao Kindo Alain",
+          "newProfile": "Reconduit",
+          "newContact": "0708180323",
+          "newFonction": "Chef de village /Nassian",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708180323) et fonction (Chef de village /Nassian)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 40,
+          "oldNum": 45,
+          "oldName": "KOUADIO DONGO",
+          "oldObservation": "RAS",
+          "newName": "KOUADIO Dongo",
+          "newProfile": "Reconduit",
+          "newContact": "0555737522",
+          "newFonction": "Chef de canton/Bodé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0555737522) et fonction (Chef de canton/Bodé)"
+        }
+      ]
+    },
+    {
+      "region": "BOUNKANI",
+      "department": "Téhini",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 41,
+          "oldNum": 47,
+          "oldName": "OUATTARA KADJE",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "NOUFE Toh",
+          "newProfile": "Nouveau",
+          "newContact": "0709354728",
+          "newFonction": "Chef de village de Vontchon",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 42,
+          "oldNum": 48,
+          "oldName": "NON POURVU",
+          "oldObservation": "A pourvoir",
+          "newName": "OUATTARA Karim",
+          "newProfile": "Reconduit",
+          "newContact": "0711550219",
+          "newFonction": "Chef de village de Tehini",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "CAVALLY",
+      "department": "Bloléquin",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 43,
+          "oldNum": 51,
+          "oldName": "BIE GLAOU LAURENT",
+          "oldObservation": "RAS",
+          "newName": "BIE Glaou Laurent",
+          "newProfile": "Reconduit",
+          "newContact": "0707301187",
+          "newFonction": "Chef de village de Guéya",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707301187) et fonction (Chef de village de Guéya)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 44,
+          "oldNum": 52,
+          "oldName": "BLO ETIENNE",
+          "oldObservation": "RAS",
+          "newName": "BLO Etienne",
+          "newProfile": "Reconduit",
+          "newContact": "0709656615",
+          "newFonction": "Chef de village de Bloléquin-village",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709656615) et fonction (Chef de village de Bloléquin-village)"
+        }
+      ]
+    },
+    {
+      "region": "CAVALLY",
+      "department": "Guiglo",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 45,
+          "oldNum": 49,
+          "oldName": "GlASSIOGNON JEAN",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "DJI Emile",
+          "newProfile": "Nouveau",
+          "newContact": "0708461645",
+          "newFonction": "Chef de village de Yaoudé",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 46,
+          "oldNum": 50,
+          "oldName": "OULAI DOUE EDMOND",
+          "oldObservation": "RAS",
+          "newName": "OULAI Doue Edmond",
+          "newProfile": "Reconduit",
+          "newContact": "0747338823",
+          "newFonction": "Chef de village de Niouldé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747338823) et fonction (Chef de village de Niouldé)"
+        }
+      ]
+    },
+    {
+      "region": "CAVALLY",
+      "department": "Taï",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 47,
+          "oldNum": 56,
+          "oldName": "GUI FRANCOIS",
+          "oldObservation": "RAS",
+          "newName": "GUI Francois",
+          "newProfile": "Reconduit",
+          "newContact": "0708236779",
+          "newFonction": "Chef de village de Gahably",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708236779) et fonction (Chef de village de Gahably)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 48,
+          "oldNum": 55,
+          "oldName": "BLE MATHIEU PIERRE",
+          "oldObservation": "RAS",
+          "newName": "YAGNON Valentin",
+          "newProfile": "Nouveau",
+          "newContact": "0576136545",
+          "newFonction": "Chef de village de Gouléako II",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"BLE MATHIEU PIERRE\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "CAVALLY",
+      "department": "Toulepleu",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 49,
+          "oldNum": 53,
+          "oldName": "OUODJIRO ROBERT",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "DAU Jacques",
+          "newProfile": "Nouveau",
+          "newContact": "0758161393",
+          "newFonction": "Chef de la tribu Bloawia",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 50,
+          "oldNum": 54,
+          "oldName": "GUIDY ALAIN JEROME",
+          "oldObservation": "Nommé au Directoire A pourvoir",
+          "newName": "TE Jean Claude",
+          "newProfile": "Nouveau",
+          "newContact": "0707393860",
+          "newFonction": "Chef de village de Seizaibli",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Nommé au Directoire A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "DISTRICT D’ABIDJAN",
+      "department": "Abidjan",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 51,
+          "oldNum": 1,
+          "oldName": "KOUACHY ALFRED",
+          "oldObservation": "Renouvellement générationnel A pourvoir",
+          "newName": "ABODOU Mohoué Faustin",
+          "newProfile": "Nouveau",
+          "newContact": "0101285151",
+          "newFonction": "Chef du village d'Akéikoi",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Renouvellement générationnel A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 52,
+          "oldNum": 2,
+          "oldName": "AGBO HONORE",
+          "oldObservation": "Renouvellement générationnel A pourvoir",
+          "newName": "DJOMAN Banan Calixte",
+          "newProfile": "Nouveau",
+          "newContact": "0748951609",
+          "newFonction": "Chef du village d'Abadjin-Kouté",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Renouvellement générationnel A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "DISTRICT DE YAMOUSSOUKRO",
+      "department": "Attiegouakro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 53,
+          "oldNum": 5,
+          "oldName": "QUASHIE KOUAME THEODORE",
+          "oldObservation": "RAS",
+          "newName": "QUASHIE Kouame Theodore",
+          "newProfile": "Reconduit",
+          "newContact": "0747447853",
+          "newFonction": "Chef de Canton/Nanafouè d'Attiégouakro",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747447853) et fonction (Chef de Canton/Nanafouè d'Attiégouakro)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 54,
+          "oldNum": 6,
+          "oldName": "N’DRI KOUADIO",
+          "oldObservation": "RAS",
+          "newName": "YAO Kouacou Evariste",
+          "newProfile": "Nouveau",
+          "newContact": "0709766389",
+          "newFonction": "Chef de Village/Ouffoué-diékro",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N’DRI KOUADIO\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "DISTRICT DE YAMOUSSOUKRO",
+      "department": "Yamoussoukro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 55,
+          "oldNum": 4,
+          "oldName": "KOUASSI KONAN",
+          "oldObservation": "RAS",
+          "newName": "KOUASSI Konan",
+          "newProfile": "Reconduit",
+          "newContact": "0757795958",
+          "newFonction": "Chef de Village/Kami",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0757795958) et fonction (Chef de Village/Kami)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 56,
+          "oldNum": 3,
+          "oldName": "N’DRI ALBERT",
+          "oldObservation": "RAS",
+          "newName": "N'DRI Albert",
+          "newProfile": "Reconduit",
+          "newContact": "0701857015",
+          "newFonction": "Chef de Village/Yobouekro",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0701857015) et fonction (Chef de Village/Yobouekro)"
+        }
+      ]
+    },
+    {
+      "region": "FOLON",
+      "department": "Kaniasso",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 57,
+          "oldNum": 59,
+          "oldName": "DIARRASSOUBA DRAMANE",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "DIARRASSOUBA Souleymane",
+          "newProfile": "Nouveau",
+          "newContact": "0707383171",
+          "newFonction": "Chef du village de Kaniasso",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707383171) et fonction (Chef du village de Kaniasso)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 58,
+          "oldNum": 60,
+          "oldName": "KONE SIAKA",
+          "oldObservation": "Pas chef de village (représentant)- A pourvoir",
+          "newName": "KONE Dramane",
+          "newProfile": "Nouveau",
+          "newContact": "0544326988",
+          "newFonction": "Chef de canton de Goulia",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0544326988) et fonction (Chef de canton de Goulia)"
+        }
+      ]
+    },
+    {
+      "region": "FOLON",
+      "department": "Minignan",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 59,
+          "oldNum": 57,
+          "oldName": "SANGARE MAMADOU",
+          "oldObservation": "RAS",
+          "newName": "SANGARE Mamadou",
+          "newProfile": "Reconduit",
+          "newContact": "0556755433",
+          "newFonction": "Chef du village de Minignan",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0556755433) et fonction (Chef du village de Minignan)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 60,
+          "oldNum": 58,
+          "oldName": "CISSE MOUSSA",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "SIDIBE Karim",
+          "newProfile": "Nouveau",
+          "newContact": "0749234553",
+          "newFonction": "Chef du village de Tienkô",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "GBEKE",
+      "department": "Béoumi",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 61,
+          "oldNum": 65,
+          "oldName": "YAO KOFFI BARTHELEMY",
+          "oldObservation": "RAS",
+          "newName": "ANDOH Koffi N'Da Siméon",
+          "newProfile": "Nouveau",
+          "newContact": "0707102009",
+          "newFonction": "Chef de village Alloukou-Yakro",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"YAO KOFFI BARTHELEMY\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 62,
+          "oldNum": 66,
+          "oldName": "N’GUESSAN KOUADIO JEAN",
+          "oldObservation": "RAS",
+          "newName": "YAO Koffi Barthelemy",
+          "newProfile": "Reconduit",
+          "newContact": "0708106408",
+          "newFonction": "Chef de canton Kodê",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N’GUESSAN KOUADIO JEAN\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "GBEKE",
+      "department": "Botro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 63,
+          "oldNum": 64,
+          "oldName": "KOUASSI YAO THOMAS",
+          "oldObservation": "RAS",
+          "newName": "KOUASSI Yao Thomas",
+          "newProfile": "Reconduit",
+          "newContact": "0707808390",
+          "newFonction": "Chef de canton Gblo Mamela",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707808390) et fonction (Chef de canton Gblo Mamela)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 64,
+          "oldNum": 63,
+          "oldName": "TOTOKRA KONAN PAUL",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "TOTOKRA Kouakou Édouard",
+          "newProfile": "Nouveau",
+          "newContact": "0707838250",
+          "newFonction": "Chef de canton Satiklan",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707838250) et fonction (Chef de canton Satiklan)"
+        }
+      ]
+    },
+    {
+      "region": "GBEKE",
+      "department": "Bouaké",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 65,
+          "oldNum": 61,
+          "oldName": "KOUASSI AKISSI MARIE",
+          "oldObservation": "RAS",
+          "newName": "KONAN Brou",
+          "newProfile": "Nouveau",
+          "newContact": "0748323655",
+          "newFonction": "Chef de canton de Prepressou",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KOUASSI AKISSI MARIE\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 66,
+          "oldNum": 62,
+          "oldName": "KOUASSI DENIS",
+          "oldObservation": "RAS",
+          "newName": "NGUESSAN Yoboue",
+          "newProfile": "Nouveau",
+          "newContact": "0708704610",
+          "newFonction": "Chef de canton de Dohoun",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KOUASSI DENIS\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "GBEKE",
+      "department": "Sakassou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 67,
+          "oldNum": 68,
+          "oldName": "KOUASSI N’DRI",
+          "oldObservation": "RAS",
+          "newName": "KOUASSI N'Dri",
+          "newProfile": "Reconduit",
+          "newContact": "0707259297",
+          "newFonction": "Chef de village de Komokonouan",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707259297) et fonction (Chef de village de Komokonouan)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 68,
+          "oldNum": 67,
+          "oldName": "N’GUESSAN KOUASSI DJEA",
+          "oldObservation": "RAS",
+          "newName": "N’GUESSAN Kouassi Djea",
+          "newProfile": "Reconduit",
+          "newContact": "0707514147",
+          "newFonction": "Chef de village de Kpetebonouan",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707514147) et fonction (Chef de village de Kpetebonouan)"
+        }
+      ]
+    },
+    {
+      "region": "GBOKLE",
+      "department": "Fresco",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 69,
+          "oldNum": 72,
+          "oldName": "BEUGRE DAGAUD GUY DESIRE",
+          "oldObservation": "RAS",
+          "newName": "BEUGRE Dagaud Guy Desire",
+          "newProfile": "Reconduit",
+          "newContact": "0575197877",
+          "newFonction": "Chef de village de Gomeneberi",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0575197877) et fonction (Chef de village de Gomeneberi)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 70,
+          "oldNum": 71,
+          "oldName": "N’DRIN BOGUI RAPHAEL",
+          "oldObservation": "RAS",
+          "newName": "N'DRIN Bogui Raphael",
+          "newProfile": "Reconduit",
+          "newContact": "0707044589",
+          "newFonction": "Chef de village de Zanéko",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707044589) et fonction (Chef de village de Zanéko)"
+        }
+      ]
+    },
+    {
+      "region": "GBOKLE",
+      "department": "Sassandra",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 71,
+          "oldNum": 69,
+          "oldName": "TOUKROU PAPA",
+          "oldObservation": "Nommé au Directoire A pourvoir",
+          "newName": "GRAH Moni",
+          "newProfile": "Nouveau",
+          "newContact": "0747015423",
+          "newFonction": "Chef de village de Niega",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Nommé au Directoire A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 72,
+          "oldNum": 70,
+          "oldName": "OTE KOUADIO",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "OPIAH François",
+          "newProfile": "Nouveau",
+          "newContact": "0505208924",
+          "newFonction": "Chef de canton Kodia",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "GOH",
+      "department": "Gagnoa",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 73,
+          "oldNum": 73,
+          "oldName": "DIZOE BLO ROBERT",
+          "oldObservation": "RAS",
+          "newName": "DAGO Joachim Boga",
+          "newProfile": "Nouveau",
+          "newContact": "0707537778",
+          "newFonction": "Chef du Village de Gnalégribouo / Chef Tribu Djérégou",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"DIZOE BLO ROBERT\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 74,
+          "oldNum": 74,
+          "oldName": "GADJI DAGBO JOSEPH",
+          "oldObservation": "RAS",
+          "newName": "GADJI Dagbo Joseph",
+          "newProfile": "Reconduit",
+          "newContact": "0707638878",
+          "newFonction": "Chef du Village de Godelilié / Chef Caton Gnébié",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707638878) et fonction (Chef du Village de Godelilié / Chef Caton Gnébié)"
+        }
+      ]
+    },
+    {
+      "region": "GOH",
+      "department": "Oumé",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 75,
+          "oldNum": 76,
+          "oldName": "KOFFI DIBY GUY HOLLANG",
+          "oldObservation": "RAS",
+          "newName": "KOFFI Diby Guy Hollang",
+          "newProfile": "Reconduit",
+          "newContact": "0709128905",
+          "newFonction": "Chef du Village de Yahofla",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709128905) et fonction (Chef du Village de Yahofla)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 76,
+          "oldNum": 75,
+          "oldName": "KOUAME YOBO",
+          "oldObservation": "RAS",
+          "newName": "KOUAME Yobo",
+          "newProfile": "Reconduit",
+          "newContact": "0748692322",
+          "newFonction": "Chef du Village de Badié",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0748692322) et fonction (Chef du Village de Badié)"
+        }
+      ]
+    },
+    {
+      "region": "GONTOUGO",
+      "department": "Bondoukou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 77,
+          "oldNum": 78,
+          "oldName": "BINI KOUAKOU",
+          "oldObservation": "RAS",
+          "newName": "BINI Kouakou",
+          "newProfile": "Reconduit",
+          "newContact": "0707843673",
+          "newFonction": "Chef de village /Binda",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707843673) et fonction (Chef de village /Binda)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 78,
+          "oldNum": 77,
+          "oldName": "KOUADJO YEBOUA",
+          "oldObservation": "RAS",
+          "newName": "KOUADJO Yeboua",
+          "newProfile": "Reconduit",
+          "newContact": "0707939494",
+          "newFonction": "Chef de Province",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707939494) et fonction (Chef de Province)"
+        }
+      ]
+    },
+    {
+      "region": "GONTOUGO",
+      "department": "Koun-Fao",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 79,
+          "oldNum": 82,
+          "oldName": "KOUABENAN BRINDOUMI GREGOIRE",
+          "oldObservation": "RAS",
+          "newName": "KOUABENAN Brindoumi Gregoire",
+          "newProfile": "Reconduit",
+          "newContact": "0758261348",
+          "newFonction": "Chef de village /Krakro",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0758261348) et fonction (Chef de village /Krakro)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 80,
+          "oldNum": 81,
+          "oldName": "KOUADIO HOUSSOU",
+          "oldObservation": "RAS",
+          "newName": "KOUADIO Houssou",
+          "newProfile": "Reconduit",
+          "newContact": "0707954897",
+          "newFonction": "chef de village / N'gorato",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707954897) et fonction (chef de village / N'gorato)"
+        }
+      ]
+    },
+    {
+      "region": "GONTOUGO",
+      "department": "Sandégué",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 81,
+          "oldNum": 79,
+          "oldName": "OUATTARA ALLIAGUI",
+          "oldObservation": "RAS",
+          "newName": "OUATTARA Bamorou",
+          "newProfile": "Reconduit",
+          "newContact": "0778730126",
+          "newFonction": "chef de village /Dimandougou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0778730126) et fonction (chef de village /Dimandougou)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 82,
+          "oldNum": 80,
+          "oldName": "OUATTARA BAMOROU",
+          "oldObservation": "RAS",
+          "newName": "OUATTARA Alliagui",
+          "newProfile": "Reconduit",
+          "newContact": "0707734130",
+          "newFonction": "Chef de canton / Sandegué",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707734130) et fonction (Chef de canton / Sandegué)"
+        }
+      ]
+    },
+    {
+      "region": "GONTOUGO",
+      "department": "Tanda",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 83,
+          "oldNum": 86,
+          "oldName": "KOBENAN GBOKO",
+          "oldObservation": "RAS",
+          "newName": "KOBENAN Gboko",
+          "newProfile": "Reconduit",
+          "newContact": "0707047135",
+          "newFonction": "Chef de village/Korokobango",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707047135) et fonction (Chef de village/Korokobango)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 84,
+          "oldNum": 85,
+          "oldName": "KOFFI MOUROUFIE NORBERT",
+          "oldObservation": "RAS",
+          "newName": "KOFFI Mouroufie Norbert",
+          "newProfile": "Reconduit",
+          "newContact": "0707709365",
+          "newFonction": "chef de canton /Ketan",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707709365) et fonction (chef de canton /Ketan)"
+        }
+      ]
+    },
+    {
+      "region": "GONTOUGO",
+      "department": "Transua",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 85,
+          "oldNum": 83,
+          "oldName": "KOUAKOU IGNACE",
+          "oldObservation": "RAS",
+          "newName": "KOUAKOU Ignace",
+          "newProfile": "Reconduit",
+          "newContact": "0707933708",
+          "newFonction": "Chef de canton / Transua",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707933708) et fonction (Chef de canton / Transua)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 86,
+          "oldNum": 84,
+          "oldName": "YAO KOUAF",
+          "oldObservation": "RAS",
+          "newName": "YAO Kouaf",
+          "newProfile": "Reconduit",
+          "newContact": "0707643670",
+          "newFonction": "Chef de village / Assueffry",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707643670) et fonction (Chef de village / Assueffry)"
+        }
+      ]
+    },
+    {
+      "region": "GRANDS-PONTS",
+      "department": "Dabou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 87,
+          "oldNum": 96,
+          "oldName": "AGNIMEL YEDESS",
+          "oldObservation": "RAS",
+          "newName": "AGNIMEL Yedess Laurent",
+          "newProfile": "Reconduit",
+          "newContact": "0141777933",
+          "newFonction": "Chef du village de Bouboury",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0141777933) et fonction (Chef du village de Bouboury)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 88,
+          "oldNum": 95,
+          "oldName": "YEDAGNE DE PHILIPPE",
+          "oldObservation": "RAS",
+          "newName": "YEDAGNE De Phillipe",
+          "newProfile": "Reconduit",
+          "newContact": "0707096416",
+          "newFonction": "Chef du village de Pandaa",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707096416) et fonction (Chef du village de Pandaa)"
+        }
+      ]
+    },
+    {
+      "region": "GRANDS-PONTS",
+      "department": "Grand-Lahou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 89,
+          "oldNum": 100,
+          "oldName": "KPAGNE ABOURE EMMANUEL",
+          "oldObservation": "Cécité  – A pourvoir",
+          "newName": "KPAGNE Aboure Emmanuel",
+          "newProfile": "Reconduit",
+          "newContact": "0152530942",
+          "newFonction": "Chef du village de Likpilassé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0152530942) et fonction (Chef du village de Likpilassé)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 90,
+          "oldNum": 99,
+          "oldName": "ZOUKOUAN KOKORA GABRIEL",
+          "oldObservation": "RAS",
+          "newName": "ZOUKOUAN Kokora Gabriel",
+          "newProfile": "Reconduit",
+          "newContact": "0101390507",
+          "newFonction": "Chef du village de N'Zida",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0101390507) et fonction (Chef du village de N'Zida)"
+        }
+      ]
+    },
+    {
+      "region": "GRANDS-PONTS",
+      "department": "Jacqueville",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 91,
+          "oldNum": 98,
+          "oldName": "DAGRI N’GUESSAN CELESTIN",
+          "oldObservation": "RAS",
+          "newName": "DAGRI N’Guessan Celestin",
+          "newProfile": "Reconduit",
+          "newContact": "0757690942",
+          "newFonction": "Chef du village de Bahuama",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0757690942) et fonction (Chef du village de Bahuama)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 92,
+          "oldNum": 97,
+          "oldName": "OBOUAYEBA SAMUEL",
+          "oldObservation": "RAS",
+          "newName": "OBOUAYEBA Samuel",
+          "newProfile": "Reconduit",
+          "newContact": "0708385965",
+          "newFonction": "Chef du village de Koko",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708385965) et fonction (Chef du village de Koko)"
+        }
+      ]
+    },
+    {
+      "region": "GUEMON",
+      "department": "Bangolo",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 93,
+          "oldNum": 89,
+          "oldName": "NAHE GOUEHE PATRICE",
+          "oldObservation": "RAS",
+          "newName": "BAH Béla Léopold",
+          "newProfile": "Nouveau",
+          "newContact": "0585228893",
+          "newFonction": "Chef du village de Bahibly",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"NAHE GOUEHE PATRICE\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 94,
+          "oldNum": 90,
+          "oldName": "TAHIBA JEAN",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "TAHA Sérou Bruno",
+          "newProfile": "Nouveau",
+          "newContact": "0709552095",
+          "newFonction": "Chef de canton Zagna et du village Yably Guinglo",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "GUEMON",
+      "department": "Duékoué",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 95,
+          "oldNum": 87,
+          "oldName": "DOUE OULA HENRI",
+          "oldObservation": "RAS",
+          "newName": "DIEGAI Boblahet Zacharie",
+          "newProfile": "Nouveau",
+          "newContact": "0708254123",
+          "newFonction": "Chef du village de Fangolo",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"DOUE OULA HENRI\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 96,
+          "oldNum": 88,
+          "oldName": "SEREL PIERRE",
+          "oldObservation": "Nommé au Directoire A pourvoir",
+          "newName": "DJEHE Dessiéhi Etienne",
+          "newProfile": "Nouveau",
+          "newContact": "0749276990",
+          "newFonction": "Chef du Canton Zagné et du village de Bagohouo",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Nommé au Directoire A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "GUEMON",
+      "department": "Facobly",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 97,
+          "oldNum": 93,
+          "oldName": "DOHAI GOHO JONNS",
+          "oldObservation": "RAS",
+          "newName": "BOLOU Jean Modeste",
+          "newProfile": "Nouveau",
+          "newContact": "0769258005",
+          "newFonction": "Chef de la Tribu Minlo",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"DOHAI GOHO JONNS\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 98,
+          "oldNum": 94,
+          "oldName": "TIA EMILE",
+          "oldObservation": "RAS",
+          "newName": "TEHOUE Mesmin Sylvain Pahiet",
+          "newProfile": "Nouveau",
+          "newContact": "0707487503",
+          "newFonction": "Chef de la Tribu Soho",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"TIA EMILE\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "GUEMON",
+      "department": "Kouibly",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 99,
+          "oldNum": 91,
+          "oldName": "BOUE SORY VICTOR",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "GNONDIE Monnehon Benjamin",
+          "newProfile": "Nouveau",
+          "newContact": "0758707021",
+          "newFonction": "Chef du village de Guinglo-ville",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 100,
+          "oldNum": 92,
+          "oldName": "BROUHO ZIONGOULE CHRISTIAN",
+          "oldObservation": "Démissionnaire – A pourvoir",
+          "newName": "POTE Moussa Ismael",
+          "newProfile": "Nouveau",
+          "newContact": "0708006347",
+          "newFonction": "Chef de la tribu Nidrou",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Démissionnaire – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "HAMBOL",
+      "department": "Dabakala",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 101,
+          "oldNum": 103,
+          "oldName": "OUATTARA TEFI",
+          "oldObservation": "RAS",
+          "newName": "COULIBALY Fatogoma",
+          "newProfile": "Reconduit",
+          "newContact": "0757882528",
+          "newFonction": "Chef de Canton/Satama-Sokoro",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"OUATTARA TEFI\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 102,
+          "oldNum": 104,
+          "oldName": "BAIKORO DAOUDA",
+          "oldObservation": "RAS",
+          "newName": "OUATTARA Sina",
+          "newProfile": "Reconduit",
+          "newContact": "0749534529",
+          "newFonction": "Chef de Canton/Sokoura",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"BAIKORO DAOUDA\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "HAMBOL",
+      "department": "Katiola",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 103,
+          "oldNum": 101,
+          "oldName": "COULIBALY TIEMOKO",
+          "oldObservation": "RAS",
+          "newName": "COULIBALY Tiemoko",
+          "newProfile": "Reconduit",
+          "newContact": "0505594119",
+          "newFonction": "Chef de Canton/Fronan",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0505594119) et fonction (Chef de Canton/Fronan)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 104,
+          "oldNum": 102,
+          "oldName": "OUATTARA WAOGNINLIN",
+          "oldObservation": "RAS",
+          "newName": "OUATTARA Waogninlin",
+          "newProfile": "Reconduit",
+          "newContact": "0757830372",
+          "newFonction": "Chef de Village/Pédiakaha",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0757830372) et fonction (Chef de Village/Pédiakaha)"
+        }
+      ]
+    },
+    {
+      "region": "HAMBOL",
+      "department": "Niakaramadougou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 105,
+          "oldNum": 105,
+          "oldName": "KONE TALNAN",
+          "oldObservation": "RAS",
+          "newName": "COULIBALY Kpotery",
+          "newProfile": "Nouveau",
+          "newContact": "0707824443",
+          "newFonction": "Chef de Village/Tafiré",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KONE TALNAN\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 106,
+          "oldNum": 106,
+          "oldName": "KONE SANGA",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KONE Talnan",
+          "newProfile": "Reconduit",
+          "newContact": "0709349781",
+          "newFonction": "Chef de Canton/Niakara",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709349781) et fonction (Chef de Canton/Niakara)"
+        }
+      ]
+    },
+    {
+      "region": "HAUT SASSANDRA",
+      "department": "Daloa",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 107,
+          "oldNum": 108,
+          "oldName": "KEKE AHIPO",
+          "oldObservation": "RAS",
+          "newName": "KEKE Ahipo",
+          "newProfile": "Reconduit",
+          "newContact": "0759840363",
+          "newFonction": "Chef du village de Baléa 2",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0759840363) et fonction (Chef du village de Baléa 2)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 108,
+          "oldNum": 107,
+          "oldName": "ZAN BI KOUADIO BENOIT",
+          "oldObservation": "RAS",
+          "newName": "ZAN Bi Kouadio",
+          "newProfile": "Reconduit",
+          "newContact": "0709097313",
+          "newFonction": "Chef du village de Faazra",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709097313) et fonction (Chef du village de Faazra)"
+        }
+      ]
+    },
+    {
+      "region": "HAUT SASSANDRA",
+      "department": "Issia",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 109,
+          "oldNum": 109,
+          "oldName": "GUEDE GUEHI ZEPHIRIN",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "GAMA Yoh",
+          "newProfile": "Nouveau",
+          "newContact": "0758372174",
+          "newFonction": "Chef du village de Gazéhio",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 110,
+          "oldNum": 110,
+          "oldName": "SERI DEDE JUSTIN",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "Ipaud Lago Pierre Michel",
+          "newProfile": "Nouveau",
+          "newContact": "0505057704",
+          "newFonction": "Chef du village de Liga",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "HAUT SASSANDRA",
+      "department": "Vavoua",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 111,
+          "oldNum": 111,
+          "oldName": "BOUELY BI BOHIE HERVE",
+          "oldObservation": "RAS",
+          "newName": "BOUELY Bi Bohié Hervé",
+          "newProfile": "Reconduit",
+          "newContact": "0708023317",
+          "newFonction": "chef du Canton Sétis et du village de Bohifla",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708023317) et fonction (chef du Canton Sétis et du village de Bohifla)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 112,
+          "oldNum": 112,
+          "oldName": "TAPE GBEULY",
+          "oldObservation": "RAS",
+          "newName": "GBESSI Mathurin Séri",
+          "newProfile": "Nouveau",
+          "newContact": "0594056704",
+          "newFonction": "Chef du village de Fiankon",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"TAPE GBEULY\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "HAUT SASSANDRA",
+      "department": "Zoukougbeu",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 113,
+          "oldNum": 114,
+          "oldName": "GUINA LAGO BERTIN",
+          "oldObservation": "RAS",
+          "newName": "GUINA Lago Bertin",
+          "newProfile": "Reconduit",
+          "newContact": "0709981749",
+          "newFonction": "Chef du village de Bagro 2",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709981749) et fonction (Chef du village de Bagro 2)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 114,
+          "oldNum": 113,
+          "oldName": "TOUAPRI GOGOUA PHILIPPE",
+          "oldObservation": "Contesté – A pourvoir",
+          "newName": "ZEDE Yves",
+          "newProfile": "Nouveau",
+          "newContact": "0709727204",
+          "newFonction": "Chef du village de Détroya",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Contesté – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "IFFOU",
+      "department": "Daoukro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 115,
+          "oldNum": 115,
+          "oldName": "KOUAME KOFFI EUGENE",
+          "oldObservation": "RAS",
+          "newName": "KOUADIO Konan",
+          "newProfile": "Nouveau",
+          "newContact": "0758591602",
+          "newFonction": "Chef de Village/d'Anoumabo S/P Daoukro",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KOUAME KOFFI EUGENE\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 116,
+          "oldNum": 116,
+          "oldName": "KOUASSI KOMENAN JACOB",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KOUAME Koffi Eugene",
+          "newProfile": "Reconduit",
+          "newContact": "0708452055",
+          "newFonction": "Chef de Village/Daoukro S/P Daoukro",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "IFFOU",
+      "department": "M’bahiakro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 117,
+          "oldNum": 118,
+          "oldName": "ESSE KOUAKOU",
+          "oldObservation": "RAS",
+          "newName": "ESSE Kouakou",
+          "newProfile": "Reconduit",
+          "newContact": "0707419778",
+          "newFonction": "Chef du Village/kouassikro S/P MBahi",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707419778) et fonction (Chef du Village/kouassikro S/P MBahi)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 118,
+          "oldNum": 117,
+          "oldName": "KAMONOU KOUASSI",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KOUAKOU Kouame Jean Baptiste",
+          "newProfile": "Nouveau",
+          "newContact": "0707019441",
+          "newFonction": "Chef du Village/Amankro S/P MBahiakro",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "IFFOU",
+      "department": "Ouellé",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 119,
+          "oldNum": 121,
+          "oldName": "NON POURVU",
+          "oldObservation": "A pourvoir",
+          "newName": "KOFFI Kouassi",
+          "newProfile": "Nouveau",
+          "newContact": "0707540909",
+          "newFonction": "Chef de Village/Bedie-komenankro",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 120,
+          "oldNum": 122,
+          "oldName": "NON POURVU",
+          "oldObservation": "A pourvoir",
+          "newName": "KOMENAN Ipou",
+          "newProfile": "Nouveau",
+          "newContact": "0707025086",
+          "newFonction": "Chef de Tribu/Ngbogbo-kotoko",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "IFFOU",
+      "department": "Prikro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 121,
+          "oldNum": 119,
+          "oldName": "KOUMOUE KOFF",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "ABOU Adama Kouassi Ouattara",
+          "newProfile": "Nouveau",
+          "newContact": "0709302206",
+          "newFonction": "Chef de Village/Serebou S/P Famienkro",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 122,
+          "oldNum": 120,
+          "oldName": "SIAKA OUMAR",
+          "oldObservation": "RAS",
+          "newName": "SIAKA Oumar",
+          "newProfile": "Reconduit",
+          "newContact": "0707485897",
+          "newFonction": "Chef de Village/Tetessi S/P Nafanan",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707485897) et fonction (Chef de Village/Tetessi S/P Nafanan)"
+        }
+      ]
+    },
+    {
+      "region": "INDENIE-DJUABLIN",
+      "department": "Abengourou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 123,
+          "oldNum": 123,
+          "oldName": "ANEY FIRMIN",
+          "oldObservation": "RAS",
+          "newName": "ANEY Firmin",
+          "newProfile": "Reconduit",
+          "newContact": "0707598737",
+          "newFonction": "Chef de village /Bokakokoré",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707598737) et fonction (Chef de village /Bokakokoré)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 124,
+          "oldNum": 124,
+          "oldName": "ASSALE KOUASSI VICTOR",
+          "oldObservation": "RAS",
+          "newName": "ASSALE Kouassi Victor",
+          "newProfile": "Reconduit",
+          "newContact": "0707899714",
+          "newFonction": "Chef de Canton / Niablé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707899714) et fonction (Chef de Canton / Niablé)"
+        }
+      ]
+    },
+    {
+      "region": "INDENIE-DJUABLIN",
+      "department": "Agnibilékrou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 125,
+          "oldNum": 125,
+          "oldName": "EPONON KOUAME ADOLPHE",
+          "oldObservation": "RAS",
+          "newName": "EPONON Kouame Adolphe",
+          "newProfile": "Reconduit",
+          "newContact": "0707877604",
+          "newFonction": "Chef de village /Damé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707877604) et fonction (Chef de village /Damé)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 126,
+          "oldNum": 126,
+          "oldName": "N’GUESSAN BROU RAYMOND",
+          "oldObservation": "RAS",
+          "newName": "N'GUESSAN Brou Raymond",
+          "newProfile": "Reconduit",
+          "newContact": "0707621161",
+          "newFonction": "Chef de village /Kongodia",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707621161) et fonction (Chef de village /Kongodia)"
+        }
+      ]
+    },
+    {
+      "region": "INDENIE-DJUABLIN",
+      "department": "Béttié",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 127,
+          "oldNum": 128,
+          "oldName": "COBRI ANINI",
+          "oldObservation": "RAS",
+          "newName": "COBRI Anini",
+          "newProfile": "Reconduit",
+          "newContact": "0709004335",
+          "newFonction": "Chef de village de Akebri",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709004335) et fonction (Chef de village de Akebri)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 128,
+          "oldNum": 127,
+          "oldName": "KOBRI MESSOU HILAIRE",
+          "oldObservation": "RAS",
+          "newName": "KOUA Sawou",
+          "newProfile": "Nouveau",
+          "newContact": "0747851145",
+          "newFonction": "Chef de canton / Bettié",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KOBRI MESSOU HILAIRE\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "KABADOUGOU",
+      "department": "Gbéléban",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 129,
+          "oldNum": 132,
+          "oldName": "TOURE LANCINE",
+          "oldObservation": "RAS",
+          "newName": "TOURE Laciné",
+          "newProfile": "Reconduit",
+          "newContact": "0546337350",
+          "newFonction": "chef du village de Kogonan",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0546337350) et fonction (chef du village de Kogonan)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 130,
+          "oldNum": 131,
+          "oldName": "TRAORE YOUSSOUFOU",
+          "oldObservation": "RAS",
+          "newName": "TRAORE Youssoufou",
+          "newProfile": "Reconduit",
+          "newContact": "0545779798",
+          "newFonction": "Chef du village de Gbéléban",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0545779798) et fonction (Chef du village de Gbéléban)"
+        }
+      ]
+    },
+    {
+      "region": "KABADOUGOU",
+      "department": "Madinani",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 131,
+          "oldNum": 134,
+          "oldName": "KONE YAYA",
+          "oldObservation": "RAS",
+          "newName": "KONE Yaya",
+          "newProfile": "Reconduit",
+          "newContact": "0708634558",
+          "newFonction": "Chef du village de Madinani",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708634558) et fonction (Chef du village de Madinani)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 132,
+          "oldNum": 133,
+          "oldName": "SANGARE VAMOUSSA",
+          "oldObservation": "RAS",
+          "newName": "SANGARE Vamoussa",
+          "newProfile": "Reconduit",
+          "newContact": "0555825478",
+          "newFonction": "Chef du canton de Fladougo",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0555825478) et fonction (Chef du canton de Fladougo)"
+        }
+      ]
+    },
+    {
+      "region": "KABADOUGOU",
+      "department": "Odiénné",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 133,
+          "oldNum": 130,
+          "oldName": "DIARRASSOUBA DOUMBIA INZA",
+          "oldObservation": "RAS",
+          "newName": "DIARRASSOUBA Doumbia Inza",
+          "newProfile": "Reconduit",
+          "newContact": "0505151489",
+          "newFonction": "Chef du canton Nafana",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0505151489) et fonction (Chef du canton Nafana)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 134,
+          "oldNum": 129,
+          "oldName": "YOUSSOUF KONE",
+          "oldObservation": "RAS",
+          "newName": "YOUSSOUF Kone",
+          "newProfile": "Reconduit",
+          "newContact": "0747544582",
+          "newFonction": "Chef du canton Sienkô",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747544582) et fonction (Chef du canton Sienkô)"
+        }
+      ]
+    },
+    {
+      "region": "KABADOUGOU",
+      "department": "Samatiguila",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 135,
+          "oldNum": 137,
+          "oldName": "DIABY MORY",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "DIABY Mamadou",
+          "newProfile": "Nouveau",
+          "newContact": "0707854840",
+          "newFonction": "Chef du village de Samatiguila",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707854840) et fonction (Chef du village de Samatiguila)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 136,
+          "oldNum": 138,
+          "oldName": "SANOGO AMIDOU",
+          "oldObservation": "RAS",
+          "newName": "SANOGO Brahima",
+          "newProfile": "Reconduit",
+          "newContact": "0768081256",
+          "newFonction": "Chef du village de Sanogobra-Mafélé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0768081256) et fonction (Chef du village de Sanogobra-Mafélé)"
+        }
+      ]
+    },
+    {
+      "region": "KABADOUGOU",
+      "department": "Séguélon",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 137,
+          "oldNum": 135,
+          "oldName": "KONE MAMADOU",
+          "oldObservation": "RAS",
+          "newName": "KONE Baba",
+          "newProfile": "Nouveau",
+          "newContact": "0748087832",
+          "newFonction": "Chef du canton Seguelon",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0748087832) et fonction (Chef du canton Seguelon)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 138,
+          "oldNum": 136,
+          "oldName": "KONE SOUMAILA",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KONE Issiaka",
+          "newProfile": "Nouveau",
+          "newContact": "0708438862",
+          "newFonction": "Chef du village de Lingoho",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708438862) et fonction (Chef du village de Lingoho)"
+        }
+      ]
+    },
+    {
+      "region": "LA ME",
+      "department": "Adzopé",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 139,
+          "oldName": "(Non renseigné)",
+          "oldObservation": "",
+          "newName": "ASSI Yapo",
+          "newProfile": "Nouveau",
+          "newContact": "0748727395",
+          "newFonction": "Chef du village de Nyan",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N/A\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 140,
+          "oldName": "(Non renseigné)",
+          "oldObservation": "",
+          "newName": "YAPO Gbocho Hyacinthe",
+          "newProfile": "Reconduit",
+          "newContact": "5743070763",
+          "newFonction": "Chef du village de Miadzin",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N/A\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "LA ME",
+      "department": "Akoupé",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 141,
+          "oldName": "(Non renseigné)",
+          "oldObservation": "",
+          "newName": "ASSI Dian",
+          "newProfile": "Nouveau",
+          "newContact": "0708297655",
+          "newFonction": "Chef du village d'Akoupé 2",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N/A\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 142,
+          "oldName": "(Non renseigné)",
+          "oldObservation": "",
+          "newName": "KOUASSI N'guessan Luc",
+          "newProfile": "Nouveau",
+          "newContact": "0707680897",
+          "newFonction": "Chef du village d'Adikokoi",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N/A\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "LA ME",
+      "department": "Alépé",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 143,
+          "oldName": "(Non renseigné)",
+          "oldObservation": "",
+          "newName": "KOUAHO Martin Narcisse Adja",
+          "newProfile": "Nouveau",
+          "newContact": "0749773362",
+          "newFonction": "Chef du village d'Alépé",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N/A\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 144,
+          "oldName": "(Non renseigné)",
+          "oldObservation": "",
+          "newName": "NIAMIEN Adou Mathurin",
+          "newProfile": "Nouveau",
+          "newContact": "0546063490",
+          "newFonction": "Chef du village d'Aboisso - Comoé",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N/A\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "LA ME",
+      "department": "Yakassé-Attobrou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 145,
+          "oldName": "(Non renseigné)",
+          "oldObservation": "",
+          "newName": "BERRY Seka Pierre-Dieudonne",
+          "newProfile": "Reconduit",
+          "newContact": "0707028086",
+          "newFonction": "Chef de canton Attobrou",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N/A\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 146,
+          "oldName": "(Non renseigné)",
+          "oldObservation": "",
+          "newName": "YAPO Yapi Barnabe",
+          "newProfile": "Reconduit",
+          "newContact": "0708154794",
+          "newFonction": "Chef du village de Kong 1",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"N/A\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "LOH-DJIBOUA",
+      "department": "Divo",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 147,
+          "oldNum": 139,
+          "oldName": "KOFFI AHOU MARCELINE",
+          "oldObservation": "RAS",
+          "newName": "ANY Gbetto Moïse",
+          "newProfile": "Nouveau",
+          "newContact": "0707985610",
+          "newFonction": "Chef du village de Hiré",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KOFFI AHOU MARCELINE\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 148,
+          "oldNum": 140,
+          "oldName": "BOLLO AKE AUGUSTIN",
+          "oldObservation": "Nommé au Directoire A pourvoir",
+          "newName": "KOFFI Ahou Marceline",
+          "newProfile": "Reconduit",
+          "newContact": "0747698654",
+          "newFonction": "Chef du Canton Zego",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Nommé au Directoire A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "LOH-DJIBOUA",
+      "department": "Guitry",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 149,
+          "oldNum": 143,
+          "oldName": "KEKE FELIX",
+          "oldObservation": "RAS",
+          "newName": "GNEBLO Blapka",
+          "newProfile": "Nouveau",
+          "newContact": "0708194744",
+          "newFonction": "Chef du village de Méné s/p Yacobou",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"KEKE FELIX\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 150,
+          "oldNum": 144,
+          "oldName": "BEUGRE GNAGBO EMMANUEL",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "SAMON Godo Abry",
+          "newProfile": "Nouveau",
+          "newContact": "0707481834",
+          "newFonction": "Chef du canton Kobouo",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "LOH-DJIBOUA",
+      "department": "Lakota",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 151,
+          "oldNum": 142,
+          "oldName": "GOLI NANEBO PAUL",
+          "oldObservation": "RAS",
+          "newName": "GOLI Nanebo Paul",
+          "newProfile": "Reconduit",
+          "newContact": "0747916050",
+          "newFonction": "Chef du village et Chef canton d'Akabreboua",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747916050) et fonction (Chef du village et Chef canton d'Akabreboua)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 152,
+          "oldNum": 141,
+          "oldName": "LEDJOU GNAKOURI",
+          "oldObservation": "RAS",
+          "newName": "LEDJOU Gnakouri",
+          "newProfile": "Reconduit",
+          "newContact": "0756667190",
+          "newFonction": "Chef du Village Niémanakoya",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0756667190) et fonction (Chef du Village Niémanakoya)"
+        }
+      ]
+    },
+    {
+      "region": "MARAHOUE",
+      "department": "Bonon",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 153,
+          "oldNum": 151,
+          "oldName": "Non pourvu",
+          "oldObservation": "A pourvoir",
+          "newName": "BI Gooré Néné",
+          "newProfile": "Nouveau",
+          "newContact": "0708787264",
+          "newFonction": "Chef de la Tribu Bonon",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 154,
+          "oldNum": 152,
+          "oldName": "Non pourvu",
+          "oldObservation": "A pourvoir",
+          "newName": "BI Gouri Djangoné",
+          "newProfile": "Nouveau",
+          "newContact": "0749013010",
+          "newFonction": "Chef de la Tribu Gonan",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "MARAHOUE",
+      "department": "Bouaflé",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 155,
+          "oldNum": 145,
+          "oldName": "OUIN BI GOORE LUCIEN",
+          "oldObservation": "Nommé au Directoire A Pourvoir",
+          "newName": "BI Ouai Léon Hué",
+          "newProfile": "Nouveau",
+          "newContact": "0757020171",
+          "newFonction": "chef du village de Koblata",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Nommé au Directoire A Pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 156,
+          "oldNum": 146,
+          "oldName": "KOFFI KOUAKOU LAZARE",
+          "oldObservation": "Inaptitude physique A pourvoir",
+          "newName": "N'Dia Coffi Georges Léon",
+          "newProfile": "Nouveau",
+          "newContact": "0707073532",
+          "newFonction": "Chef de Canton Ayaou",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Inaptitude physique A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "MARAHOUE",
+      "department": "Gohitafla",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 157,
+          "oldNum": 153,
+          "oldName": "Non pourvu",
+          "oldObservation": "A pourvoir",
+          "newName": "TA Bi Trayé",
+          "newProfile": "Nouveau",
+          "newContact": "0709995845",
+          "newFonction": "Chef du Canton Beis",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 158,
+          "oldNum": 154,
+          "oldName": "Non pourvu",
+          "oldObservation": "A pourvoir",
+          "newName": "YOUAN Bi Youan",
+          "newProfile": "Nouveau",
+          "newContact": "0709488000",
+          "newFonction": "Chef du Village de Manfla",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "MARAHOUE",
+      "department": "Sinfra",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 159,
+          "oldNum": 147,
+          "oldName": "ZAKOUTA BI KALE MATHIAS",
+          "oldObservation": "RAS",
+          "newName": "ZAHOUO Bi Bia Jean-Baptiste",
+          "newProfile": "Nouveau",
+          "newContact": "0748112717",
+          "newFonction": "Chef de la Tribu Nanan",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"ZAKOUTA BI KALE MATHIAS\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 160,
+          "oldNum": 148,
+          "oldName": "ZAN BI HOUGO PROSPER",
+          "oldObservation": "RAS",
+          "newName": "ZAKOUTA Bi  Kalé Mathias",
+          "newProfile": "Reconduit",
+          "newContact": "0143659391",
+          "newFonction": "chef de la Tibu  Sian",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"ZAN BI HOUGO PROSPER\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "MARAHOUE",
+      "department": "Zuénoula",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 161,
+          "oldNum": 149,
+          "oldName": "BOTI BI ZORO",
+          "oldObservation": "RAS",
+          "newName": "VANIE Bi Zamble Julien",
+          "newProfile": "Nouveau",
+          "newContact": "0707170306",
+          "newFonction": "Chef de la Tribu Bouénou",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"BOTI BI ZORO\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 162,
+          "oldNum": 150,
+          "oldName": "TRA BI GOH NORBERT",
+          "oldObservation": "RAS",
+          "newName": "BI Tra Mathurin Voli",
+          "newProfile": "Nouveau",
+          "newContact": "0707912309",
+          "newFonction": "Chef de la Tribu Duonon",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"TRA BI GOH NORBERT\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "MORONOU",
+      "department": "Arrah",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 163,
+          "oldNum": 165,
+          "oldName": "AQUEGNAN KOFFI",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "N'GANZA Ahissan Olivier",
+          "newProfile": "Nouveau",
+          "newContact": "0708852248",
+          "newFonction": "Chef de Tribu/Ahua",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 164,
+          "oldNum": 166,
+          "oldName": "TANOH OI TANOH JEAN",
+          "oldObservation": "RAS",
+          "newName": "TANOH Oi Tanoh Jean",
+          "newProfile": "Reconduit",
+          "newContact": "0748479530",
+          "newFonction": "Chef de Village/Erobo",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0748479530) et fonction (Chef de Village/Erobo)"
+        }
+      ]
+    },
+    {
+      "region": "MORONOU",
+      "department": "Bongouanou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 165,
+          "oldNum": 163,
+          "oldName": "KOUADIO OI KOUADIO",
+          "oldObservation": "RAS",
+          "newName": "KOUADIO Oi Kouadio",
+          "newProfile": "Reconduit",
+          "newContact": "0707441586",
+          "newFonction": "Chef de village/Agbossou S/P Ande",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707441586) et fonction (Chef de village/Agbossou S/P Ande)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 166,
+          "oldNum": 164,
+          "oldName": "KOUAME AKPEGNI PIERRE",
+          "oldObservation": "RAS",
+          "newName": "KOUAME Akpegni Pierre",
+          "newProfile": "Reconduit",
+          "newContact": "0748335006",
+          "newFonction": "Chef de village/Bocaci S/P Bongouanou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0748335006) et fonction (Chef de village/Bocaci S/P Bongouanou)"
+        }
+      ]
+    },
+    {
+      "region": "MORONOU",
+      "department": "M’Batto",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 167,
+          "oldNum": 168,
+          "oldName": "KAMANAN ASSOUA",
+          "oldObservation": "RAS",
+          "newName": "KAMANAN Assoua",
+          "newProfile": "Reconduit",
+          "newContact": "0707910084",
+          "newFonction": "Chef de Tribu/Allangoua S/P Assahara",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707910084) et fonction (Chef de Tribu/Allangoua S/P Assahara)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 168,
+          "oldNum": 167,
+          "oldName": "BONI OUA BONI NOEL",
+          "oldObservation": "RAS",
+          "newName": "OUA Boni Noel Boni",
+          "newProfile": "Reconduit",
+          "newContact": "0709088188",
+          "newFonction": "Chef de Tribu",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"BONI OUA BONI NOEL\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "N’ZI",
+      "department": "Bocanda",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 169,
+          "oldNum": 180,
+          "oldName": "ELLE KOUAKOU THEODORE",
+          "oldObservation": "RAS",
+          "newName": "ELLE Kouakou Theodore",
+          "newProfile": "Reconduit",
+          "newContact": "0707805668",
+          "newFonction": "Chef de Village/Dida-Kayabo S/P Bocanda",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707805668) et fonction (Chef de Village/Dida-Kayabo S/P Bocanda)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 170,
+          "oldNum": 179,
+          "oldName": "KOUAKOU LOKOSSUE",
+          "oldObservation": "RAS",
+          "newName": "KOUAKOU Lokossue",
+          "newProfile": "Reconduit",
+          "newContact": "0708719773",
+          "newFonction": "Chef de Village/Abeanou S/P Kouadioblékro",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708719773) et fonction (Chef de Village/Abeanou S/P Kouadioblékro)"
+        }
+      ]
+    },
+    {
+      "region": "N’ZI",
+      "department": "Dimbokro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 171,
+          "oldNum": 177,
+          "oldName": "KOUASSI KOFFI",
+          "oldObservation": "RAS",
+          "newName": "KOUASSI Koffi",
+          "newProfile": "Reconduit",
+          "newContact": "0708477039",
+          "newFonction": "Chef de Tribu/Sakiaré S/P Djagoko",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708477039) et fonction (Chef de Tribu/Sakiaré S/P Djagoko)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 172,
+          "oldNum": 178,
+          "oldName": "N’DRI KOUAKOU",
+          "oldObservation": "RAS",
+          "newName": "N'DRI Kouakou",
+          "newProfile": "Reconduit",
+          "newContact": "0707867164",
+          "newFonction": "Chef de Village/Komien Kouassikro S/P Abidji",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707867164) et fonction (Chef de Village/Komien Kouassikro S/P Abidji)"
+        }
+      ]
+    },
+    {
+      "region": "N’ZI",
+      "department": "Kouassi-Kouassikro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 173,
+          "oldNum": 182,
+          "oldName": "ADI KOFFI NARCISSE",
+          "oldObservation": "RAS",
+          "newName": "ADI Koffi Narcisse",
+          "newProfile": "Reconduit",
+          "newContact": "0709774600",
+          "newFonction": "Chef du Village/Adikoffikro S/P Mekro",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709774600) et fonction (Chef du Village/Adikoffikro S/P Mekro)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 174,
+          "oldNum": 181,
+          "oldName": "ASSALE KOFFI",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "KOFFI Kouadio Augustin",
+          "newProfile": "Nouveau",
+          "newContact": "0708748431",
+          "newFonction": "Chef du Village/Adikoffikro S/P Kcro",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "NAWA",
+      "department": "Buyo",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 175,
+          "oldNum": 172,
+          "oldName": "GATTA TAPE",
+          "oldObservation": "RAS",
+          "newName": "GATTA Tape",
+          "newProfile": "Reconduit",
+          "newContact": "0709173572",
+          "newFonction": "Chef du Village de Wonsealy V2",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709173572) et fonction (Chef du Village de Wonsealy V2)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 176,
+          "oldNum": 171,
+          "oldName": "GOURO GBOTO ANATOLE",
+          "oldObservation": "RAS",
+          "newName": "LIADE Emile",
+          "newProfile": "Nouveau",
+          "newContact": "0707355841",
+          "newFonction": "Chef du Vilage de Loboville",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"GOURO GBOTO ANATOLE\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "NAWA",
+      "department": "Guéyo",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 177,
+          "oldNum": 175,
+          "oldName": "GBAKA DAKOURY GERMAIN",
+          "oldObservation": "RAS",
+          "newName": "GBAKA Dakouri Germain",
+          "newProfile": "Reconduit",
+          "newContact": "0748103384",
+          "newFonction": "Chef du Village de Bakadou s/p Dabouyo",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0748103384) et fonction (Chef du Village de Bakadou s/p Dabouyo)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 178,
+          "oldNum": 176,
+          "oldName": "GNALI GNAKOURI MICHEL",
+          "oldObservation": "RAS",
+          "newName": "GNALI Gnakouri Michel",
+          "newProfile": "Reconduit",
+          "newContact": "0749170050",
+          "newFonction": "Chef du Village de Brétihio s/p Guéyo",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0749170050) et fonction (Chef du Village de Brétihio s/p Guéyo)"
+        }
+      ]
+    },
+    {
+      "region": "NAWA",
+      "department": "Méagui",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 179,
+          "oldNum": 174,
+          "oldName": "NETRO BARTHELEMY",
+          "oldObservation": "RAS",
+          "newName": "NETRO Barthelemy",
+          "newProfile": "Reconduit",
+          "newContact": "0708541631",
+          "newFonction": "Chef du Village de Méagui",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708541631) et fonction (Chef du Village de Méagui)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 180,
+          "oldNum": 173,
+          "oldName": "VAKA KPLE KPEULE",
+          "oldObservation": "RAS",
+          "newName": "VAKA Kple Kpeule",
+          "newProfile": "Reconduit",
+          "newContact": "0708010820",
+          "newFonction": "Chef du Village de Gnamagni / Chef de Caton Bakoué de la Nawa",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708010820) et fonction (Chef du Village de Gnamagni / Chef de Caton Bakoué de la Nawa)"
+        }
+      ]
+    },
+    {
+      "region": "NAWA",
+      "department": "Soubré",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 181,
+          "oldNum": 169,
+          "oldName": "GBALLE ZADOU JEAN-PAUL",
+          "oldObservation": "RAS",
+          "newName": "GBALLE Zadou Jean-Paul",
+          "newProfile": "Reconduit",
+          "newContact": "0707353051",
+          "newFonction": "Chef du Village de Guiméyo",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707353051) et fonction (Chef du Village de Guiméyo)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 182,
+          "oldNum": 170,
+          "oldName": "SEREBO IKA",
+          "oldObservation": "RAS",
+          "newName": "MAGUI Jean-Claude",
+          "newProfile": "Nouveau",
+          "newContact": "0748236957",
+          "newFonction": "Chef du Village de Gabaguhé",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"SEREBO IKA\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "PORO",
+      "department": "Dikodougou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 183,
+          "oldNum": 189,
+          "oldName": "SORO OUANAN LAZARE",
+          "oldObservation": "RAS",
+          "newName": "SORO Ouanan Lazare",
+          "newProfile": "Reconduit",
+          "newContact": "0707349415",
+          "newFonction": "Chef de Canton de Dikodougou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707349415) et fonction (Chef de Canton de Dikodougou)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 184,
+          "oldNum": 190,
+          "oldName": "YEO DONIKPORO",
+          "oldObservation": "RAS",
+          "newName": "YEO Donikporo",
+          "newProfile": "Reconduit",
+          "newContact": "0707709252",
+          "newFonction": "Chef de Canton de Guiembé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707709252) et fonction (Chef de Canton de Guiembé)"
+        }
+      ]
+    },
+    {
+      "region": "PORO",
+      "department": "Korhogo",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 185,
+          "oldNum": 183,
+          "oldName": "COULIBALY BAKARY",
+          "oldObservation": "RAS",
+          "newName": "COULIBALY Bakary",
+          "newProfile": "Reconduit",
+          "newContact": "0506016072",
+          "newFonction": "Chef de Canton de Komborodougou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0506016072) et fonction (Chef de Canton de Komborodougou)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 186,
+          "oldNum": 184,
+          "oldName": "OUANA SORO",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "SILUE Namitin",
+          "newProfile": "Nouveau",
+          "newContact": "0584705525",
+          "newFonction": "Chef du village de Tioroniaradougou",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "PORO",
+      "department": "M’Bengué",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 187,
+          "oldNum": 185,
+          "oldName": "COULIBALY MAMOUROU",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "COULIBALY Banako",
+          "newProfile": "Nouveau",
+          "newContact": "0707889362",
+          "newFonction": "Chef de Canton de M'bengué",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707889362) et fonction (Chef de Canton de M'bengué)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 188,
+          "oldNum": 186,
+          "oldName": "COULIBALY ZANA",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "COULIBALY Zanifigué",
+          "newProfile": "Nouveau",
+          "newContact": "0709745587",
+          "newFonction": "Chef de village de M'bengué",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709745587) et fonction (Chef de village de M'bengué)"
+        }
+      ]
+    },
+    {
+      "region": "PORO",
+      "department": "Sinématiali",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 189,
+          "oldNum": 187,
+          "oldName": "COULIBALY SIAKA",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "COULIBALY Tiémoko Yadé Dominique",
+          "newProfile": "Nouveau",
+          "newContact": "0758818280",
+          "newFonction": "Chef de Canton de Sinématiali",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0758818280) et fonction (Chef de Canton de Sinématiali)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 190,
+          "oldNum": 188,
+          "oldName": "SILUE TIANDIOGO",
+          "oldObservation": "RAS",
+          "newName": "SILUE Tiandiogo Dit Kone Samba",
+          "newProfile": "Reconduit",
+          "newContact": "0748313151",
+          "newFonction": "Chef de Canton de Kagbolodougou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0748313151) et fonction (Chef de Canton de Kagbolodougou)"
+        }
+      ]
+    },
+    {
+      "region": "SAN PEDRO",
+      "department": "San-pédro",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 191,
+          "oldNum": 192,
+          "oldName": "HEMY DANIEL",
+          "oldObservation": "RAS",
+          "newName": "HEMY Daniel",
+          "newProfile": "Reconduit",
+          "newContact": "0779325351",
+          "newFonction": "Chef de village de Magné",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0779325351) et fonction (Chef de village de Magné)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 192,
+          "oldNum": 191,
+          "oldName": "KAH TOH",
+          "oldObservation": "RAS",
+          "newName": "KAH Toh",
+          "newProfile": "Reconduit",
+          "newContact": "0707782685",
+          "newFonction": "Chef de canton Doba",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707782685) et fonction (Chef de canton Doba)"
+        }
+      ]
+    },
+    {
+      "region": "SAN PEDRO",
+      "department": "Tabou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 193,
+          "oldNum": 193,
+          "oldName": "HIANNON BAROU HERVE",
+          "oldObservation": "RAS",
+          "newName": "HIANNON Barou Aimé",
+          "newProfile": "Reconduit",
+          "newContact": "0707261613",
+          "newFonction": "Chef de Canton BAPO",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707261613) et fonction (Chef de Canton BAPO)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 194,
+          "oldNum": 194,
+          "oldName": "HINE BEUGLE",
+          "oldObservation": "RAS",
+          "newName": "HINE Beugle",
+          "newProfile": "Reconduit",
+          "newContact": "0747614450",
+          "newFonction": "Chef du village de OMBLOKE",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747614450) et fonction (Chef du village de OMBLOKE)"
+        }
+      ]
+    },
+    {
+      "region": "SUD COMOE",
+      "department": "Aboisso",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 195,
+          "oldNum": 195,
+          "oldName": "SAHASSI ANVO SIMON",
+          "oldObservation": "RAS",
+          "newName": "ENAN Eboua Francis",
+          "newProfile": "Nouveau",
+          "newContact": "0707993586",
+          "newFonction": "Roi du Sanwi",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"SAHASSI ANVO SIMON\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 196,
+          "oldNum": 196,
+          "oldName": "TANO-BIAN AKA",
+          "oldObservation": "RAS",
+          "newName": "TANO-BIAN Aka",
+          "newProfile": "Reconduit",
+          "newContact": "0707086486",
+          "newFonction": "Chef du village de Maféré",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707086486) et fonction (Chef du village de Maféré)"
+        }
+      ]
+    },
+    {
+      "region": "SUD COMOE",
+      "department": "Adiaké",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 197,
+          "oldNum": 198,
+          "oldName": "ANIMA AKA",
+          "oldObservation": "RAS",
+          "newName": "ANIMA Aka",
+          "newProfile": "Reconduit",
+          "newContact": "0747958101",
+          "newFonction": "Roi des Bétibés (Adiaké)",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747958101) et fonction (Roi des Bétibés (Adiaké))"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 198,
+          "oldNum": 197,
+          "oldName": "EBY KOUAME",
+          "oldObservation": "RAS",
+          "newName": "EBY Kouame",
+          "newProfile": "Reconduit",
+          "newContact": "0708092619",
+          "newFonction": "Roi Essouma (Assinie)",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708092619) et fonction (Roi Essouma (Assinie))"
+        }
+      ]
+    },
+    {
+      "region": "SUD COMOE",
+      "department": "Grand-Bassam",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 199,
+          "oldNum": 199,
+          "oldName": "NON POURVU",
+          "oldObservation": "RAS",
+          "newName": "MANZAN Jules",
+          "newProfile": "Reconduit",
+          "newContact": "0747854974",
+          "newFonction": "Chef du village d' Azuretti",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (RAS)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 200,
+          "oldNum": 200,
+          "oldName": "ADIKO VANGAH SEVERIN",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "MIEZAN Kacou Venance",
+          "newProfile": "Nouveau",
+          "newContact": "0788881509",
+          "newFonction": "Roi de Bonoua",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "SUD COMOE",
+      "department": "Tiapoum",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 201,
+          "oldNum": 201,
+          "oldName": "KOUASSI N’DAFFO",
+          "oldObservation": "RAS",
+          "newName": "KOUASSI N’Daffo",
+          "newProfile": "Reconduit",
+          "newContact": "0574472431",
+          "newFonction": "Roi de Tiapoum",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0574472431) et fonction (Roi de Tiapoum)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 202,
+          "oldNum": 202,
+          "oldName": "EZAN SOMO",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "Niamké Niamké",
+          "newProfile": "Nouveau",
+          "newContact": "0709466377",
+          "newFonction": "Chef du village de Eboko",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "TCHOLOGO",
+      "department": "Ferkéssédougou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 203,
+          "oldNum": 204,
+          "oldName": "KONE MAMADOU JONAS",
+          "oldObservation": "RAS",
+          "newName": "KONE Mamadou Jonas",
+          "newProfile": "Reconduit",
+          "newContact": "0707670348",
+          "newFonction": "Chef de Canton de Ferkessédougou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707670348) et fonction (Chef de Canton de Ferkessédougou)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 204,
+          "oldNum": 203,
+          "oldName": "OUATTARA ABDOULAYE",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "OUATTARA Perogniguélé Benjamin",
+          "newProfile": "Nouveau",
+          "newContact": "0707281378",
+          "newFonction": "Chef de Canton de Koumbala",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0707281378) et fonction (Chef de Canton de Koumbala)"
+        }
+      ]
+    },
+    {
+      "region": "TCHOLOGO",
+      "department": "Kong",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 205,
+          "oldNum": 206,
+          "oldName": "BAMBA TIEMOKO",
+          "oldObservation": "RAS",
+          "newName": "BAMBA Tiemoko",
+          "newProfile": "Reconduit",
+          "newContact": "0747581529",
+          "newFonction": "Chef du village de Kafolo",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747581529) et fonction (Chef du village de Kafolo)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 206,
+          "oldNum": 205,
+          "oldName": "OUATTARA FABAKARY",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "OUATTARA Fotié",
+          "newProfile": "Nouveau",
+          "newContact": "0708567885",
+          "newFonction": "Chef du village de Kong",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708567885) et fonction (Chef du village de Kong)"
+        }
+      ]
+    },
+    {
+      "region": "TCHOLOGO",
+      "department": "Ouangolodougou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 207,
+          "oldNum": 208,
+          "oldName": "OUATTARA MAMADOU",
+          "oldObservation": "RAS",
+          "newName": "OUATTARA Siaka",
+          "newProfile": "Reconduit",
+          "newContact": "0747061597",
+          "newFonction": "Chef du village de Ouangolodougou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747061597) et fonction (Chef du village de Ouangolodougou)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 208,
+          "oldNum": 207,
+          "oldName": "ISSA OUATTARA",
+          "oldObservation": "RAS",
+          "newName": "OUATTARA Mamadou",
+          "newProfile": "Reconduit",
+          "newContact": "0709777612",
+          "newFonction": "Chef du village de Torla",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"ISSA OUATTARA\" par un nouveau membre"
+        }
+      ]
+    },
+    {
+      "region": "TONKPI",
+      "department": "Biankouma",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 209,
+          "oldNum": 213,
+          "oldName": "DRO DIOMANDE",
+          "oldObservation": "RAS",
+          "newName": "CHERIFOU Banketa",
+          "newProfile": "Reconduit",
+          "newContact": "0707451886",
+          "newFonction": "Chef du canton Toura",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"DRO DIOMANDE\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 210,
+          "oldNum": 214,
+          "oldName": "ZOH LOUA OLIVIER",
+          "oldObservation": "Décédé – A pourvoir",
+          "newName": "DRO Diomande",
+          "newProfile": "Reconduit",
+          "newContact": "0709288462",
+          "newFonction": "Chef de village de Biankouma Village",
+          "changeType": "NOUVEAU_POURVU",
+          "note": "Nouveau titulaire pourvu en remplacement d'un poste vacant/décédé/nommé (Décédé – A pourvoir)"
+        }
+      ]
+    },
+    {
+      "region": "TONKPI",
+      "department": "Danané",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 211,
+          "oldNum": 218,
+          "oldName": "TIOMIN AUGUSTIN",
+          "oldObservation": "RAS",
+          "newName": "TIOMIN Augustin",
+          "newProfile": "Reconduit",
+          "newContact": "0709800240",
+          "newFonction": "Chef du canton Ouiné",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709800240) et fonction (Chef du canton Ouiné)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 212,
+          "oldNum": 217,
+          "oldName": "YAKE ADAMA",
+          "oldObservation": "RAS",
+          "newName": "YAKE Adama",
+          "newProfile": "Reconduit",
+          "newContact": "0749677349",
+          "newFonction": "Chef du canton Gourressé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0749677349) et fonction (Chef du canton Gourressé)"
+        }
+      ]
+    },
+    {
+      "region": "TONKPI",
+      "department": "Man",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 213,
+          "oldNum": 209,
+          "oldName": "GONCE PIERRE",
+          "oldObservation": "RAS",
+          "newName": "GONCE Pierre",
+          "newProfile": "Reconduit",
+          "newContact": "0747382581",
+          "newFonction": "Chef du canton Man-Campagne",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747382581) et fonction (Chef du canton Man-Campagne)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 214,
+          "oldNum": 210,
+          "oldName": "GUEU EMMANUEL",
+          "oldObservation": "RAS",
+          "newName": "GUEU Emmanuel",
+          "newProfile": "Reconduit",
+          "newContact": "0708318811",
+          "newFonction": "Chef de village de Guianlé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708318811) et fonction (Chef de village de Guianlé)"
+        }
+      ]
+    },
+    {
+      "region": "TONKPI",
+      "department": "Sipilou",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 215,
+          "oldNum": 215,
+          "oldName": "DIOMANDE AUBIN",
+          "oldObservation": "RAS",
+          "newName": "DIOMANDE Aubin",
+          "newProfile": "Reconduit",
+          "newContact": "0747908297",
+          "newFonction": "Chef du canton  Sipilou",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0747908297) et fonction (Chef du canton  Sipilou)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 216,
+          "oldNum": 216,
+          "oldName": "SOUMAHORO DROH PAUL",
+          "oldObservation": "RAS",
+          "newName": "SOUMAHORO Droh Paul",
+          "newProfile": "Reconduit",
+          "newContact": "0769369929",
+          "newFonction": "Chef de village de Zocoma",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0769369929) et fonction (Chef de village de Zocoma)"
+        }
+      ]
+    },
+    {
+      "region": "TONKPI",
+      "department": "Zouan-Hounien",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 217,
+          "oldNum": 211,
+          "oldName": "GOUN TIEU GERARD",
+          "oldObservation": "RAS",
+          "newName": "GOUN Tieu Gerard",
+          "newProfile": "Reconduit",
+          "newContact": "0709659377",
+          "newFonction": "Chef du  canton Blossé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709659377) et fonction (Chef du  canton Blossé)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 218,
+          "oldNum": 212,
+          "oldName": "TOMA LUCIEN",
+          "oldObservation": "RAS",
+          "newName": "TOMA Lucien",
+          "newProfile": "Reconduit",
+          "newContact": "0708819989",
+          "newFonction": "Chef du canton Lollé",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708819989) et fonction (Chef du canton Lollé)"
+        }
+      ]
+    },
+    {
+      "region": "WORODOUGOU",
+      "department": "Kani",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 219,
+          "oldNum": 221,
+          "oldName": "BAKAYOKO KROBLA",
+          "oldObservation": "RAS",
+          "newName": "BAKAYOKO Krobla",
+          "newProfile": "Reconduit",
+          "newContact": "0709356745",
+          "newFonction": "Chef Canton Kani",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0709356745) et fonction (Chef Canton Kani)"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 220,
+          "oldNum": 222,
+          "oldName": "BAMBA ABDOULAYE",
+          "oldObservation": "RAS",
+          "newName": "BAMBA Abdoulaye",
+          "newProfile": "Nouveau",
+          "newContact": "0708170925",
+          "newFonction": "Chef de village / Soba",
+          "changeType": "RECONDUIT",
+          "note": "Titulaire reconduit avec mise à jour du contact (0708170925) et fonction (Chef de village / Soba)"
+        }
+      ]
+    },
+    {
+      "region": "WORODOUGOU",
+      "department": "Séguéla",
+      "seats": [
+        {
+          "slotNum": 1,
+          "newNum": 221,
+          "oldNum": 219,
+          "oldName": "DOSSO MEBASSI",
+          "oldObservation": "RAS",
+          "newName": "KONE El Hadj",
+          "newProfile": "Nouveau",
+          "newContact": "0757007325",
+          "newFonction": "Chef de village/ Kamalo",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"DOSSO MEBASSI\" par un nouveau membre"
+        },
+        {
+          "slotNum": 2,
+          "newNum": 222,
+          "oldNum": 220,
+          "oldName": "SINALY KONE",
+          "oldObservation": "RAS",
+          "newName": "NAMORY Diomande",
+          "newProfile": "Nouveau",
+          "newContact": "0757898032",
+          "newFonction": "Chef de village/Farafing",
+          "changeType": "REMPLACEMENT",
+          "note": "Remplacement de \"SINALY KONE\" par un nouveau membre"
+        }
+      ]
+    }
+  ]
+}

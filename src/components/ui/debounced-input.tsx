@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 
 export function DebouncedInput({ 
@@ -14,20 +14,27 @@ export function DebouncedInput({
   debounce?: number; 
 } & Omit<React.ComponentProps<typeof Input>, 'onChange'>) {
   const [value, setValue] = useState(initialValue);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   useEffect(() => {
     setValue(initialValue);
   }, [initialValue]);
 
   useEffect(() => {
+    if (value === initialValue) return;
     const timeout = setTimeout(() => {
-      onChange(value);
+      onChangeRef.current(value);
     }, debounce);
 
     return () => clearTimeout(timeout);
-  }, [value, debounce, onChange]);
+  }, [value, debounce, initialValue]);
 
   return (
-    <Input {...props} value={value} onChange={e => setValue(e.target.value)} />
+    <Input 
+      {...props} 
+      value={value} 
+      onChange={e => setValue(e.target.value)} 
+    />
   );
 }

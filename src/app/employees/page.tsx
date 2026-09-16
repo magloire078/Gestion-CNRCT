@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useDeferredValue, useTransition } from "react";
+import { useState, useEffect, useMemo, useCallback, useDeferredValue, useTransition } from "react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
 import { format, parseISO, differenceInYears } from "date-fns";
@@ -115,6 +115,20 @@ export default function EmployeesPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const handleSearchChange = useCallback((val: string | number) => {
+    startTransition(() => {
+      setSearchTerm(String(val));
+      setCurrentPage(1);
+    });
+  }, []);
+
+  const handleVillageSearchChange = useCallback((val: string | number) => {
+    startTransition(() => {
+      setVillageFilter(String(val));
+      setCurrentPage(1);
+    });
+  }, []);
 
   const canImport = hasPermission('feature:employees:import');
   const canExport = hasPermission('feature:employees:export');
@@ -292,11 +306,13 @@ export default function EmployeesPage() {
       const normRegion = (emp.Region || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normDept = (emp.Departement || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normSubPref = (emp.subPrefecture || emp.Commune || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const chiefStatuses = getMemberChiefStatuses(emp);
 
       return {
         ...emp,
         calculatedGroup: getEmployeeGroup(emp, departments),
         resolvedVillage,
+        chiefStatuses,
         _searchTokens: [normFullName, normName, normMatricule, normVillage, normPoste, normRegion, normDept, normSubPref],
         _normVillage: normVillage
       };
@@ -373,18 +389,18 @@ export default function EmployeesPage() {
     let multi = 0;
     let roi = 0;
 
-    const list = isGeoTab ? filteredEmployees : employees;
-    list.forEach(emp => {
-      const st = getMemberChiefStatuses(emp);
+    const list = isGeoTab ? filteredEmployees : enrichedEmployees;
+    for (let i = 0; i < list.length; i++) {
+      const st = (list[i] as any).chiefStatuses || [];
       if (st.includes("Chef de Canton")) canton++;
       if (st.includes("Chef de Tribu")) tribu++;
       if (st.includes("Chef de Village")) village++;
       if (st.includes("Roi") || st.includes("Chef de Province")) roi++;
       if (st.length > 1) multi++;
-    });
+    }
 
     return { canton, tribu, village, multi, roi };
-  }, [filteredEmployees, employees, isGeoTab]);
+  }, [filteredEmployees, enrichedEmployees, isGeoTab]);
 
   // Adjust page safely
   const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / itemsPerPage));
@@ -768,12 +784,7 @@ export default function EmployeesPage() {
                             className="h-10 pl-9 rounded-lg border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium text-sm transition-colors"
                             value={searchTerm}
                             debounce={300}
-                            onChange={(val) => {
-                              startTransition(() => {
-                                setSearchTerm(String(val));
-                                setCurrentPage(1);
-                              });
-                            }}
+                            onChange={handleSearchChange}
                           />
                         </div>
 
@@ -889,14 +900,12 @@ export default function EmployeesPage() {
 
                           <div className="relative flex-1 min-w-[160px]">
                             <LayoutGrid className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input
+                            <DebouncedInput
                               placeholder="Filtrer par village..."
                               className="h-10 pl-9 rounded-lg border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium text-sm transition-colors"
                               value={villageFilter}
-                              onChange={(e) => {
-                                setVillageFilter(e.target.value);
-                                setCurrentPage(1);
-                              }}
+                              debounce={300}
+                              onChange={handleVillageSearchChange}
                             />
                           </div>
                         </div>

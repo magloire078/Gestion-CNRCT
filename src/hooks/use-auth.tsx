@@ -8,6 +8,7 @@ import { updateUserActiveStatus } from '@/services/user-service';
 import type { User, OrganizationSettings } from '@/lib/data';
 import { getOrganizationSettings } from '@/services/organization-service';
 import { mapPermissionToCrud } from '@/services/permission-service';
+import { DEFAULT_ROLE_PERMISSIONS } from '@/types/permissions';
 
 interface AuthContextType {
   user: User | null;
@@ -116,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loading, pathname, router]);
 
-    const hasPermission = React.useCallback((permission: string) => {
+  const hasPermission = React.useCallback((permission: string) => {
     if (loading || !user) return false;
     
     // Super-admins/Dirigeants have all permissions (bypass by ID or by specific email for safety)
@@ -127,26 +128,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user.email === 'magloire078@gmail.com'
     ) return true;
 
-    // 1. Check legacy permissions array (always takes priority)
-    if (user.permissions?.includes(permission)) return true;
-
-    // 2. Map the permission string to a CRUD action on a resource
+    // 1. Map permission string to resource and CRUD action
     const mapped = mapPermissionToCrud(permission);
-    if (!mapped) return false;
+    if (mapped) {
+      const { resourceId, action } = mapped;
 
-    const { resourceId, action } = mapped;
+      // 2. Check for User Exceptions first (overrides)
+      const userOverrides = user.resourcePermissions || {};
+      if (userOverrides[resourceId] && userOverrides[resourceId][action] !== undefined) {
+        return userOverrides[resourceId][action] === true;
+      }
 
-    // 3. Check for User Exceptions first (overrides)
-    const userOverrides = user.resourcePermissions || {};
-    if (userOverrides[resourceId]) {
-      return userOverrides[resourceId][action] === true;
+      // 3. Fallback to Role Permissions from DB or Default Matrix
+      const rolePermissions = user.role?.resourcePermissions || (user.roleId ? DEFAULT_ROLE_PERMISSIONS[user.roleId] : undefined) || {};
+      if (rolePermissions[resourceId] && rolePermissions[resourceId][action] !== undefined) {
+        return rolePermissions[resourceId][action] === true;
+      }
     }
 
-    // 4. Fallback to Role Permissions
-    const rolePermissions = user.role?.resourcePermissions || {};
-    if (rolePermissions[resourceId]) {
-      return rolePermissions[resourceId][action] === true;
-    }
+    // 4. Fallback to legacy permissions array only if not governed by resource matrix
+    if (user.permissions?.includes(permission)) return true;
 
     return false;
   }, [loading, user]);

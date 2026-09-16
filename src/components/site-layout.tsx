@@ -263,9 +263,7 @@ const SidebarMenuItemComponent = React.memo(({
           <CollapsibleContent asChild>
             <SidebarMenuSub>
               {item.subItems?.filter((sub: SubMenuItem) =>
-                !sub.permission ||
-                hasPermission(sub.permission) ||
-                (['/payroll', '/leave', '/missions'].includes(sub.href.split('?')[0]) && !!user?.employeeId)
+                !sub.permission || hasPermission(sub.permission)
               ).map((subItem: SubMenuItem) => (
                 <SidebarMenuSubItem key={subItem.href}>
                   <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>

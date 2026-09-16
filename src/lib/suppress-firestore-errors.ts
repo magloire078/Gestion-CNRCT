@@ -16,10 +16,13 @@ if (typeof window !== 'undefined') {
             // Firestore multi-tab IndexedDB lease — transitoire et auto-résolu
             m.includes('failed to obtain primary lease') ||
             m.includes('primary lease for action') ||
-            // next-themes injecte un <script> pour éviter le flash de thème,
-            // React 19 le signale mais le comportement est correct et voulu.
+            // next-themes / Radix UI Dialog warnings
             m.includes('encountered a script tag while rendering') ||
-            m.includes('scripts inside react components are never executed')
+            m.includes('scripts inside react components are never executed') ||
+            m.includes('dialogcontent requires a dialogtitle') ||
+            m.includes('missing `description` or `aria-describedby`') ||
+            m.includes('missing or insufficient permissions') ||
+            m.includes('permission-denied')
         );
     };
 

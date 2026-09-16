@@ -107,7 +107,7 @@ service cloud.firestore {
       allow delete: if can('employees', 'delete');
       
       match /history/{eventId} {
-        allow read: if can('employees', 'read');
+        allow read: if can('employees', 'read') || (isSignedIn() && employeeId == getUserData().get('employeeId', ''));
         allow create, update, delete: if can('employees', 'update');
       }
     }

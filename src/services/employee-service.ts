@@ -246,7 +246,6 @@ export function subscribeToDirectoireMembers(
             callback(employees);
         },
         (error: Error) => {
-            console.error("[EmployeeService] Error in subscribeToDirectoireMembers:", error);
             onError(error);
         }
     );

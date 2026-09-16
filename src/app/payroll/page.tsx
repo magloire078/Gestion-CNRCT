@@ -49,7 +49,7 @@ import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { lastDayOfMonth, format, parseISO } from "date-fns";
+import { lastDayOfMonth, format, parseISO, isBefore, isValid } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuth } from "@/hooks/use-auth";
 import { PaginationControls } from "@/components/common/pagination-controls";
@@ -531,7 +531,7 @@ export default function PayrollPage() {
 
 
           {!canViewSalaries ? (
-            <div className="max-w-5xl mx-auto w-full flex flex-col gap-8 pb-12">
+            <div className="w-full flex flex-col gap-6 pb-12">
               {/* Hero Profile Banner */}
               <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-6 md:p-8 shadow-2xl border border-white/10">
                 <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
@@ -626,6 +626,28 @@ export default function PayrollPage() {
                 const prevMonthFormattedDate = lastDayOfPrevMonth.toISOString().split('T')[0];
                 const prevMonthLabel = format(prevMonthDate, 'MMMM yyyy', { locale: fr });
                 const prevPeriodLabel = `Du 01/${format(prevMonthDate, 'MM/yyyy')} au ${format(lastDayOfPrevMonth, 'dd/MM/yyyy')}`;
+
+                const isEmployeeCnpsActive = (emp?: Employe | null): boolean => {
+                  if (!emp) return false;
+                  const val = emp.CNPS as unknown;
+                  const isDeclared = val === true || val === 'true' || val === '1' || val === 'OUI' || val === 'oui';
+                  if (!isDeclared) return false;
+                  if (emp.Date_Cessation_CNPS) {
+                    try {
+                      const cessationDate = parseISO(emp.Date_Cessation_CNPS);
+                      if (isValid(cessationDate) && isBefore(cessationDate, new Date())) {
+                        return false;
+                      }
+                    } catch {
+                      // ignore
+                    }
+                  }
+                  if (emp.status === 'Retraité') return false;
+                  return true;
+                };
+
+                const isCnpsActive = isEmployeeCnpsActive(employees[0]);
+                const hasCnpsNumber = !!employees[0].cnpsEmploye && employees[0].cnpsEmploye.trim() !== '' && employees[0].cnpsEmploye !== 'N/A';
 
                 return (
                   <>
@@ -738,12 +760,21 @@ export default function PayrollPage() {
                               Affiliation CNPS
                             </span>
                             <div className="mt-2">
-                              <p className="text-base font-bold text-foreground font-mono">
-                                {employees[0].cnpsEmploye || "Déclaré"}
+                              <p className="text-base font-bold text-foreground font-mono truncate">
+                                {hasCnpsNumber ? employees[0].cnpsEmploye : (isCnpsActive ? "Déclaré" : "Non affilié")}
                               </p>
-                              <p className="text-[10px] text-emerald-600 font-bold mt-0.5 flex items-center gap-1">
-                                <CheckCircle2 className="h-3 w-3" /> Cotisation active
-                              </p>
+                              {isCnpsActive ? (
+                                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5 flex items-center gap-1">
+                                  <CheckCircle2 className="h-3 w-3" /> Cotisation active
+                                </p>
+                              ) : (
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 flex items-center gap-1.5">
+                                  <span className="h-2 w-2 rounded-full bg-slate-400 dark:bg-slate-500 inline-block shrink-0" />
+                                  {employees[0].Date_Cessation_CNPS 
+                                    ? `Cessation (${format(parseISO(employees[0].Date_Cessation_CNPS), 'dd/MM/yyyy')})` 
+                                    : "Non cotisant (Pas de prélèvement)"}
+                                </p>
+                              )}
                             </div>
                           </div>
 

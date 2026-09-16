@@ -70,9 +70,12 @@ export default function MissionDetailPage() {
                 ]);
                 if (data) {
                     // Restriction de sécurité : un agent sans droits étendus ne peut voir que les missions auxquelles il participe
-                    const canViewAll = hasPermission('page:missions:view') || can('missions', 'read') || can('missions', 'create');
+                    const canViewAll = canEdit || hasPermission('page:admin:view') || ['administrateur', 'super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'manager-rh', 'chef-de-service'].includes(user?.roleId || '');
                     if (!canViewAll && user?.employeeId) {
-                        const isParticipant = (data.participants || []).some((p: any) => p.employeeId === user.employeeId);
+                        const isParticipant = (data.participants || []).some((p: any) => 
+                            p.employeeId === user.employeeId ||
+                            (user.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
+                        );
                         if (!isParticipant) {
                             router.replace('/missions');
                             return;

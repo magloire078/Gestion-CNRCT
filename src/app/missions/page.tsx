@@ -136,7 +136,7 @@ export default function MissionsPage() {
   const canCreate = can('missions', 'create') || hasPermission('missions:create') || hasPermission('page:missions:create') || hasPermission('page:missions:add') || hasPermission('page:admin:view');
   const canUpdate = can('missions', 'update') || hasPermission('missions:update') || hasPermission('page:missions:update') || hasPermission('page:missions:edit') || hasPermission('page:admin:view');
   const canDelete = can('missions', 'delete') || hasPermission('missions:delete') || hasPermission('page:missions:delete') || hasPermission('page:admin:view');
-  const canManageAllMissions = hasPermission('page:missions:view') || can('missions', 'read') || canCreate;
+  const canManageAllMissions = canCreate || canUpdate || canDelete || hasPermission('page:admin:view') || ['administrateur', 'super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'manager-rh', 'chef-de-service'].includes(user?.roleId || '');
 
   useEffect(() => {
     getOrganizationSettings().then(setLogos).catch(console.error);
@@ -198,7 +198,10 @@ export default function MissionsPage() {
     return missions.filter(mission => {
       // Data-level filtering: If not admin/HR/manager, only show missions where user is a participant
       if (!canManageAllMissions && user?.employeeId) {
-        const isParticipant = (mission.participants || []).some(p => p.employeeId === user.employeeId);
+        const isParticipant = (mission.participants || []).some(p => 
+          p.employeeId === user.employeeId || 
+          (user.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
+        );
         if (!isParticipant) return false;
       }
 

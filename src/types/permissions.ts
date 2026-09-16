@@ -171,7 +171,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
     'employe': buildDefault({
         dashboard: ALL_READ, repository: ALL_READ, assistant: ALL_READ,
         tickets: NO_ACCESS, 'my-space': ALL_READ,
-        missions: ALL_READ,
+        missions: NO_ACCESS,
     }),
     'stagiaire': buildDefault({
         dashboard: ALL_READ, repository: ALL_READ, assistant: ALL_READ,

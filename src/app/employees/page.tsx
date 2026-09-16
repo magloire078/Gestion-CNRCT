@@ -644,20 +644,20 @@ export default function EmployeesPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
                     <DropdownMenuLabel className="text-sm md:text-xs font-black uppercase text-slate-400 p-2">Formats d'Export</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportXlsx, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm text-emerald-700 bg-emerald-50 mb-1">
+                    <DropdownMenuItem onSelect={() => startTransition(() => handleExportXlsx())} className="rounded-lg font-bold p-2 text-base md:text-sm text-emerald-700 bg-emerald-50 mb-1">
                       Excel (.xlsx)
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel className="text-sm md:text-xs font-black uppercase text-slate-400 p-2">Formats Systèmes</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportCsv, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">CSV</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportJson, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">JSON</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportSql, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">SQL</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => startTransition(() => handleExportCsv())} className="rounded-lg font-bold p-2 text-base md:text-sm">CSV</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => startTransition(() => handleExportJson())} className="rounded-lg font-bold p-2 text-base md:text-sm">JSON</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => startTransition(() => handleExportSql())} className="rounded-lg font-bold p-2 text-base md:text-sm">SQL</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
               {hasPermission('employees:create') && (
                 <Button 
-                  onClick={() => setTimeout(() => setIsAddSheetOpen(true), 50)} 
+                  onClick={() => startTransition(() => setIsAddSheetOpen(true))} 
                   className="h-11 px-6 rounded-lg bg-slate-900 shadow-xl shadow-slate-900/10 font-black uppercase tracking-widest text-sm md:text-xs hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
                 >
                   <PlusCircle className="mr-2 h-4 w-4 text-emerald-400" />
@@ -1248,21 +1248,23 @@ export default function EmployeesPage() {
       </div>
 
       {/* --- INSTITUTIONAL PRINT PORTAL --- */}
-      <EmployeeOfficialReport 
-          employees={filteredEmployees.map(e => ({ ...e, department: e.department || getEmployeeOrgUnit(e) }))}
-          logos={organizationLogos}
-          unitLabel={pageTitle}
-          selectedColumns={columnsToPrint}
-          isPrinting={isPrinting}
-          onAfterPrint={() => setIsPrinting(false)}
-          orientation={printOrientation}
-          stats={{
-              total: filteredEmployees.length,
-              active: filteredEmployees.filter(e => e.status === 'Actif').length,
-              men: filteredEmployees.filter(e => e.sexe === 'Homme').length,
-              women: filteredEmployees.filter(e => e.sexe === 'Femme').length
-          }}
-      />
+      {isPrinting && (
+        <EmployeeOfficialReport 
+            employees={filteredEmployees.map(e => ({ ...e, department: e.department || getEmployeeOrgUnit(e) }))}
+            logos={organizationLogos}
+            unitLabel={pageTitle}
+            selectedColumns={columnsToPrint}
+            isPrinting={isPrinting}
+            onAfterPrint={() => setIsPrinting(false)}
+            orientation={printOrientation}
+            stats={{
+                total: filteredEmployees.length,
+                active: filteredEmployees.filter(e => e.status === 'Actif').length,
+                men: filteredEmployees.filter(e => e.sexe === 'Homme').length,
+                women: filteredEmployees.filter(e => e.sexe === 'Femme').length
+            }}
+        />
+      )}
     </PermissionGuard>
   );
 }

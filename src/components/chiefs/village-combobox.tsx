@@ -150,7 +150,7 @@ export function VillageCombobox({
                             <CommandEmpty>Aucun village trouvé.</CommandEmpty>
                         )}
                         <CommandGroup>
-                            {filteredOptions.map((village) => (
+                            {filteredOptions.slice(0, 100).map((village) => (
                                 <CommandItem
                                     key={village.name}
                                     value={village.name}

@@ -191,6 +191,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     setCnps(true);
     setDateImmatriculation("");
     setDateCessationCNPS("");
+    setStatutChef([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -493,23 +494,33 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       </p>
                       <div className="grid grid-cols-2 gap-2.5">
                         {ALL_CHIEF_STATUSES.map(status => {
-                          const isSelected = statutChef.includes(status);
+                          const isSelected = Array.isArray(statutChef) && statutChef.includes(status);
                           return (
-                            <div
+                            <button
                               key={status}
-                              onClick={() => {
-                                setStatutChef(prev => isSelected ? prev.filter(s => s !== status) : [...prev, status]);
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setStatutChef(prev => {
+                                  const current = Array.isArray(prev) ? prev : [];
+                                  return isSelected ? current.filter(s => s !== status) : [...current, status];
+                                });
                               }}
                               className={cn(
-                                "flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all cursor-pointer select-none text-xs font-bold",
+                                "flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all cursor-pointer select-none text-xs font-bold w-full",
                                 isSelected 
                                   ? "bg-slate-900 border-slate-900 text-white shadow-sm" 
                                   : "bg-slate-50/50 border-slate-200 text-slate-700 hover:bg-slate-100"
                               )}
                             >
-                              <Checkbox checked={isSelected} className={cn("rounded-md pointer-events-none", isSelected ? "border-white data-[state=checked]:bg-white data-[state=checked]:text-slate-900" : "")} />
+                              <Checkbox 
+                                checked={isSelected} 
+                                tabIndex={-1}
+                                className={cn("rounded-md pointer-events-none", isSelected ? "border-white data-[state=checked]:bg-white data-[state=checked]:text-slate-900" : "")} 
+                              />
                               <span className="uppercase text-[10px] tracking-tight">{status}</span>
-                            </div>
+                            </button>
                           );
                         })}
                       </div>

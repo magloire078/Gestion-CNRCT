@@ -472,23 +472,30 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       {ALL_CHIEF_STATUSES.map(status => {
                         const isSelected = Array.isArray(formData.statutChef) && formData.statutChef.includes(status);
                         return (
-                          <div
+                          <button
                             key={status}
-                            onClick={() => {
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               const current = Array.isArray(formData.statutChef) ? [...formData.statutChef] : [];
                               const next = isSelected ? current.filter(s => s !== status) : [...current, status];
                               setFormData(prev => ({ ...prev, statutChef: next }));
                             }}
                             className={cn(
-                              "flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer select-none",
+                              "flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer select-none w-full",
                               isSelected 
                                 ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10 scale-[1.01]" 
                                 : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                             )}
                           >
-                            <Checkbox checked={isSelected} className={cn("rounded-md pointer-events-none", isSelected ? "border-white data-[state=checked]:bg-white data-[state=checked]:text-slate-900" : "")} />
+                            <Checkbox 
+                              checked={isSelected} 
+                              tabIndex={-1}
+                              className={cn("rounded-md pointer-events-none", isSelected ? "border-white data-[state=checked]:bg-white data-[state=checked]:text-slate-900" : "")} 
+                            />
                             <span className="text-xs font-black uppercase tracking-tight">{status}</span>
-                          </div>
+                          </button>
                         );
                       })}
                     </div>

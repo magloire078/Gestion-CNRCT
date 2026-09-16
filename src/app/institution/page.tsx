@@ -27,8 +27,24 @@ export default function InstitutionPage() {
                     getDirectoireMembers(),
                     getEmployeeDirectory()
                 ]);
-                const members = membersRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé');
-                const directory = directoryRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé');
+                const directory = directoryRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé' || !emp.status);
+                let members = membersRaw.filter(emp => emp.status === 'Actif' || emp.status === 'En congé' || !emp.status);
+
+                // Fallback: Si l'API renvoie une liste vide, on extrait les membres du Directoire depuis l'annuaire
+                if (members.length === 0 && directory.length > 0) {
+                    const DIRECTOIRE_DEPT_ID = '9ywKFDgVMS86rZLPYhpm';
+                    const DIRECTOIRE_KEYWORDS = [
+                        'president', 'président', 'vice-president', 'vice-président', 
+                        'secretaire general', 'secrétaire général', 'membre du directoire', 
+                        'membre du bureau', 'directrice de cabinet', 'directeur de cabinet'
+                    ];
+                    members = directory.filter(emp => {
+                        if (emp.departmentId === DIRECTOIRE_DEPT_ID) return true;
+                        const p = (emp.poste || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        return DIRECTOIRE_KEYWORDS.some(kw => p.includes(kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '')));
+                    });
+                }
+
                 setDirectoireMembers(members);
 
                 // Compute regional committees locally

@@ -31,13 +31,15 @@ interface EmployeeOfficialReportProps {
 export function EmployeeOfficialReport({ 
     employees, 
     logos, 
-    unitLabel,
-    selectedColumns,
-    stats,
-    orientation = 'landscape',
-    isPrinting,
-    onAfterPrint
+    unitLabel, 
+    selectedColumns, 
+    stats, 
+    orientation = 'landscape', 
+    isPrinting, 
+    onAfterPrint 
 }: EmployeeOfficialReportProps) {
+    if (!isPrinting) return null;
+
     const todayStr = format(new Date(), 'dd MMMM yyyy', { locale: fr });
     const columnsToDisplay = selectedColumns || ["index", "matricule", "name", "sexe", "poste", "statutChef", "department", "status"];
     

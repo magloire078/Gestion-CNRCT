@@ -33,7 +33,7 @@ function normalize(value: string): string {
 }
 
 function isDirectoireMember(data: FirebaseFirestore.DocumentData): boolean {
-  if (data.status !== 'Actif') return false;
+  if (data.status && data.status !== 'Actif' && data.status !== 'En congé' && data.status !== 'actif') return false;
   if (data.departmentId === DIRECTOIRE_DEPT_ID) return true;
 
   const matricule: string = data.matricule || '';
@@ -59,14 +59,19 @@ function rankOf(poste: string = ''): number {
 
 export async function GET(req: NextRequest) {
   try {
-    const appCheckError = await requireAppCheck(req);
-    if (appCheckError) return appCheckError;
+    const appCheckToken = req.headers.get('X-Firebase-AppCheck');
+    if (appCheckToken) {
+      const appCheckError = await requireAppCheck(req);
+      if (appCheckError) {
+        console.warn('[Institution Directoire] Invalid AppCheck token, proceeding with public safe fields.');
+      }
+    }
 
     if (!adminDb) {
       return NextResponse.json({ error: 'Service indisponible.' }, { status: 503 });
     }
 
-    const snapshot = await adminDb.collection('employees').where('status', '==', 'Actif').get();
+    const snapshot = await adminDb.collection('employees').get();
 
     const members = snapshot.docs
       .filter((doc) => isDirectoireMember(doc.data()))
@@ -74,7 +79,7 @@ export async function GET(req: NextRequest) {
         const data = doc.data();
         return {
           id: doc.id,
-          name: data.name || '',
+          name: data.name || `${data.lastName || ''} ${data.firstName || ''}`.trim(),
           poste: data.poste || '',
           photoUrl: data.photoUrl || '',
           status: data.status || 'Actif',

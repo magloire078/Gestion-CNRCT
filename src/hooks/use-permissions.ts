@@ -50,6 +50,8 @@ export function usePermissions(): UsePermissionsReturn {
     const can = useCallback((resource: string, action: CrudAction): boolean => {
         // Super Admins always have full access
         if (user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.roleId === 'super-admin') return true;
+        // Intranet read est universellement accessible à tout utilisateur connecté
+        if (resource === 'intranet' && action === 'read') return true;
         const perm = permissions[resource];
         if (!perm) return false;
         return perm[action] === true;

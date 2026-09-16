@@ -128,10 +128,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user.email === 'magloire078@gmail.com'
     ) return true;
 
+    // L'Intranet est le portail d'accueil universel accessible à tous les membres connectés
+    if (
+      permission === 'page:intranet:view' || 
+      permission === 'page:intranet:read' || 
+      permission === 'intranet:read' ||
+      permission === 'intranet:view'
+    ) return true;
+
     // 1. Map permission string to resource and CRUD action
     const mapped = mapPermissionToCrud(permission);
     if (mapped) {
       const { resourceId, action } = mapped;
+
+      // Safe default for intranet read
+      if (resourceId === 'intranet' && action === 'read') {
+        return true;
+      }
 
       // 2. Check for User Exceptions first (overrides)
       const userOverrides = user.resourcePermissions || {};
@@ -144,18 +157,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (rolePermissions[resourceId] && rolePermissions[resourceId][action] !== undefined) {
         return rolePermissions[resourceId][action] === true;
       }
-
-      // Safe default for intranet read: all authenticated users can view the intranet portal
-      if (resourceId === 'intranet' && action === 'read') {
-        return true;
-      }
     }
 
     // 4. Fallback to legacy permissions array only if not governed by resource matrix
     if (user.permissions?.includes(permission)) return true;
-
-    // Direct fallback for intranet view
-    if (permission === 'page:intranet:view') return true;
 
     return false;
   }, [loading, user]);

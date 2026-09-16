@@ -181,12 +181,15 @@ export default function PayrollPage() {
           }
 
           const today = new Date();
-          const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
+          const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          const dateForCalculations = canManagePayroll 
+            ? lastDayOfMonth(today).toISOString().split('T')[0] 
+            : lastDayOfMonth(prevMonthDate).toISOString().split('T')[0];
 
           const employeesWithSalary = await Promise.all(
             payrollEmployees.map(async (emp) => {
               try {
-                const details = await getPayslipDetails(emp, lastDayOfCurrentMonth, {
+                const details = await getPayslipDetails(emp, dateForCalculations, {
                   departments: deps,
                   directions: dirs,
                   services: servs
@@ -591,19 +594,24 @@ export default function PayrollPage() {
                         </div>
                       </div>
 
-                      {employees[0].netSalary !== undefined && employees[0].netSalary > 0 && (
-                        <div className="bg-white/5 border border-white/10 backdrop-blur-xl p-5 rounded-2xl md:text-right min-w-[220px] shadow-lg">
-                          <span className="text-[10px] uppercase font-black tracking-widest text-indigo-300 block">
-                            Dernier Net Perçu
-                          </span>
-                          <span className="text-2xl md:text-3xl font-black text-white block mt-0.5 tracking-tight">
-                            {formatCurrency(employees[0].netSalary)}
-                          </span>
-                          <span className="text-[10px] font-medium text-slate-400 block mt-1">
-                            {employees[0].banque ? `Par virement (${employees[0].banque})` : "Par Trésor Public"}
-                          </span>
-                        </div>
-                      )}
+                      {employees[0].netSalary !== undefined && employees[0].netSalary > 0 && (() => {
+                        const now = new Date();
+                        const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        const prevMonthLabel = format(prevMonthDate, 'MMMM yyyy', { locale: fr });
+                        return (
+                          <div className="bg-white/5 border border-white/10 backdrop-blur-xl p-5 rounded-2xl md:text-right min-w-[220px] shadow-lg">
+                            <span className="text-[10px] uppercase font-black tracking-widest text-indigo-300 block">
+                              Net Perçu ({prevMonthLabel})
+                            </span>
+                            <span className="text-2xl md:text-3xl font-black text-white block mt-0.5 tracking-tight">
+                              {formatCurrency(employees[0].netSalary)}
+                            </span>
+                            <span className="text-[10px] font-medium text-slate-400 block mt-1">
+                              {employees[0].banque ? `Par virement (${employees[0].banque})` : "Par Trésor Public"}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </>
                   ) : (
                     <div className="text-slate-400">Aucun profil employé rattaché.</div>
@@ -611,238 +619,169 @@ export default function PayrollPage() {
                 </div>
               </div>
 
-              {employees[0] && (
-                <>
-                  {/* Period Selection & Quick Access */}
-                  <Card className="border-border/60 shadow-xl bg-card/70 backdrop-blur-md overflow-hidden rounded-3xl">
-                    <CardHeader className="p-6 md:p-8 bg-muted/20 border-b border-border/40">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-blue-600" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">
-                              Sélection de la Période
-                            </span>
-                          </div>
-                          <CardTitle className="text-xl md:text-2xl font-black tracking-tight">
-                            Consulter un Bulletin Spécifique
-                          </CardTitle>
-                          <CardDescription className="text-xs font-medium">
-                            Sélectionnez le mois et l'année pour afficher et imprimer votre bulletin officiel.
-                          </CardDescription>
-                        </div>
+              {employees[0] && (() => {
+                const now = new Date();
+                const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const lastDayOfPrevMonth = lastDayOfMonth(prevMonthDate);
+                const prevMonthFormattedDate = lastDayOfPrevMonth.toISOString().split('T')[0];
+                const prevMonthLabel = format(prevMonthDate, 'MMMM yyyy', { locale: fr });
+                const prevPeriodLabel = `Du 01/${format(prevMonthDate, 'MM/yyyy')} au ${format(lastDayOfPrevMonth, 'dd/MM/yyyy')}`;
 
-                        {/* Month & Year Selectors */}
-                        <div className="flex flex-wrap items-center gap-3">
-                          <Select value={month} onValueChange={setMonth}>
-                            <SelectTrigger className="w-36 h-12 rounded-xl bg-white dark:bg-slate-900 font-bold border-slate-200">
-                              <SelectValue placeholder="Mois" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {months.map(m => (
-                                <SelectItem key={m.value} value={m.value} className="font-medium">
-                                  {m.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          <Select value={year} onValueChange={setYear}>
-                            <SelectTrigger className="w-28 h-12 rounded-xl bg-white dark:bg-slate-900 font-bold border-slate-200">
-                              <SelectValue placeholder="Année" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {years.map(y => (
-                                <SelectItem key={y} value={y} className="font-medium">
-                                  {y}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          <Button
-                            size="lg"
-                            onClick={() => {
-                              const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-                              const lastDay = lastDayOfMonth(selectedDate);
-                              const formattedDate = lastDay.toISOString().split('T')[0];
-                              router.push(`/payroll/${employees[0].id}?payslipDate=${formattedDate}`);
-                            }}
-                            className="font-bold gap-2 shadow-xl shadow-slate-900/10 bg-slate-900 text-white hover:bg-slate-800 h-12 px-6 rounded-xl transition-all"
-                          >
-                            <Eye className="h-4 w-4" />
-                            Consulter ce bulletin
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="p-6 md:p-8">
-                      {/* Administrative Details Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="p-5 rounded-2xl border border-border/50 bg-background/50 flex flex-col justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                            Date d'embauche
-                          </span>
-                          <div className="mt-2">
-                            <p className="text-base font-bold text-foreground">
-                              {employees[0].dateEmbauche ? format(parseISO(employees[0].dateEmbauche), 'dd MMMM yyyy', { locale: fr }) : 'Non renseignée'}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Entrée en service CNRCT</p>
-                          </div>
-                        </div>
-
-                        <div className="p-5 rounded-2xl border border-border/50 bg-background/50 flex flex-col justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                            Banque / Règlement
-                          </span>
-                          <div className="mt-2">
-                            <p className="text-base font-bold text-foreground uppercase truncate">
-                              {employees[0].banque || "Trésor Public"}
-                            </p>
-                            <p className="text-[10px] font-mono text-muted-foreground font-medium mt-0.5 truncate">
-                              {employees[0].numeroCompte ? `Compte : ${employees[0].numeroCompte}` : "Virement institutionnel"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="p-5 rounded-2xl border border-border/50 bg-background/50 flex flex-col justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                            Affiliation CNPS
-                          </span>
-                          <div className="mt-2">
-                            <p className="text-base font-bold text-foreground font-mono">
-                              {employees[0].cnpsEmploye || "Déclaré"}
-                            </p>
-                            <p className="text-[10px] text-emerald-600 font-bold mt-0.5 flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> Cotisation active
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="p-5 rounded-2xl border border-border/50 bg-background/50 flex flex-col justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                            Statut Administratif
-                          </span>
-                          <div className="mt-2">
-                            <p className="text-base font-bold text-emerald-600 flex items-center gap-2">
-                              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                              {employees[0].status || "Actif"}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground font-medium mt-0.5">En poste à Yamoussoukro</p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* History of Recent Payslips */}
-                  <Card className="border-border/60 shadow-xl bg-card/70 backdrop-blur-md overflow-hidden rounded-3xl">
-                    <CardHeader className="p-6 md:p-8 bg-muted/10 border-b border-border/40">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <History className="h-4 w-4 text-indigo-600" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-                              Historique Récent
-                            </span>
-                          </div>
-                          <CardTitle className="text-xl font-black tracking-tight">
-                            Vos 6 Derniers Bulletins de Salaire
-                          </CardTitle>
-                          <CardDescription className="text-xs font-medium">
-                            Accédez en un clic à l'un de vos bulletins précédents pour consultation ou impression.
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="p-0">
-                      <div className="divide-y divide-border/40">
-                        {Array.from({ length: 6 }, (_, i) => {
-                          const now = new Date();
-                          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                          const lastDay = lastDayOfMonth(d);
-                          const formattedDate = lastDay.toISOString().split('T')[0];
-                          const monthLabel = format(d, 'MMMM yyyy', { locale: fr });
-                          const periodLabel = `Du 01/${format(d, 'MM/yyyy')} au ${format(lastDay, 'dd/MM/yyyy')}`;
-                          const isCurrent = i === 0;
-
-                          return (
-                            <div
-                              key={formattedDate}
-                              className="p-5 md:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className={cn(
-                                  "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm",
-                                  isCurrent ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                                )}>
-                                  <FileText className="h-6 w-6" />
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-black text-foreground capitalize text-base">
-                                      {monthLabel}
-                                    </h4>
-                                    {isCurrent && (
-                                      <span className="text-[9px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-200 px-2 py-0.5 rounded-full dark:bg-indigo-950 dark:border-indigo-800 dark:text-indigo-300">
-                                        Dernier émis
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-muted-foreground font-medium mt-0.5">
-                                    {periodLabel} • <span className="text-emerald-600 font-semibold">Validé & Émis</span>
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-3">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => router.push(`/payroll/${employees[0].id}?payslipDate=${formattedDate}`)}
-                                  className="h-10 px-4 rounded-xl font-bold border-slate-200 hover:bg-slate-900 hover:text-white transition-all gap-2"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                  Consulter
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => router.push(`/payroll/${employees[0].id}?payslipDate=${formattedDate}`)}
-                                  className="h-10 px-3 rounded-xl text-slate-500 hover:text-slate-900"
-                                  title="Imprimer"
-                                >
-                                  <Printer className="h-4 w-4" />
-                                </Button>
-                              </div>
+                return (
+                  <>
+                    {/* Previous Month Payslip Card */}
+                    <Card className="border-border/60 shadow-xl bg-card/70 backdrop-blur-md overflow-hidden rounded-3xl">
+                      <CardHeader className="p-6 md:p-8 bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 text-white">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-indigo-400" />
+                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300">
+                                Bulletin Officiel Disponible
+                              </span>
                             </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
+                            <CardTitle className="text-xl md:text-2xl font-black tracking-tight capitalize text-white">
+                              Bulletin de Salaire — {prevMonthLabel}
+                            </CardTitle>
+                            <CardDescription className="text-xs font-medium text-slate-300">
+                              Conformément aux règles de la CNRCT, seul le bulletin du mois précédent est accessible dans votre espace personnel.
+                            </CardDescription>
+                          </div>
 
-                  {/* Context / Help Section */}
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-100 dark:border-blue-900/40 rounded-3xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
-                    <div className="flex items-start gap-4">
-                      <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-600/20">
-                        <ShieldCheck className="h-6 w-6" />
-                      </div>
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">
-                          Assistance & Conformité Paie
-                        </h4>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-2xl">
-                          Les bulletins affichés sont conformes à la grille salariale et aux indemnités officielles de la CNRCT. Pour toute réclamation, modification de domiciliation bancaire ou demande d'attestation, contactez la Direction des Ressources Humaines (DRHAS).
-                        </p>
+                          <div className="flex items-center gap-3">
+                            <Button
+                              size="lg"
+                              onClick={() => router.push(`/payroll/${employees[0].id}?payslipDate=${prevMonthFormattedDate}`)}
+                              className="font-bold gap-2 shadow-xl shadow-indigo-900/40 bg-indigo-600 hover:bg-indigo-500 text-white h-12 px-6 rounded-xl transition-all cursor-pointer"
+                            >
+                              <Eye className="h-4 w-4" />
+                              Consulter mon bulletin
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => router.push(`/payroll/${employees[0].id}?payslipDate=${prevMonthFormattedDate}`)}
+                              className="h-12 w-12 rounded-xl bg-white/10 hover:bg-white/20 border-white/20 text-white transition-all cursor-pointer"
+                              title="Imprimer le bulletin"
+                            >
+                              <Printer className="h-5 w-5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="p-6 md:p-8 space-y-6">
+                        {/* Summary Row */}
+                        <div className="p-5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-600/20">
+                              <Calendar className="h-6 w-6" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-black text-slate-900 dark:text-white capitalize text-base">
+                                  Période de Paie : {prevMonthLabel}
+                                </h4>
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-300 px-2 py-0.5 rounded-full dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-300">
+                                  Validé & Émis
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                {prevPeriodLabel}
+                              </p>
+                            </div>
+                          </div>
+
+                          {employees[0].netSalary !== undefined && employees[0].netSalary > 0 && (
+                            <div className="sm:text-right">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                                Montant Net à Payer
+                              </span>
+                              <span className="text-xl font-black text-indigo-700 dark:text-indigo-400 block mt-0.5">
+                                {formatCurrency(employees[0].netSalary)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Administrative Details Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div className="p-5 rounded-2xl border border-border/50 bg-background/50 flex flex-col justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                              Date d'embauche
+                            </span>
+                            <div className="mt-2">
+                              <p className="text-base font-bold text-foreground">
+                                {employees[0].dateEmbauche ? format(parseISO(employees[0].dateEmbauche), 'dd MMMM yyyy', { locale: fr }) : 'Non renseignée'}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Entrée en service CNRCT</p>
+                            </div>
+                          </div>
+
+                          <div className="p-5 rounded-2xl border border-border/50 bg-background/50 flex flex-col justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                              Banque / Règlement
+                            </span>
+                            <div className="mt-2">
+                              <p className="text-base font-bold text-foreground uppercase truncate">
+                                {employees[0].banque || "Trésor Public"}
+                              </p>
+                              <p className="text-[10px] font-mono text-muted-foreground font-medium mt-0.5 truncate">
+                                {employees[0].numeroCompte ? `Compte : ${employees[0].numeroCompte}` : "Virement institutionnel"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="p-5 rounded-2xl border border-border/50 bg-background/50 flex flex-col justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                              Affiliation CNPS
+                            </span>
+                            <div className="mt-2">
+                              <p className="text-base font-bold text-foreground font-mono">
+                                {employees[0].cnpsEmploye || "Déclaré"}
+                              </p>
+                              <p className="text-[10px] text-emerald-600 font-bold mt-0.5 flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" /> Cotisation active
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="p-5 rounded-2xl border border-border/50 bg-background/50 flex flex-col justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                              Statut Administratif
+                            </span>
+                            <div className="mt-2">
+                              <p className="text-base font-bold text-emerald-600 flex items-center gap-2">
+                                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                                {employees[0].status || "Actif"}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">En poste à Yamoussoukro</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Context / Help Section */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-100 dark:border-blue-900/40 rounded-3xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+                      <div className="flex items-start gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-600/20">
+                          <ShieldCheck className="h-6 w-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                            Assistance & Conformité Paie
+                          </h4>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-2xl">
+                            Les bulletins affichés sont conformes à la grille salariale et aux indemnités officielles de la CNRCT. Pour toute réclamation, historique antérieur, modification de domiciliation bancaire ou demande d'attestation, contactez la Direction des Ressources Humaines (DRHAS).
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                );
+              })()}
             </div>
           ) : (
             <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden">

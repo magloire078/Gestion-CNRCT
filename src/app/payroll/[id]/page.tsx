@@ -41,6 +41,12 @@ export default function PayslipDetailPage() {
 
     const isHrAdmin = hasPermission('page:payroll:view');
 
+    // Pour les collaborateurs non-RH, seul le bulletin du mois précédent est autorisé
+    const now = new Date();
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const allowedPrevMonthDate = format(lastDayOfMonth(prevMonthDate), 'yyyy-MM-dd');
+    const effectivePayslipDate = isHrAdmin ? payslipDate : allowedPrevMonthDate;
+
     useEffect(() => {
         if (authLoading || !employeeId) return;
 
@@ -60,7 +66,7 @@ export default function PayslipDetailPage() {
                 const employeeDoc = await getEmployee(employeeId);
                 
                 if (employeeDoc) {
-                    // Les utilisateurs non-RH ne peuvent générer qu'un seul bulletin (le dernier)
+                    // Les utilisateurs non-RH ne peuvent générer qu'un seul bulletin (le mois précédent uniquement)
                     if (endDate && isHrAdmin) {
                         // Period mode: Generate multiple payslips (RH uniquement)
                         const start = parseISO(payslipDate);
@@ -77,8 +83,8 @@ export default function PayslipDetailPage() {
                         const results = await Promise.all(detailsPromises);
                         setAllPayslips(results);
                     } else {
-                        // Single mode (Dernier bulletin)
-                        const details = await getPayslipDetails(employeeDoc, payslipDate);
+                        // Single mode (Mois précédent pour les agents, date choisie pour les RH)
+                        const details = await getPayslipDetails(employeeDoc, effectivePayslipDate);
                         setAllPayslips([details]);
                     }
                 } else {
@@ -102,7 +108,7 @@ export default function PayslipDetailPage() {
         }
 
         fetchData();
-    }, [employeeId, payslipDate, endDate, router, toast]);
+    }, [employeeId, payslipDate, effectivePayslipDate, endDate, isHrAdmin, user?.employeeId, authLoading, router, toast]);
 
     const handlePrint = () => {
         // Log the printing action

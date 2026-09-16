@@ -67,7 +67,16 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isSignedIn() && (request.auth.uid == userId || can('admin', 'read'));
       allow list: if can('admin', 'read');
-      allow create: if isSignedIn() && (request.auth.uid == userId || isSuperAdmin());
+      // isSuperAdmin() et can() tirent leurs droits de roleId et
+      // resourcePermissions. L'update interdit déjà d'y toucher ; la création
+      // doit l'interdire aussi, sinon un compte fraîchement inscrit se crée
+      // son propre profil super-admin. L'inscription n'écrit que le rôle par
+      // défaut : toute élévation passe par un super-admin.
+      allow create: if isSuperAdmin() || (
+        isSignedIn() && request.auth.uid == userId &&
+        !request.resource.data.keys().hasAny(['resourcePermissions']) &&
+        request.resource.data.get('roleId', '') == 'employe-operationnel'
+      );
       allow update: if isSuperAdmin() || (
         request.auth.uid == userId && 
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['roleId', 'resourcePermissions'])

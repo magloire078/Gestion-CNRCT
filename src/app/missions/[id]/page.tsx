@@ -129,6 +129,21 @@ export default function MissionDetailPage() {
         }
     }, [mission?.startDate, mission?.endDate]);
 
+    const canViewAll = canEdit || hasPermission('page:admin:view') || ['administrateur', 'super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'manager-rh', 'chef-de-service'].includes(user?.roleId || '');
+
+    const currentUserParticipant = useMemo(() => {
+        if (!mission?.participants || !user) return null;
+        return (mission.participants || []).find(p => 
+            (user.employeeId && p.employeeId === user.employeeId) ||
+            (user.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
+        ) || null;
+    }, [mission?.participants, user]);
+
+    const myCosts = useMemo(() => {
+        if (!currentUserParticipant) return 0;
+        return (currentUserParticipant.coutTransport || 0) + (currentUserParticipant.coutHebergement || 0) + (currentUserParticipant.totalIndemnites || 0);
+    }, [currentUserParticipant]);
+
     const budgetStats = useMemo(() => {
         const parts = mission?.participants || [];
         const totalTransport = parts.reduce((t, p) => t + (p.coutTransport || 0), 0);
@@ -260,37 +275,53 @@ export default function MissionDetailPage() {
 
                     {/* Action Toolbar */}
                     <div className="flex flex-wrap items-center gap-2 shrink-0 self-start xl:self-center">
-                        <Button 
-                            variant="outline" 
-                            onClick={() => setShowCollectivePrint(true)}
-                            className="h-10 px-3.5 rounded-xl border-slate-200 bg-white shadow-sm font-bold text-xs hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-700"
-                        >
-                            <Printer className="mr-2 h-4 w-4 text-purple-600" /> Ordre Collectif
-                        </Button>
-                        
-                        <Button 
-                            variant="outline" 
-                            onClick={() => setShowGroupedIndividualPrint(true)}
-                            className="h-10 px-3.5 rounded-xl border-slate-200 bg-white shadow-sm font-bold text-xs hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-700"
-                        >
-                            <Printer className="mr-2 h-4 w-4 text-emerald-600" /> Impression Groupée
-                        </Button>
+                        {canViewAll ? (
+                            <>
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setShowCollectivePrint(true)}
+                                    className="h-10 px-3.5 rounded-xl border-slate-200 bg-white shadow-sm font-bold text-xs hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-700"
+                                >
+                                    <Printer className="mr-2 h-4 w-4 text-purple-600" /> Ordre Collectif
+                                </Button>
+                                
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setShowGroupedIndividualPrint(true)}
+                                    className="h-10 px-3.5 rounded-xl border-slate-200 bg-white shadow-sm font-bold text-xs hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-700"
+                                >
+                                    <Printer className="mr-2 h-4 w-4 text-emerald-600" /> Impression Groupée
+                                </Button>
 
-                        <Button 
-                            variant="outline" 
-                            onClick={() => setShowGroupPrint(true)}
-                            className="h-10 px-3.5 rounded-xl border-slate-200 bg-white shadow-sm font-bold text-xs hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-700"
-                        >
-                            <FileText className="mr-2 h-4 w-4 text-blue-600" /> Demande d'Ordre
-                        </Button>
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setShowGroupPrint(true)}
+                                    className="h-10 px-3.5 rounded-xl border-slate-200 bg-white shadow-sm font-bold text-xs hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-700"
+                                >
+                                    <FileText className="mr-2 h-4 w-4 text-blue-600" /> Demande d'Ordre
+                                </Button>
 
-                        {canEdit && (
-                            <Button 
-                                onClick={() => router.push(`/missions/${id}/edit`)} 
-                                className="h-10 px-4 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-all shadow-md shadow-slate-900/15 active:scale-95"
-                            >
-                                <Pencil className="mr-1.5 h-3.5 w-3.5 text-amber-400" /> Modifier
-                            </Button>
+                                {canEdit && (
+                                    <Button 
+                                        onClick={() => router.push(`/missions/${id}/edit`)} 
+                                        className="h-10 px-4 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-all shadow-md shadow-slate-900/15 active:scale-95"
+                                    >
+                                        <Pencil className="mr-1.5 h-3.5 w-3.5 text-amber-400" /> Modifier
+                                    </Button>
+                                )}
+                            </>
+                        ) : (
+                            currentUserParticipant && (
+                                <Button 
+                                    onClick={() => {
+                                        setSelectedParticipant(currentUserParticipant);
+                                        setShowIndividualPrint(true);
+                                    }}
+                                    className="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition-all active:scale-95"
+                                >
+                                    <Printer className="mr-2 h-4 w-4 text-white" /> Imprimer mon Ordre de Mission
+                                </Button>
+                            )
                         )}
                     </div>
                 </div>
@@ -348,7 +379,7 @@ export default function MissionDetailPage() {
                 <div className="rounded-2xl bg-white p-4 lg:p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all group">
                     <div className="flex items-start justify-between">
                         <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-                            Effectif Engagé
+                            {canViewAll ? "Effectif Engagé" : "Ma Participation"}
                         </span>
                         <div className="h-9 w-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                             <Users className="h-4 w-4" />
@@ -356,29 +387,20 @@ export default function MissionDetailPage() {
                     </div>
                     <div className="flex items-baseline gap-2 mt-2">
                         <span className="text-xl font-black text-slate-900">
-                            {(mission.participants || []).length}
+                            {canViewAll ? (mission.participants || []).length : "Assigné"}
                         </span>
                         <span className="text-xs font-bold text-slate-500 uppercase">
-                            {(mission.participants || []).length > 1 ? 'Agents mobilisés' : 'Agent mobilisé'}
+                            {canViewAll 
+                                ? ((mission.participants || []).length > 1 ? 'Agents mobilisés' : 'Agent mobilisé') 
+                                : `Équipage de ${(mission.participants || []).length} agent(s)`}
                         </span>
                     </div>
                     <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                        <div className="flex -space-x-1.5">
-                            {(mission.participants || []).slice(0, 3).map((p, idx) => (
-                                <div 
-                                    key={idx} 
-                                    className={cn(
-                                        "h-5 w-5 rounded-full border border-white flex items-center justify-center text-[8px] font-black bg-gradient-to-br",
-                                        getAvatarGradient(p.employeeName)
-                                    )}
-                                    title={p.employeeName}
-                                >
-                                    {p.employeeName.charAt(0)}
-                                </div>
-                            ))}
-                        </div>
                         <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
-                            Équipage
+                            Ordre Individuel
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-400">
+                            {currentUserParticipant?.numeroOrdre || (mission.numeroMission ? `N° ${mission.numeroMission}` : "Validé")}
                         </span>
                     </div>
                 </div>
@@ -387,7 +409,7 @@ export default function MissionDetailPage() {
                 <div className="rounded-2xl bg-white p-4 lg:p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all group">
                     <div className="flex items-start justify-between">
                         <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-                            Budget Prévisionnel
+                            {canViewAll ? "Budget Prévisionnel" : "Mes Indemnités & Frais"}
                         </span>
                         <div className="h-9 w-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                             <CreditCard className="h-4 w-4" />
@@ -395,7 +417,7 @@ export default function MissionDetailPage() {
                     </div>
                     <div className="flex items-baseline gap-1.5 mt-2">
                         <span className="text-lg font-black text-slate-900 tracking-tight">
-                            {budgetStats.total.toLocaleString()}
+                            {canViewAll ? budgetStats.total.toLocaleString() : myCosts.toLocaleString()}
                         </span>
                         <span className="text-[10px] font-bold text-amber-600 uppercase">
                             FCFA
@@ -403,10 +425,10 @@ export default function MissionDetailPage() {
                     </div>
                     <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-bold text-slate-500">
-                            Indemnités : {budgetStats.indemnitesPct}%
+                            {canViewAll ? `Indemnités : ${budgetStats.indemnitesPct}%` : "Prise en charge validée"}
                         </span>
                         <span className="text-[10px] font-medium text-slate-400">
-                            {(mission.participants || []).length} p.
+                            {canViewAll ? `${(mission.participants || []).length} p.` : "Agent"}
                         </span>
                     </div>
                 </div>
@@ -452,14 +474,16 @@ export default function MissionDetailPage() {
                                         {(mission.participants || []).length} Agent(s)
                                     </Badge>
                                 </div>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => setShowGroupedIndividualPrint(true)}
-                                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg h-8"
-                                >
-                                    <Printer className="mr-1.5 h-3.5 w-3.5" /> Tout imprimer
-                                </Button>
+                                {canViewAll && (
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => setShowGroupedIndividualPrint(true)}
+                                        className="text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg h-8"
+                                    >
+                                        <Printer className="mr-1.5 h-3.5 w-3.5" /> Tout imprimer
+                                    </Button>
+                                )}
                             </div>
 
                             {(mission.participants || []).length === 0 ? (
@@ -483,11 +507,17 @@ export default function MissionDetailPage() {
                                         const empPoste = p.employeeId && employees[p.employeeId]?.poste;
                                         const avatarGrad = getAvatarGradient(p.employeeName);
                                         const orderNum = p.numeroOrdre?.trim() || (mission.numeroMission ? (mission.participants?.length > 1 ? `N° ${mission.numeroMission}-${i + 1}` : `N° ${mission.numeroMission}`) : `N° ${i + 1}`);
+                                        const isMe = (user?.employeeId && p.employeeId === user.employeeId) || 
+                                                     (user?.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim());
+                                        const canPrintThisParticipant = canViewAll || isMe;
 
                                         return (
                                             <div 
                                                 key={i} 
-                                                className="group bg-slate-50/50 rounded-xl border border-slate-200/80 p-4 shadow-sm hover:bg-white hover:border-indigo-300 hover:shadow-md transition-all duration-200 flex items-center justify-between gap-3"
+                                                className={cn(
+                                                    "group rounded-xl border p-4 shadow-sm transition-all duration-200 flex items-center justify-between gap-3",
+                                                    isMe ? "bg-indigo-50/40 border-indigo-200 shadow-indigo-100" : "bg-slate-50/50 border-slate-200/80 hover:bg-white hover:border-slate-300"
+                                                )}
                                             >
                                                 <div className="flex items-center gap-3.5 min-w-0 flex-1">
                                                     {/* Avatar */}
@@ -499,9 +529,16 @@ export default function MissionDetailPage() {
                                                     </div>
 
                                                     <div className="min-w-0 space-y-1 flex-1">
-                                                        <p className="font-bold text-xs text-slate-900 uppercase leading-snug break-words" title={p.employeeName}>
-                                                            {p.employeeName}
-                                                        </p>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <p className="font-bold text-xs text-slate-900 uppercase leading-snug break-words" title={p.employeeName}>
+                                                                {p.employeeName}
+                                                            </p>
+                                                            {isMe && (
+                                                                <span className="bg-indigo-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded uppercase">
+                                                                    Moi
+                                                                </span>
+                                                            )}
+                                                        </div>
 
                                                         {empPoste ? (
                                                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide truncate">
@@ -531,20 +568,27 @@ export default function MissionDetailPage() {
 
                                                 {/* Action Buttons */}
                                                 <div className="flex items-center gap-1 shrink-0">
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="icon" 
-                                                        className="h-8 w-8 rounded-lg border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-colors shadow-xs" 
-                                                        title="Imprimer l'ordre de mission individuel"
-                                                        onClick={() => {
-                                                            setSelectedParticipant(p);
-                                                            setShowIndividualPrint(true);
-                                                        }}
-                                                    >
-                                                        <Printer className="h-3.5 w-3.5" />
-                                                    </Button>
+                                                    {canPrintThisParticipant && (
+                                                        <Button 
+                                                            variant="outline" 
+                                                            size="icon" 
+                                                            className={cn(
+                                                                "h-8 w-8 rounded-lg transition-colors shadow-xs",
+                                                                isMe 
+                                                                    ? "border-indigo-300 bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white"
+                                                                    : "border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600"
+                                                            )} 
+                                                            title={isMe ? "Imprimer mon ordre de mission" : "Imprimer l'ordre de mission individuel"}
+                                                            onClick={() => {
+                                                                setSelectedParticipant(p);
+                                                                setShowIndividualPrint(true);
+                                                            }}
+                                                        >
+                                                            <Printer className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    )}
 
-                                                    {p.employeeId && (
+                                                    {canViewAll && p.employeeId && (
                                                         <Button 
                                                             variant="ghost" 
                                                             size="icon" 
@@ -563,59 +607,45 @@ export default function MissionDetailPage() {
                             )}
                         </TabsContent>
 
-                        {/* TAB 2: PRÉSENTATION */}
+                        {/* TAB 2: PRÉSENTATION & CADRE */}
                         <TabsContent value="overview" className="pt-5 space-y-6 animate-in fade-in-50 duration-200">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-slate-700">
-                                    <div className="h-7 w-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                        <ListChecks className="h-4 w-4" />
-                                    </div>
-                                    <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-                                        Note & Objet de la Mission
-                                    </h3>
+                            {/* Missions Specs Cards */}
+                            <div className="space-y-4">
+                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                        Objectif & Contexte de la Mission
+                                    </span>
+                                    <p className="text-sm font-medium text-slate-800 leading-relaxed text-justify">
+                                        {mission.description || "Aucun descriptif complémentaire renseigné pour ce dossier de mission."}
+                                    </p>
                                 </div>
-                                
-                                <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 text-xs md:text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
-                                    {mission.description || "Aucune note explicative n'a été saisie pour ce dossier."}
-                                </div>
-                            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 text-slate-700">
-                                        <div className="h-7 w-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                                            <Landmark className="h-4 w-4" />
-                                        </div>
-                                        <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-                                            Cadre Institutionnel
-                                        </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                            Lieu / Périmètre
+                                        </span>
+                                        <p className="text-sm font-bold text-slate-900 uppercase flex items-center gap-1.5">
+                                            <MapPin className="h-4 w-4 text-emerald-600" />
+                                            {mission.lieuMission || "Territoire National"}
+                                        </p>
                                     </div>
 
-                                    <div className="space-y-2 text-xs">
-                                        <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50/60 border border-slate-200/70">
-                                            <span className="font-medium text-slate-500">Institution</span>
-                                            <span className="font-bold text-slate-800 uppercase">CNRCT Côte d'Ivoire</span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50/60 border border-slate-200/70">
-                                            <span className="font-medium text-slate-500">Enregistrement / Saisie</span>
-                                            <span className="font-bold text-slate-800">
-                                                {mission.dateSaisie ? format(parseISO(mission.dateSaisie), "dd MMMM yyyy", { locale: fr }) : "Non spécifiée"}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50/60 border border-slate-200/70">
-                                            <span className="font-medium text-slate-500">Classification</span>
-                                            <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                                                Ordre Administratif
-                                            </span>
-                                        </div>
+                                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                            Dates Officielles
+                                        </span>
+                                        <p className="text-sm font-bold text-slate-900 uppercase flex items-center gap-1.5">
+                                            <Calendar className="h-4 w-4 text-blue-600" />
+                                            {format(parseISO(mission.startDate), "dd MMM yyyy", { locale: fr })} au {format(parseISO(mission.endDate), "dd MMM yyyy", { locale: fr })}
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div className="p-5 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-white relative overflow-hidden flex flex-col justify-between">
-                                    <div className="space-y-2 relative z-10">
-                                        <div className="flex items-center gap-2 text-indigo-300">
+                                {/* Security and Official Rules Notice */}
+                                <div className="p-4 rounded-xl bg-slate-900 text-white relative overflow-hidden shadow-sm">
+                                    <div className="space-y-1 relative z-10">
+                                        <div className="flex items-center gap-2 text-indigo-400">
                                             <Shield className="h-4 w-4" />
                                             <span className="text-[10px] font-black uppercase tracking-widest">
                                                 Conformité Opérationnelle
@@ -642,81 +672,134 @@ export default function MissionDetailPage() {
                                         <div className="flex items-center gap-2 text-indigo-300">
                                             <CreditCard className="h-4 w-4" />
                                             <span className="text-[10px] font-black uppercase tracking-widest">
-                                                Budget Prévisionnel Global
+                                                {canViewAll ? "Budget Prévisionnel Global" : "Mes Frais & Indemnités Personnelles"}
                                             </span>
                                         </div>
                                         <div className="flex items-baseline gap-2">
                                             <span className="text-3xl lg:text-4xl font-black tracking-tight text-white">
-                                                {budgetStats.total.toLocaleString()}
+                                                {canViewAll ? budgetStats.total.toLocaleString() : myCosts.toLocaleString()}
                                             </span>
                                             <span className="text-sm font-bold text-indigo-300 uppercase">
                                                 FCFA
                                             </span>
                                         </div>
                                         <p className="text-xs text-slate-400 font-medium">
-                                            Calculé pour {(mission.participants || []).length} agent(s) assigné(s)
+                                            {canViewAll 
+                                                ? `Calculé pour ${(mission.participants || []).length} agent(s) assigné(s)` 
+                                                : "Prise en charge validée pour votre mission"}
                                         </p>
                                     </div>
 
-                                    {/* Percentage Breakdown Chips */}
-                                    <div className="grid grid-cols-3 gap-2 shrink-0">
-                                        <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-center min-w-[75px]">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Indemnités</p>
-                                            <p className="text-sm font-black text-amber-400 mt-0.5">{budgetStats.indemnitesPct}%</p>
+                                    {/* Percentage Breakdown Chips (Admins only) */}
+                                    {canViewAll ? (
+                                        <div className="grid grid-cols-3 gap-2 shrink-0">
+                                            <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-center min-w-[75px]">
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase">Indemnités</p>
+                                                <p className="text-sm font-black text-amber-400 mt-0.5">{budgetStats.indemnitesPct}%</p>
+                                            </div>
+                                            <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-center min-w-[75px]">
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase">Transport</p>
+                                                <p className="text-sm font-black text-blue-400 mt-0.5">{budgetStats.transportPct}%</p>
+                                            </div>
+                                            <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-center min-w-[75px]">
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase">Héberg.</p>
+                                                <p className="text-sm font-black text-emerald-400 mt-0.5">{budgetStats.hebergementPct}%</p>
+                                            </div>
                                         </div>
-                                        <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-center min-w-[75px]">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Transport</p>
-                                            <p className="text-sm font-black text-blue-400 mt-0.5">{budgetStats.transportPct}%</p>
-                                        </div>
-                                        <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-center min-w-[75px]">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Héberg.</p>
-                                            <p className="text-sm font-black text-emerald-400 mt-0.5">{budgetStats.hebergementPct}%</p>
-                                        </div>
-                                    </div>
+                                    ) : (
+                                        currentUserParticipant && (
+                                            <div className="flex flex-col gap-1 text-right shrink-0">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400">Véhicule assigné</span>
+                                                <span className="text-xs font-black text-white uppercase">{currentUserParticipant.moyenTransport || "Véhicule CNRCT"}</span>
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                             </div>
 
                             {/* Detailed Rubrics Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                                <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                            <Car className="h-4 w-4" />
+                            {canViewAll ? (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                                    <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                                <Car className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase">Transport</p>
+                                                <p className="text-xs font-black text-slate-900">{budgetStats.totalTransport.toLocaleString()} FCFA</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Transport</p>
-                                            <p className="text-xs font-black text-slate-900">{budgetStats.totalTransport.toLocaleString()} FCFA</p>
-                                        </div>
+                                        <Badge variant="outline" className="text-[10px] font-bold text-blue-600">{budgetStats.transportPct}%</Badge>
                                     </div>
-                                    <Badge variant="outline" className="text-[10px] font-bold text-blue-600">{budgetStats.transportPct}%</Badge>
-                                </div>
 
-                                <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-9 w-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                            <Hotel className="h-4 w-4" />
+                                    <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-9 w-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                                <Hotel className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase">Hébergement</p>
+                                                <p className="text-xs font-black text-slate-900">{budgetStats.totalHebergement.toLocaleString()} FCFA</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Hébergement</p>
-                                            <p className="text-xs font-black text-slate-900">{budgetStats.totalHebergement.toLocaleString()} FCFA</p>
-                                        </div>
+                                        <Badge variant="outline" className="text-[10px] font-bold text-emerald-600">{budgetStats.hebergementPct}%</Badge>
                                     </div>
-                                    <Badge variant="outline" className="text-[10px] font-bold text-emerald-600">{budgetStats.hebergementPct}%</Badge>
-                                </div>
 
-                                <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-9 w-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                                            <CreditCard className="h-4 w-4" />
+                                    <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-9 w-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                                                <CreditCard className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase">Indemnités</p>
+                                                <p className="text-xs font-black text-slate-900">{budgetStats.totalIndemnites.toLocaleString()} FCFA</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Indemnités</p>
-                                            <p className="text-xs font-black text-slate-900">{budgetStats.totalIndemnites.toLocaleString()} FCFA</p>
+                                        <Badge variant="outline" className="text-[10px] font-bold text-amber-600">{budgetStats.indemnitesPct}%</Badge>
+                                    </div>
+                                </div>
+                            ) : (
+                                currentUserParticipant && (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                                        <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                                    <Car className="h-4 w-4" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Mon Transport</p>
+                                                    <p className="text-xs font-black text-slate-900">{(currentUserParticipant.coutTransport || 0).toLocaleString()} FCFA</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-9 w-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                                    <Hotel className="h-4 w-4" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Mon Hébergement</p>
+                                                    <p className="text-xs font-black text-slate-900">{(currentUserParticipant.coutHebergement || 0).toLocaleString()} FCFA</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-9 w-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                                                    <CreditCard className="h-4 w-4" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Mes Indemnités</p>
+                                                    <p className="text-xs font-black text-slate-900">{(currentUserParticipant.totalIndemnites || 0).toLocaleString()} FCFA</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <Badge variant="outline" className="text-[10px] font-bold text-amber-600">{budgetStats.indemnitesPct}%</Badge>
-                                </div>
-                            </div>
+                                )
+                            )}
                         </TabsContent>
                     </Tabs>
                 </div>
@@ -733,53 +816,78 @@ export default function MissionDetailPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <div 
-                                onClick={() => setShowCollectivePrint(true)} 
-                                className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-indigo-50/60 hover:border-indigo-200 flex items-center justify-between group cursor-pointer transition-all"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="h-8 w-8 bg-white shadow-xs border border-slate-200/80 rounded-lg flex items-center justify-center text-indigo-600 group-hover:scale-105 transition-transform">
-                                        <FileText className="h-4 w-4" />
+                            {canViewAll ? (
+                                <>
+                                    <div 
+                                        onClick={() => setShowCollectivePrint(true)} 
+                                        className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-purple-50/60 hover:border-purple-200 flex items-center justify-between group cursor-pointer transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 bg-white shadow-xs border border-slate-200/80 rounded-lg flex items-center justify-center text-purple-600 group-hover:scale-105 transition-transform">
+                                                <FileText className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-900 leading-tight">Ordre Collectif</p>
+                                                <p className="text-[9px] text-slate-400 font-medium">Document officiel</p>
+                                            </div>
+                                        </div>
+                                        <Printer className="h-3.5 w-3.5 text-slate-300 group-hover:text-purple-600 transition-colors" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-bold text-slate-900 leading-tight">Ordre Collectif</p>
-                                        <p className="text-[9px] text-slate-400 font-medium">Document officiel</p>
-                                    </div>
-                                </div>
-                                <Printer className="h-3.5 w-3.5 text-slate-300 group-hover:text-indigo-600 transition-colors" />
-                            </div>
 
-                            <div 
-                                onClick={() => setShowGroupedIndividualPrint(true)} 
-                                className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-emerald-50/60 hover:border-emerald-200 flex items-center justify-between group cursor-pointer transition-all"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="h-8 w-8 bg-white shadow-xs border border-slate-200/80 rounded-lg flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
-                                        <Printer className="h-4 w-4" />
+                                    <div 
+                                        onClick={() => setShowGroupedIndividualPrint(true)} 
+                                        className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-emerald-50/60 hover:border-emerald-200 flex items-center justify-between group cursor-pointer transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 bg-white shadow-xs border border-slate-200/80 rounded-lg flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
+                                                <Printer className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-900 leading-tight">Ordres Individuels</p>
+                                                <p className="text-[9px] text-slate-400 font-medium">Tous les équipages ({ (mission.participants || []).length })</p>
+                                            </div>
+                                        </div>
+                                        <ArrowRight className="h-3.5 w-3.5 text-slate-300 group-hover:text-emerald-600 transition-colors" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-bold text-slate-900 leading-tight">Ordres Individuels</p>
-                                        <p className="text-[9px] text-slate-400 font-medium">Tous les équipages ({ (mission.participants || []).length })</p>
-                                    </div>
-                                </div>
-                                <ArrowRight className="h-3.5 w-3.5 text-slate-300 group-hover:text-emerald-600 transition-colors" />
-                            </div>
 
-                            <div 
-                                onClick={() => setShowGroupPrint(true)} 
-                                className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-blue-50/60 hover:border-blue-200 flex items-center justify-between group cursor-pointer transition-all"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="h-8 w-8 bg-white shadow-xs border border-slate-200/80 rounded-lg flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
-                                        <FileText className="h-4 w-4" />
+                                    <div 
+                                        onClick={() => setShowGroupPrint(true)} 
+                                        className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-blue-50/60 hover:border-blue-200 flex items-center justify-between group cursor-pointer transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 bg-white shadow-xs border border-slate-200/80 rounded-lg flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
+                                                <FileText className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-900 leading-tight">Demande d'Ordre</p>
+                                                <p className="text-[9px] text-slate-400 font-medium">Bordereau récapitulatif</p>
+                                            </div>
+                                        </div>
+                                        <Printer className="h-3.5 w-3.5 text-slate-300 group-hover:text-blue-600 transition-colors" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-bold text-slate-900 leading-tight">Demande d'Ordre</p>
-                                        <p className="text-[9px] text-slate-400 font-medium">Bordereau récapitulatif</p>
+                                </>
+                            ) : (
+                                currentUserParticipant && (
+                                    <div 
+                                        onClick={() => {
+                                            setSelectedParticipant(currentUserParticipant);
+                                            setShowIndividualPrint(true);
+                                        }} 
+                                        className="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200/80 hover:bg-indigo-100/70 flex items-center justify-between group cursor-pointer transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 bg-indigo-600 shadow-xs rounded-lg flex items-center justify-center text-white group-hover:scale-105 transition-transform">
+                                                <Printer className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-indigo-950 leading-tight">Mon Ordre de Mission</p>
+                                                <p className="text-[9px] text-indigo-600 font-medium">Bordereau individuel officiel</p>
+                                            </div>
+                                        </div>
+                                        <Printer className="h-3.5 w-3.5 text-indigo-500 group-hover:text-indigo-700 transition-colors" />
                                     </div>
-                                </div>
-                                <Printer className="h-3.5 w-3.5 text-slate-300 group-hover:text-blue-600 transition-colors" />
-                            </div>
+                                )
+                            )}
                         </div>
                     </div>
 

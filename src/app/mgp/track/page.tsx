@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { 
-    Search, ShieldCheck, MapPin, 
+    Search, ShieldCheck,
     Calendar, History, ArrowRight,
     Loader2, AlertCircle, CheckCircle2,
     Clock, MessageSquare, Info
@@ -13,15 +13,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getConflictByTrackingId } from "@/services/conflict-service";
-import type { Conflict } from "@/types/common";
+import { trackConflictPublicly, type PublicConflictStatus } from "@/services/conflict-service";
 import { cn } from "@/lib/utils";
 
 export default function PublicTrackingPage() {
     const [id, setId] = useState("");
     const [loading, setLoading] = useState(false);
-    const [conflict, setConflict] = useState<Conflict | null>(null);
+    const [conflict, setConflict] = useState<PublicConflictStatus | null>(null);
     const [searched, setSearched] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,11 +29,14 @@ export default function PublicTrackingPage() {
 
         setLoading(true);
         setSearched(true);
+        setErrorMessage(null);
         try {
-            const result = await getConflictByTrackingId(id.trim());
+            const result = await trackConflictPublicly(id.trim());
             setConflict(result);
         } catch (error) {
             console.error(error);
+            setConflict(null);
+            setErrorMessage(error instanceof Error ? error.message : "La recherche a échoué.");
         } finally {
             setLoading(false);
         }
@@ -103,10 +106,16 @@ export default function PublicTrackingPage() {
                             <div className="h-20 w-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <AlertCircle className="h-10 w-10 text-rose-500" />
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 uppercase">Dossier Introuvable</h3>
+                            <h3 className="text-xl font-black text-slate-900 uppercase">
+                                {errorMessage ? "Recherche Indisponible" : "Dossier Introuvable"}
+                            </h3>
                             <p className="text-slate-500 mt-2 max-w-xs mx-auto">
-                                Nous n'avons trouvé aucun dossier correspondant à l'identifiant <span className="text-slate-900 font-bold">{id}</span>. 
-                                Veuillez vérifier le code et réessayer.
+                                {errorMessage ? errorMessage : (
+                                    <>
+                                        Nous n'avons trouvé aucun dossier correspondant à l'identifiant <span className="text-slate-900 font-bold">{id}</span>.
+                                        Veuillez vérifier le code et réessayer.
+                                    </>
+                                )}
                             </p>
                         </Card>
                     ) : searched && conflict ? (
@@ -120,8 +129,7 @@ export default function PublicTrackingPage() {
                                         </Badge>
                                         <h2 className="text-3xl font-black tracking-tight">{conflict.type}</h2>
                                         <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                                            <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {conflict.village}, {conflict.region}</span>
-                                            <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Signaler le {conflict.reportedDate}</span>
+                                            <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Enregistré le {conflict.reportedDate}</span>
                                         </div>
                                     </div>
                                     <div className="bg-white/5 border border-white/10 p-6 rounded-xl text-center min-w-[200px]">
@@ -133,16 +141,20 @@ export default function PublicTrackingPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div className="space-y-6">
                                             <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                                <Info className="h-4 w-4" /> Détails de l'Affaire
+                                                <Info className="h-4 w-4" /> Votre Dossier
                                             </h3>
                                             <div className="space-y-4">
                                                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Partis en Conflit</p>
-                                                    <p className="text-slate-800 font-bold leading-relaxed">{conflict.parties}</p>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Nature de la Saisine</p>
+                                                    <p className="text-slate-800 font-bold leading-relaxed">{conflict.type}</p>
                                                 </div>
-                                                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Impact Territorial</p>
-                                                    <p className="text-slate-600 font-medium text-sm leading-relaxed italic">{conflict.impact}</p>
+                                                <div className="p-5 rounded-2xl bg-blue-50 border border-blue-100">
+                                                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Confidentialité</p>
+                                                    <p className="text-slate-600 font-medium text-sm leading-relaxed">
+                                                        Pour protéger les personnes concernées, le détail du dossier n'est pas
+                                                        consultable en ligne. Rapprochez-vous de la CNRCT muni de votre récépissé
+                                                        pour tout complément.
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -162,24 +174,14 @@ export default function PublicTrackingPage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Comments/Timeline */}
-                                                {conflict.comments && conflict.comments.length > 0 ? (
-                                                    conflict.comments.map((comment, idx) => (
-                                                        <div key={idx} className="relative">
-                                                            <div className="absolute -left-[30px] top-1 h-2.5 w-2.5 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10" />
-                                                            <div>
-                                                                <p className="text-[10px] font-black text-blue-600 uppercase">Mise à jour</p>
-                                                                <p className="text-xs font-bold text-slate-900 mt-1 leading-relaxed">{comment.content}</p>
-                                                                <p className="text-[9px] font-bold text-slate-400 mt-1 italic">{new Date(comment.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                                                            </div>
-                                                        </div>
-                                                    ))
-                                                ) : (
+                                                {/* Étape courante — libellé dérivé du seul statut, les notes
+                                                    internes du dossier ne sont jamais exposées au public. */}
+                                                {conflict.status !== 'Résolu' && (
                                                     <div className="relative">
                                                         <div className="absolute -left-[30px] top-1 h-2.5 w-2.5 rounded-full bg-amber-500 border-2 border-white shadow-sm z-10" />
                                                         <div>
-                                                            <p className="text-[10px] font-black text-amber-500 uppercase">En cours d'examen</p>
-                                                            <p className="text-xs font-bold text-slate-900 mt-1">Le dossier est en cours de traitement par nos services régionaux.</p>
+                                                            <p className="text-[10px] font-black text-amber-500 uppercase">{conflict.status}</p>
+                                                            <p className="text-xs font-bold text-slate-900 mt-1">Le dossier est en cours de traitement par nos services.</p>
                                                         </div>
                                                     </div>
                                                 )}
@@ -191,6 +193,9 @@ export default function PublicTrackingPage() {
                                                         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100 mt-2">
                                                             <p className="text-[10px] font-black text-emerald-600 uppercase">Clôturé</p>
                                                             <p className="text-xs font-bold text-emerald-900 mt-1">Ce dossier a été officiellement classé comme réglé suite à la médiation.</p>
+                                                            {conflict.resolutionDate && (
+                                                                <p className="text-[9px] font-bold text-emerald-600 mt-1 italic">{conflict.resolutionDate}</p>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}

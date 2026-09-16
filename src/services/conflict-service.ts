@@ -67,6 +67,11 @@ export async function getConflict(id: string): Promise<Conflict | null> {
     return null;
 }
 
+/**
+ * Réservé aux agents authentifiés : les règles Firestore refusent la lecture
+ * de /conflicts aux visiteurs anonymes. Pour le suivi citoyen public, passer
+ * par trackConflictPublicly().
+ */
 export async function getConflictByTrackingId(trackingId: string): Promise<Conflict | null> {
     if (!trackingId) return null;
     const { where } = await import('@/lib/firebase');
@@ -79,13 +84,82 @@ export async function getConflictByTrackingId(trackingId: string): Promise<Confl
     return null;
 }
 
+/** Sous-ensemble non identifiant renvoyé au citoyen sur le suivi public. */
+export type PublicConflictStatus = {
+    trackingId: string;
+    status: ConflictStatus;
+    type: string;
+    reportedDate: string;
+    resolutionDate: string | null;
+};
+
+export async function trackConflictPublicly(trackingId: string): Promise<PublicConflictStatus | null> {
+    if (!trackingId) return null;
+
+    const headers: Record<string, string> = {};
+    try {
+        const { getToken } = await import('firebase/app-check');
+        const { appCheck } = await import('@/lib/firebase');
+        if (appCheck) {
+            const appCheckToken = await getToken(appCheck, false);
+            headers['X-Firebase-AppCheck'] = appCheckToken.token;
+        }
+    } catch {
+        console.warn('[ConflictService] AppCheck indisponible pour le suivi public');
+    }
+
+    const response = await fetch(
+        `/api/mgp/track?trackingId=${encodeURIComponent(trackingId.trim().toUpperCase())}`,
+        { headers }
+    );
+
+    if (response.status === 429) {
+        throw new Error('Trop de tentatives. Veuillez réessayer dans une minute.');
+    }
+    if (!response.ok) {
+        throw new Error('La recherche a échoué. Veuillez réessayer.');
+    }
+
+    const data = await response.json();
+    return data.found ? (data as PublicConflictStatus) : null;
+}
+
+
+// 32 caractères = 5 bits chacun, donc un masque sur 0x1F tire uniformément
+// sans biais de modulo. I et O sont exclus pour éviter la confusion à la
+// lecture d'un récépissé papier (1 et 0 ne font pas partie de l'alphabet).
+const TRACKING_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+const TRACKING_CODE_LENGTH = 6;
+
+function generateTrackingCode(): string {
+    const bytes = new Uint8Array(TRACKING_CODE_LENGTH);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (b) => TRACKING_ALPHABET[b & 0x1f]).join('');
+}
+
+/**
+ * Le numéro figure sur le récépissé remis au citoyen et sert de clé de
+ * consultation publique : une collision afficherait le dossier d'autrui.
+ * L'ancien format à 4 chiffres n'offrait que 9000 valeurs par an, soit une
+ * collision quasi certaine passé une centaine de dossiers.
+ */
+async function generateUniqueTrackingId(): Promise<string> {
+    const year = new Date().getFullYear();
+    const { where } = await import('@/lib/firebase');
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+        const candidate = `CNRCT-${year}-${generateTrackingCode()}`;
+        const existing = await getDocs(
+            query(conflictsCollection, where('trackingId', '==', candidate))
+        );
+        if (existing.empty) return candidate;
+    }
+    throw new Error("Impossible de générer un numéro de suivi unique. Veuillez réessayer.");
+}
 
 export async function addConflict(conflictDataToAdd: Omit<Conflict, 'id'>): Promise<Conflict> {
-    // Generate unique tracking ID: CNRCT-YYYY-[Random 4 digits]
-    const year = new Date().getFullYear();
-    const random = Math.floor(1000 + Math.random() * 9000);
-    const trackingId = `CNRCT-${year}-${random}`;
-    
+    const trackingId = await generateUniqueTrackingId();
+
     const docRef = await addDoc(conflictsCollection, {
         ...conflictDataToAdd,
         trackingId,

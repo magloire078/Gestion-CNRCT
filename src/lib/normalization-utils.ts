@@ -85,6 +85,22 @@ export const getOfficialRegion = (input: string): string => {
 };
 
 /**
+ * Deduce the official Region name from a department name.
+ */
+export const getRegionFromDepartment = (department: string): string => {
+    if (!department || department === "all") return "";
+    const normDept = normalizeString(department);
+    for (const [regionName, deptMap] of Object.entries(divisions)) {
+        for (const deptKey of Object.keys(deptMap)) {
+            if (normalizeString(deptKey) === normDept) {
+                return getOfficialRegion(regionName);
+            }
+        }
+    }
+    return "";
+};
+
+/**
  * Finds the official name for a department within a region.
  */
 export const getOfficialDepartment = (region: string, input: string): string => {

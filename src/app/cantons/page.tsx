@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import Fuse from "fuse.js";
 import { 
     Search, 
@@ -41,6 +41,7 @@ export default function CantonsPage() {
     const [loading, setLoading] = useState(true);
     
     const [searchQuery, setSearchQuery] = useState("");
+    const deferredSearchQuery = useDeferredValue(searchQuery);
     const [selectedRegion, setSelectedRegion] = useState<string>("all");
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
     const [selectedSubPrefecture, setSelectedSubPrefecture] = useState<string>("all");
@@ -173,9 +174,21 @@ export default function CantonsPage() {
         return Array.from(cantonsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
     }, [villages, chiefs]);
 
+    // Fuse Instance for fuzzy searching
+    const fuseInstance = useMemo(() => {
+        return new Fuse(cantonsData, {
+            keys: ["name", "region", "department", "subPrefecture"],
+            threshold: 0.3,
+        });
+    }, [cantonsData]);
+
     // Filter and Search
     const filteredCantons = useMemo(() => {
         let result = cantonsData;
+
+        if (deferredSearchQuery.trim()) {
+            result = fuseInstance.search(deferredSearchQuery.trim()).map(r => r.item);
+        }
 
         if (selectedRegion !== "all") {
             result = result.filter(c => c.region === selectedRegion);
@@ -187,16 +200,8 @@ export default function CantonsPage() {
             result = result.filter(c => c.subPrefecture === selectedSubPrefecture);
         }
 
-        if (searchQuery.trim()) {
-            const fuse = new Fuse(result, {
-                keys: ["name", "region", "department", "subPrefecture"],
-                threshold: 0.3,
-            });
-            result = fuse.search(searchQuery).map(r => r.item);
-        }
-
         return result;
-    }, [cantonsData, searchQuery, selectedRegion, selectedDepartment, selectedSubPrefecture]);
+    }, [cantonsData, fuseInstance, deferredSearchQuery, selectedRegion, selectedDepartment, selectedSubPrefecture]);
 
     // Pagination
     const totalPages = Math.ceil(filteredCantons.length / itemsPerPage);

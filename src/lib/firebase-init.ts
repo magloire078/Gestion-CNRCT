@@ -61,8 +61,8 @@ if (typeof window !== 'undefined' && isConfigValid) {
         isTokenAutoRefreshEnabled: true
       });
       console.log("[Firebase] App Check initialisé avec succès.");
-    } else {
-      console.warn("[Firebase] Clé reCAPTCHA manquante. App Check non initialisé.");
+    } else if (process.env.NODE_ENV === 'development') {
+      console.info("[Firebase] Clé reCAPTCHA non configurée (App Check optionnel désactivé).");
     }
   } catch (error) {
     console.warn("[Firebase] Échec de l'initialisation AppCheck", error);
@@ -76,7 +76,7 @@ try {
     localCache: typeof window !== 'undefined' 
       ? persistentLocalCache({ tabManager: persistentMultipleTabManager() })
       : memoryLocalCache(),
-    experimentalForceLongPolling: true
+    experimentalAutoDetectLongPolling: true
   });
 } catch (error: any) {
   if (error.code === 'failed-precondition' || (error.message && error.message.includes('initializeFirestore'))) {

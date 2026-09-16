@@ -64,10 +64,10 @@ export async function getPayslipDetails(
 ): Promise<PayslipDetails> {
 
     const [history, departments, directions, services] = await Promise.all([
-        getEmployeeHistory(employee.id),
-        providedData?.departments || getDepartments(),
-        providedData?.directions || getDirections(),
-        providedData?.services || getServices()
+        getEmployeeHistory(employee.id).catch(() => []),
+        providedData?.departments || getDepartments().catch(() => []),
+        providedData?.directions || getDirections().catch(() => []),
+        providedData?.services || getServices().catch(() => [])
     ]);
     const payslipDateObj = parseISO(payslipDate);
 

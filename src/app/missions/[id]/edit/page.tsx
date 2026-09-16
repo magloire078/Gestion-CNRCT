@@ -24,7 +24,7 @@ export default function EditMissionPage() {
     const { can, loading: permissionsLoading } = usePermissions();
 
     const isAuthResolving = authLoading || permissionsLoading;
-    const canEdit = hasPermission('page:missions:view') && can('missions', 'update');
+    const canEdit = can('missions', 'update') || hasPermission('missions:update') || hasPermission('page:missions:update') || hasPermission('page:missions:edit') || hasPermission('page:admin:view');
 
     useEffect(() => {
         if (isAuthResolving) return;

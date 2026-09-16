@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './use-auth';
 import { getResourcePermissions, getEffectivePermissions } from '@/services/permission-service';
 import type { ResourcePermissions, CrudAction } from '@/types/permissions';
-import { RESOURCES_CONFIG } from '@/types/permissions';
+import { RESOURCES_CONFIG, DEFAULT_ROLE_PERMISSIONS } from '@/types/permissions';
 
 interface UsePermissionsReturn {
     permissions: ResourcePermissions;
@@ -34,13 +34,14 @@ export function usePermissions(): UsePermissionsReturn {
             // Fetch effective permissions (merged Role + User specific overrides)
             const perms = await getEffectivePermissions(user.id, user.roleId);
             setPermissions(perms);
-        } catch (err) {
-            console.warn('[usePermissions] Failed to load permissions:', err);
-            setPermissions(emptyPermissions);
+        } catch {
+            const rolePerms = user.role?.resourcePermissions || DEFAULT_ROLE_PERMISSIONS[user.roleId] || {};
+            const userPerms = user.resourcePermissions || {};
+            setPermissions({ ...emptyPermissions, ...rolePerms, ...userPerms });
         } finally {
             setLoading(false);
         }
-    }, [user?.id, user?.roleId]);
+    }, [user?.id, user?.roleId, user?.resourcePermissions, user?.role]);
 
     useEffect(() => {
         loadPermissions();
@@ -49,6 +50,8 @@ export function usePermissions(): UsePermissionsReturn {
     const can = useCallback((resource: string, action: CrudAction): boolean => {
         // Super Admins always have full access
         if (user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.roleId === 'super-admin') return true;
+        // Intranet read est universellement accessible à tout utilisateur connecté
+        if (resource === 'intranet' && action === 'read') return true;
         const perm = permissions[resource];
         if (!perm) return false;
         return perm[action] === true;

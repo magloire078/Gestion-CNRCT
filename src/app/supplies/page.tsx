@@ -109,7 +109,9 @@ const SupplyRow = memo(({
     openEditSheet, 
     openAdjustDialog,
     setDeleteTarget,
-    hasRecentActivity
+    hasRecentActivity,
+    canUpdate = true,
+    canDelete = true,
 }: { 
     supply: Supply; 
     index: number; 
@@ -119,6 +121,8 @@ const SupplyRow = memo(({
     openAdjustDialog: (s: Supply) => void;
     setDeleteTarget: (s: Supply) => void;
     hasRecentActivity: boolean;
+    canUpdate?: boolean;
+    canDelete?: boolean;
 }) => {
     const status = getStockStatus(supply.quantity, supply.reorderLevel);
 
@@ -175,31 +179,39 @@ const SupplyRow = memo(({
                 </div>
             </TableCell>
             <TableCell className="text-right py-2">
-                <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-primary/10 transition-colors duration-150">
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-white/10 bg-card/90 backdrop-blur-xl">
-                    <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 px-2 py-1.5">Gestion d'Inventaire</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => openDistributeDialog(supply)} className="cursor-pointer font-bold text-foreground focus:bg-primary/10 rounded-lg mx-1 my-0.5">
-                        <ShoppingCart className="mr-2 h-4 w-4 text-blue-600" /> Distribuer Article
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openRestockDialog(supply)} className="cursor-pointer font-bold text-emerald-600 focus:bg-emerald-50 rounded-lg mx-1 my-0.5">
-                        <PlusCircle className="mr-2 h-4 w-4" /> Réapprovisionner
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openAdjustDialog(supply)} className="cursor-pointer font-bold text-amber-600 focus:bg-amber-50 rounded-lg mx-1 my-0.5">
-                        <RefreshCw className="mr-2 h-4 w-4" /> Régulariser le Stock
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openEditSheet(supply)} className="cursor-pointer font-bold mx-1 my-0.5 rounded-lg">
-                        <Settings className="mr-2 h-4 w-4 text-slate-400" /> Paramètres Article
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive font-bold focus:bg-destructive/10 cursor-pointer mx-1 my-0.5 rounded-lg">
-                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer Définitivement
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-                </DropdownMenu>
+                {(canUpdate || canDelete) && (
+                  <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-primary/10 transition-colors duration-150">
+                          <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-white/10 bg-card/90 backdrop-blur-xl">
+                      <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 px-2 py-1.5">Gestion d'Inventaire</DropdownMenuLabel>
+                      {canUpdate && (
+                        <>
+                          <DropdownMenuItem onClick={() => openDistributeDialog(supply)} className="cursor-pointer font-bold text-foreground focus:bg-primary/10 rounded-lg mx-1 my-0.5">
+                              <ShoppingCart className="mr-2 h-4 w-4 text-blue-600" /> Distribuer Article
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openRestockDialog(supply)} className="cursor-pointer font-bold text-emerald-600 focus:bg-emerald-50 rounded-lg mx-1 my-0.5">
+                              <PlusCircle className="mr-2 h-4 w-4" /> Réapprovisionner
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openAdjustDialog(supply)} className="cursor-pointer font-bold text-amber-600 focus:bg-amber-50 rounded-lg mx-1 my-0.5">
+                              <RefreshCw className="mr-2 h-4 w-4" /> Régulariser le Stock
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEditSheet(supply)} className="cursor-pointer font-bold mx-1 my-0.5 rounded-lg">
+                              <Settings className="mr-2 h-4 w-4 text-slate-400" /> Paramètres Article
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {canDelete && (
+                        <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive font-bold focus:bg-destructive/10 cursor-pointer mx-1 my-0.5 rounded-lg">
+                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer Définitivement
+                        </DropdownMenuItem>
+                      )}
+                  </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
             </TableCell>
         </TableRow>
     );
@@ -214,6 +226,8 @@ const SupplyCard = memo(({
   openEditSheet, 
   openAdjustDialog,
   setDeleteTarget,
+  canUpdate = true,
+  canDelete = true,
 }: { 
   supply: Supply; 
   hasRecentActivity: boolean;
@@ -221,6 +235,8 @@ const SupplyCard = memo(({
   openEditSheet: (s: Supply) => void;
   openAdjustDialog: (s: Supply) => void;
   setDeleteTarget: (s: Supply) => void;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }) => {
   const status = getStockStatus(supply.quantity, supply.reorderLevel);
 
@@ -244,17 +260,25 @@ const SupplyCard = memo(({
                         </Badge>
                     )}
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-primary/10 transition-colors duration-150"><MoreHorizontal className="h-3.5 w-3.5" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-white/10 bg-card/90 backdrop-blur-xl">
-                        <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 px-2 py-1.5">Options Article</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => openEditSheet(supply)} className="font-bold rounded-lg mx-1 my-0.5"><Settings className="mr-2 h-4 w-4 text-slate-400" /> Modifier Détails</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openAdjustDialog(supply)} className="font-bold text-amber-600 rounded-lg mx-1 my-0.5"><RefreshCw className="mr-2 h-4 w-4" /> Régulariser Stock</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive font-bold focus:bg-destructive/10 rounded-lg mx-1 my-0.5"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                {(canUpdate || canDelete) && (
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-primary/10 transition-colors duration-150"><MoreHorizontal className="h-3.5 w-3.5" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-white/10 bg-card/90 backdrop-blur-xl">
+                          <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 px-2 py-1.5">Options Article</DropdownMenuLabel>
+                          {canUpdate && (
+                            <>
+                              <DropdownMenuItem onClick={() => openEditSheet(supply)} className="font-bold rounded-lg mx-1 my-0.5"><Settings className="mr-2 h-4 w-4 text-slate-400" /> Modifier Détails</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openAdjustDialog(supply)} className="font-bold text-amber-600 rounded-lg mx-1 my-0.5"><RefreshCw className="mr-2 h-4 w-4" /> Régulariser Stock</DropdownMenuItem>
+                            </>
+                          )}
+                          {canDelete && (
+                            <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive font-bold focus:bg-destructive/10 rounded-lg mx-1 my-0.5"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
+                          )}
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
             </div>
             <CardTitle className="text-sm font-black text-slate-900 tracking-tight leading-snug mt-1.5 line-clamp-2 min-h-[2.5rem]">{supply.name}</CardTitle>
         </CardHeader>
@@ -349,7 +373,7 @@ export default function SuppliesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const { toast } = useToast();
-  const { user, settings } = useAuth();
+  const { user, settings, hasPermission } = useAuth();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -768,8 +792,10 @@ export default function SuppliesPage() {
         openAdjustDialog={openAdjustDialog}
         setDeleteTarget={handleSetDeleteTarget}
         hasRecentActivity={recentActivityIds.has(item.id)}
+        canUpdate={hasPermission('supplies:update')}
+        canDelete={hasPermission('supplies:delete')}
     />
-  ), [openDistributeDialog, openRestockDialog, openEditSheet, openAdjustDialog, handleSetDeleteTarget, recentActivityIds]);
+  ), [openDistributeDialog, openRestockDialog, openEditSheet, openAdjustDialog, handleSetDeleteTarget, recentActivityIds, hasPermission]);
 
   const memoizedRenderSupplyCard = useCallback((supply: Supply) => (
     <SupplyCard 
@@ -780,8 +806,10 @@ export default function SuppliesPage() {
         openAdjustDialog={openAdjustDialog}
         setDeleteTarget={handleSetDeleteTarget}
         hasRecentActivity={recentActivityIds.has(supply.id)}
+        canUpdate={hasPermission('supplies:update')}
+        canDelete={hasPermission('supplies:delete')}
     />
-  ), [openDistributeDialog, openEditSheet, openAdjustDialog, handleSetDeleteTarget, recentActivityIds]);
+  ), [openDistributeDialog, openEditSheet, openAdjustDialog, handleSetDeleteTarget, recentActivityIds, hasPermission]);
 
   return (
     <PermissionGuard permission="page:supplies:view">
@@ -827,10 +855,12 @@ export default function SuppliesPage() {
               <Printer className="mr-2 h-4 w-4" /> Rapport
             </Button>
 
-            <Button onClick={() => setIsAddSheetOpen(true)} className="rounded-xl bg-slate-900 h-11 font-black px-6 shadow-xl hover:shadow-2xl transition-all">
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Nouvel Article
-            </Button>
+            {hasPermission('supplies:create') && (
+              <Button onClick={() => setIsAddSheetOpen(true)} className="rounded-xl bg-slate-900 h-11 font-black px-6 shadow-xl hover:shadow-2xl transition-all">
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  Nouvel Article
+              </Button>
+            )}
         </div>
       </div>
 
@@ -1099,7 +1129,7 @@ export default function SuppliesPage() {
   
               <InstitutionalFooter 
                 signatoryName="COULIBALY Hamadou"
-                signatoryTitle="Contrôleur Interne et Qualité, CNRCT"
+                signatoryTitle="Le Contrôleur Interne et Qualité, CNRCT"
               />
             </div>
         )}

@@ -1,19 +1,19 @@
 import { z } from "zod";
 
-export const employeeStatusSchema = z.enum(['Actif', 'En congé', 'Licencié', 'Remplacé', 'Retraité', 'Décédé']);
+export const employeeStatusSchema = z.string().optional().default('Actif');
 
 export const employeeSchema = z.object({
     id: z.string(),
-    matricule: z.string(),
-    name: z.string(),
-    lastName: z.string().optional(),
-    firstName: z.string().optional(),
-    poste: z.string(),
+    matricule: z.string().optional().default(''),
+    name: z.string().optional().default(''),
+    lastName: z.string().optional().default(''),
+    firstName: z.string().optional().default(''),
+    poste: z.string().optional().default(''),
     departmentId: z.string().optional(),
     directionId: z.string().optional(),
     serviceId: z.string().optional(),
     status: employeeStatusSchema,
-    photoUrl: z.string(),
+    photoUrl: z.string().optional().default(''),
     userId: z.string().optional(),
     
     // Replacement Info
@@ -21,23 +21,20 @@ export const employeeSchema = z.object({
     remplaceNom: z.string().optional(),
 
     // Personal Info
-    email: z.string().email("Email invalide").optional().or(z.literal('')),
+    email: z.string().optional().or(z.literal('')).default(''),
     mobile: z.string().optional(),
     Date_Naissance: z.string().optional(),
     Lieu_Naissance: z.string().optional(),
     sousPrefecture: z.string().optional(),
     village: z.string().optional(),
     situationMatrimoniale: z.string().optional(),
-    enfants: z.number().optional(),
-    sexe: z.enum(['Homme', 'Femme', 'Autre', 'M', 'F', 'H'])
-        .optional()
-        .transform((val) => {
-            // Normaliser les valeurs abrégées vers les valeurs complètes
-            if (val === 'M') return 'Homme';
-            if (val === 'H') return 'Homme';
-            if (val === 'F') return 'Femme';
-            return val;
-        }),
+    enfants: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    sexe: z.string().optional().transform((val) => {
+        if (!val) return undefined;
+        if (val === 'M' || val === 'H') return 'Homme';
+        if (val === 'F') return 'Femme';
+        return val;
+    }),
 
     // Professional Info
     dateEmbauche: z.string().optional(),
@@ -47,20 +44,20 @@ export const employeeSchema = z.object({
     Num_Decision: z.string().optional(),
 
     // Payroll Info
-    baseSalary: z.number().optional(),
-    payFrequency: z.enum(['Mensuel', 'Bi-hebdomadaire']).optional(),
+    baseSalary: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    payFrequency: z.string().optional(),
     nextPayDate: z.string().optional(),
-    Salaire_Brut: z.number().optional(),
-    Salaire_Net: z.number().optional(),
-    indemniteTransportImposable: z.number().optional(),
-    indemniteResponsabilite: z.number().optional(),
-    indemniteLogement: z.number().optional(),
-    indemniteSujetion: z.number().optional(),
-    indemniteCommunication: z.number().optional(),
-    indemniteRepresentation: z.number().optional(),
-    primeAnciennete: z.number().optional(),
-    transportNonImposable: z.number().optional(),
-    parts: z.number().optional(),
+    Salaire_Brut: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    Salaire_Net: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    indemniteTransportImposable: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    indemniteResponsabilite: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    indemniteLogement: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    indemniteSujetion: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    indemniteCommunication: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    indemniteRepresentation: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    primeAnciennete: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    transportNonImposable: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
+    parts: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
     categorie: z.string().optional(),
     cnpsEmploye: z.string().optional(),
     cnpsEmployeur: z.string().optional(),
@@ -73,11 +70,11 @@ export const employeeSchema = z.object({
     Cle_RIB: z.string().optional(),
 
     // Other fields
-    CNPS: z.boolean().optional(),
-    solde_conges: z.number().optional(),
+    CNPS: z.union([z.boolean(), z.string()]).optional().transform((val) => typeof val === 'string' ? val === 'true' || val === '1' || val === 'OUI' : val),
+    solde_conges: z.union([z.number(), z.string()]).optional().transform((val) => val === undefined || val === '' ? undefined : Number(val)),
     department: z.string().optional(), // Legacy fallback
     Departement: z.string().optional(),
     Region: z.string().optional(),
-});
+}).passthrough();
 
 export type EmployeeInput = z.infer<typeof employeeSchema>;

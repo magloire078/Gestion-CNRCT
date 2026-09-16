@@ -342,10 +342,12 @@ export default function ItAssetsPage() {
                   <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Ajouter un actif
-              </Button>
+              {hasPermission('it-assets:create') && (
+                <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Ajouter un actif
+                </Button>
+              )}
             </div>
           </div>
 
@@ -469,17 +471,21 @@ export default function ItAssetsPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem asChild>
-                                    <Link href={`/it-assets/${asset.tag}/edit`}>
-                                      <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                    </Link>
-                                  </DropdownMenuItem>
+                                  {hasPermission('it-assets:update') && (
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/it-assets/${asset.tag}/edit`}>
+                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                      </Link>
+                                    </DropdownMenuItem>
+                                  )}
                                   <DropdownMenuItem onSelect={() => handleShowLabelPreview(asset)}>
                                     <QrCode className="mr-2 h-4 w-4" /> Aperçu Étiquette
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                  </DropdownMenuItem>
+                                  {hasPermission('it-assets:delete') && (
+                                    <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
+                                      <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                    </DropdownMenuItem>
+                                  )}
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
@@ -523,17 +529,21 @@ export default function ItAssetsPage() {
                               <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>Actions</Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/it-assets/${asset.tag}/edit`}>
-                                  <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                </Link>
-                              </DropdownMenuItem>
+                              {hasPermission('it-assets:update') && (
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/it-assets/${asset.tag}/edit`}>
+                                    <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                  </Link>
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem onSelect={() => handleShowLabelPreview(asset)}>
                                 <QrCode className="mr-2 h-4 w-4" /> Aperçu Étiquette
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                              </DropdownMenuItem>
+                              {hasPermission('it-assets:delete') && (
+                                <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </CardFooter>

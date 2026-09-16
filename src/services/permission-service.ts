@@ -17,13 +17,17 @@ export type PermissionTargetType = 'role' | 'user';
  */
 export async function getResourcePermissions(id: string, type: PermissionTargetType = 'role'): Promise<ResourcePermissions> {
     if (!id) return {};
-    const col = type === 'role' ? rolesCollection : usersCollection;
-    const ref = doc(db, col, id);
-    const snap = await getDoc(ref);
-    
-    if (snap.exists()) {
-        const data = snap.data();
-        if (data.resourcePermissions) return data.resourcePermissions as ResourcePermissions;
+    try {
+        const col = type === 'role' ? rolesCollection : usersCollection;
+        const ref = doc(db, col, id);
+        const snap = await getDoc(ref);
+        
+        if (snap.exists()) {
+            const data = snap.data();
+            if (data?.resourcePermissions) return data.resourcePermissions as ResourcePermissions;
+        }
+    } catch {
+        // Fallback to role defaults if Firestore access is restricted or user is in transition
     }
     
     // Si c'est un utilisateur sans permissions propres, on retourne vide (l'héritage gérera la suite)

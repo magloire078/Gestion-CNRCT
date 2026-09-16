@@ -251,10 +251,12 @@ export default function LeavePage() {
               </Link>
             </Button>
           )}
-          <Button onClick={() => setIsAddSheetOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nouvelle demande
-          </Button>
+          {(hasPermission('leaves:create') || !!user?.employeeId) && (
+            <Button onClick={() => setIsAddSheetOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Nouvelle demande
+            </Button>
+          )}
         </div>
       </div>
 
@@ -402,7 +404,7 @@ export default function LeavePage() {
                                   <Trash2 className="h-4 w-4" />
                                   <span className="sr-only">Supprimer</span>
                                 </Button>
-                                {hasPermission('page:leaves:view') && (
+                                {canManageLeaves && (
                                   <>
                                     <Button
                                       variant="outline"
@@ -492,7 +494,7 @@ export default function LeavePage() {
                               <Trash2 className="h-4 w-4" />
                               <span className="sr-only">Supprimer</span>
                             </Button>
-                            {(leave.status === 'En attente' || canManageLeaves) && (
+                            {canManageLeaves && (
                               <>
                                 <Button
                                   variant="outline"

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { useFormat } from '@/hooks/use-format';
-import { PermissionGuard } from "@/components/auth/permission-guard";
 import {
     Card,
     CardHeader,
@@ -79,11 +78,7 @@ const QuickTile = ({ title, description, icon: Icon, href, onClick, color, permi
 };
 
 export default function IntranetPage() {
-    return (
-        <PermissionGuard permission="page:intranet:view">
-            <IntranetContent />
-        </PermissionGuard>
-    );
+    return <IntranetContent />;
 }
 
 function IntranetContent() {

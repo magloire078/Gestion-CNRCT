@@ -246,7 +246,6 @@ export function subscribeToDirectoireMembers(
             callback(employees);
         },
         (error: Error) => {
-            console.error("[EmployeeService] Error in subscribeToDirectoireMembers:", error);
             onError(error);
         }
     );
@@ -601,23 +600,8 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
                     .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime());
 
                 if (salaryEvents.length > 0) {
-                    // Get the refreshed employee data (after the updateDoc above)
-                    const refreshedEmployee = await getEmployee(employeeId);
-                    if (refreshedEmployee) {
-                        // Update the first event's previous_* fields with the new "origin" salary
-                        const firstEvent = salaryEvents[0];
-                        const firstEventRef = doc(db, `employees/${employeeId}/history`, firstEvent.id);
-                        const originUpdates: Record<string, any> = {};
-
-                        for (const field of salaryFields) {
-                            originUpdates[`details.previous_${field}`] = Number((refreshedEmployee as any)[field] || 0);
-                        }
-
-                        await updateDoc(firstEventRef, originUpdates);
-
-                        // Now recalculate the full chain
-                        await recalculateSalaryChain(employeeId);
-                    }
+                    // Recalculate the salary chain across all historical events
+                    await recalculateSalaryChain(employeeId);
                 }
             } catch (historyError) {
                 console.warn("[EmployeeService] Non-blocking salary history recalculation failed:", historyError);

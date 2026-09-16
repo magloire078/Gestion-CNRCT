@@ -101,7 +101,11 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
     const selected = columnOrder.filter((key) => selectedColumns[key]);
     if (selected.length > 0) {
       savePreferences(selected);
-      onPrint(selected, orientation);
+      React.startTransition(() => {
+        setTimeout(() => {
+          onPrint(selected, orientation);
+        }, 16);
+      });
     }
   };
 
@@ -109,11 +113,15 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
     const selected = columnOrder.filter((key) => selectedColumns[key]);
     if (selected.length > 0) {
       savePreferences(selected);
-      if (onExportPdf) {
-        onExportPdf(selected, orientation);
-      } else {
-        onPrint(selected, orientation);
-      }
+      React.startTransition(() => {
+        setTimeout(() => {
+          if (onExportPdf) {
+            onExportPdf(selected, orientation);
+          } else {
+            onPrint(selected, orientation);
+          }
+        }, 16);
+      });
     }
   };
 

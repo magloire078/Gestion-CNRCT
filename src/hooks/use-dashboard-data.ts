@@ -107,16 +107,19 @@ export function useDashboardData(user: User | null) {
                         activeEmployees: employees.filter((e: Employe) => e.status === 'Actif').length,
                         cnpsEmployees: 0 // Information restricted
                     }));
-                }, console.error));
+                }, () => {}));
             }
 
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
 
-            unsubscribers.push(subscribeToChiefs(chiefs => {
-                if (!isMounted) return;
-                setGlobalStats(prev => ({ ...prev, allChiefs: chiefs, chiefs: chiefs.length }));
-            }, console.error));
+            const canReadChiefs = hasPermission('chiefs', 'read');
+            if (canReadChiefs) {
+                unsubscribers.push(subscribeToChiefs(chiefs => {
+                    if (!isMounted) return;
+                    setGlobalStats(prev => ({ ...prev, allChiefs: chiefs, chiefs: chiefs.length }));
+                }, () => {}));
+            }
 
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
@@ -140,7 +143,7 @@ export function useDashboardData(user: User | null) {
                     ).length;
                     setPersonalStats(prev => ({ ...prev, upcomingMissions: upcoming }));
                 }
-            }, console.error));
+            }, () => {}));
 
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
@@ -148,7 +151,7 @@ export function useDashboardData(user: User | null) {
             unsubscribers.push(subscribeToDepartments(departments => {
                 if (!isMounted) return;
                 setGlobalStats(prev => ({ ...prev, departments }));
-            }, console.error));
+            }, () => {}));
 
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
@@ -158,21 +161,24 @@ export function useDashboardData(user: User | null) {
                 unsubscribers.push(subscribeToConflicts(conflicts => {
                     if (!isMounted) return;
                     setGlobalStats(prev => ({ ...prev, conflicts }));
-                }, console.error));
+                }, () => {}));
             }
 
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
 
-            unsubscribers.push(subscribeToVillages(villages => {
-                if (!isMounted) return;
-                const actualVillages = villages.filter(v => v.type !== 'campement');
-                setGlobalStats(prev => ({ 
-                    ...prev, 
-                    villages, 
-                    villagesCount: actualVillages.length 
-                }));
-            }, console.error));
+            const canReadVillages = hasPermission('villages', 'read');
+            if (canReadVillages) {
+                unsubscribers.push(subscribeToVillages(villages => {
+                    if (!isMounted) return;
+                    const actualVillages = villages.filter(v => v.type !== 'campement');
+                    setGlobalStats(prev => ({ 
+                        ...prev, 
+                        villages, 
+                        villagesCount: actualVillages.length 
+                    }));
+                }, () => {}));
+            }
 
             // --- Leaves Tracking (Global) ---
             const canReadGlobalLeaves = hasPermission('leaves', 'read');
@@ -181,7 +187,7 @@ export function useDashboardData(user: User | null) {
                 unsubscribers.push(subscribeToLeaves(allLeaves => {
                     if (!isMounted) return;
                     setAllRawLeaves(allLeaves);
-                }, console.error));
+                }, () => {}));
             }
 
             setLoadingSummary(false);

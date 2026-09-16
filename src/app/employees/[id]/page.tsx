@@ -304,8 +304,8 @@ export default function EmployeeDetailPage() {
 
     if (!employee) return null;
 
-    const canEdit = hasPermission('page:employees:edit');
-    const canDelete = hasPermission('page:employees:delete');
+    const canEdit = hasPermission('employees:update') || hasPermission('page:employees:edit');
+    const canDelete = hasPermission('employees:delete') || hasPermission('page:employees:delete');
     
     // Un employé ne peut voir la rémunération que s'il a les droits de modification de la paie, ou si c'est son propre profil
     const canManagePayroll = hasPermission('page:payroll:update') || hasPermission('page:payroll:create') || hasPermission('page:payroll:delete');
@@ -857,6 +857,8 @@ export default function EmployeeDetailPage() {
                                         setIsHistorySheetOpen(true);
                                     }}
                                     onDelete={handleDeleteEvent}
+                                    canEdit={canEdit}
+                                    canDelete={canDelete}
                                 />
                             )}
                         </CardContent>

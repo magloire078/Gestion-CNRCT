@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue, useTransition } from "react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
 import { format, parseISO, differenceInYears } from "date-fns";
@@ -41,9 +41,10 @@ import { EmployeeAnalytics } from "@/components/employees/employee-analytics";
 
 import { divisions } from "@/lib/ivory-coast-divisions";
 import dynamic from 'next/dynamic';
-import { useTransition } from "react";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { cn } from "@/lib/utils";
+import { Crown, Layers } from "lucide-react";
+import { getMemberChiefStatuses } from "@/lib/comites-regionaux-2026";
 
 const DirectoireMap = dynamic<{ members: any[]; className?: string }>(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
   ssr: false,
@@ -262,61 +263,73 @@ export default function EmployeesPage() {
     return (emp.Commune || '').trim();
   };
 
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const deferredVillageFilter = useDeferredValue(villageFilter);
+  const deferredRegionFilter = useDeferredValue(regionFilter);
+  const deferredGeoDepartementFilter = useDeferredValue(geoDepartementFilter);
+  const deferredSubPrefectureFilter = useDeferredValue(subPrefectureFilter);
+  const deferredDepartmentFilter = useDeferredValue(departmentFilter);
+  const deferredPersonnelTypeFilter = useDeferredValue(personnelTypeFilter);
+  const deferredStatusFilter = useDeferredValue(statusFilter);
+  const deferredCnpsFilter = useDeferredValue(cnpsFilter);
+  const deferredSexeFilter = useDeferredValue(sexeFilter);
+  const deferredMandatFilter = useDeferredValue(mandatFilter);
+
+  const availableRegions = useMemo(() => Object.keys(divisions).sort(), []);
+  const availableGeoDepartments = useMemo(() => {
+    if (regionFilter === 'all' || !divisions[regionFilter]) return [];
+    return Object.keys(divisions[regionFilter]).sort();
+  }, [regionFilter]);
+
   const enrichedEmployees = useMemo(() => {
     return employees.map(emp => {
-      const resolvedVillage = resolveEmployeeVillage(emp);
+      const resolvedVillage = resolveEmployeeVillage(emp) || emp.Village || emp.village || '';
+      const normFullName = ((emp.lastName || '') + ' ' + (emp.firstName || '')).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normName = (emp.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normMatricule = (emp.matricule || '').toLowerCase();
+      const normVillage = resolvedVillage.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normPoste = (emp.poste || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normRegion = (emp.Region || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normDept = (emp.Departement || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normSubPref = (emp.subPrefecture || emp.Commune || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
       return {
         ...emp,
         calculatedGroup: getEmployeeGroup(emp, departments),
-        resolvedVillage: resolvedVillage || (emp.Village || emp.village || '')
+        resolvedVillage,
+        _searchTokens: [normFullName, normName, normMatricule, normVillage, normPoste, normRegion, normDept, normSubPref],
+        _normVillage: normVillage
       };
     });
   }, [employees, departments, chiefLookup]);
 
   const filteredEmployees = useMemo(() => {
+    const searchTerms = deferredSearchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(' ').filter(Boolean);
+    const normalizedVillageFilter = deferredVillageFilter.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
     const filtered = enrichedEmployees.filter(employee => {
-      const searchTerms = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(' ').filter(Boolean);
-      
-      const normalizedFullName = ((employee.lastName || '') + ' ' + (employee.firstName || '')).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedName = (employee.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedMatricule = (employee.matricule || '').toLowerCase();
-      const normalizedVillage = (employee.resolvedVillage || employee.Village || employee.village || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedPoste = (employee.poste || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedRegion = (employee.Region || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedDept = (employee.Departement || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedSubPref = (employee.subPrefecture || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      
       const matchesSearchTerm = searchTerms.length === 0 || searchTerms.every(term => 
-        normalizedFullName.includes(term) || 
-        normalizedName.includes(term) ||
-        normalizedMatricule.includes(term) ||
-        normalizedVillage.includes(term) ||
-        normalizedPoste.includes(term) ||
-        normalizedRegion.includes(term) ||
-        normalizedDept.includes(term) ||
-        normalizedSubPref.includes(term)
+        employee._searchTokens.some(token => token.includes(term))
       );
-      const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
-      const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
-      const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
-      const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
+      const matchesDepartment = deferredDepartmentFilter === 'all' || employee.departmentId === deferredDepartmentFilter;
+      const matchesStatus = deferredStatusFilter === 'all' || employee.status === deferredStatusFilter;
+      const matchesCnps = deferredCnpsFilter === 'all' || employee.CNPS === deferredCnpsFilter;
+      const matchesSexe = deferredSexeFilter === 'all' || employee.sexe === deferredSexeFilter;
 
-      const matchesPersonnelType = personnelTypeFilter === 'all' || 
-                                   (personnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional' || employee.calculatedGroup === 'garde-republicaine') : personnelTypeFilter === employee.calculatedGroup);
+      const matchesPersonnelType = deferredPersonnelTypeFilter === 'all' || 
+                                   (deferredPersonnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional' || employee.calculatedGroup === 'garde-republicaine') : deferredPersonnelTypeFilter === employee.calculatedGroup);
 
-      const matchesRegion = !isGeoTab || regionFilter === 'all' || employee.Region === regionFilter;
-      const matchesGeoDept = !isGeoTab || geoDepartementFilter === 'all' || employee.Departement === geoDepartementFilter;
-      const matchesSubPref = !isGeoTab || subPrefectureFilter === 'all' || employee.subPrefecture === subPrefectureFilter || employee.Commune === subPrefectureFilter;
+      const matchesRegion = !isGeoTab || deferredRegionFilter === 'all' || employee.Region === deferredRegionFilter;
+      const matchesGeoDept = !isGeoTab || deferredGeoDepartementFilter === 'all' || employee.Departement === deferredGeoDepartementFilter;
+      const matchesSubPref = !isGeoTab || deferredSubPrefectureFilter === 'all' || employee.subPrefecture === deferredSubPrefectureFilter || employee.Commune === deferredSubPrefectureFilter;
       
-      const normalizedVillageFilter = villageFilter.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const normalizedEmpVillage = (employee.resolvedVillage || employee.Village || employee.village || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const matchesVillageFiltered = !isGeoTab || normalizedVillageFilter === "" || normalizedEmpVillage.includes(normalizedVillageFilter);
+      const matchesVillageFiltered = !isGeoTab || normalizedVillageFilter === "" || employee._normVillage.includes(normalizedVillageFilter);
 
       let matchesMandat = true;
       if (isGeoTab) {
-        if (mandatFilter === 'actuelle') {
+        if (deferredMandatFilter === 'actuelle') {
           matchesMandat = employee.estRenouvele !== false; // Active mandate if not explicitly archived
-        } else if (mandatFilter === 'precedente') {
+        } else if (deferredMandatFilter === 'precedente') {
           matchesMandat = employee.estRenouvele === false; // Previous mandate
         }
       }
@@ -350,18 +363,37 @@ export default function EmployeesPage() {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    if (currentPage > Math.ceil(sorted.length / itemsPerPage) && sorted.length > 0) {
-      setCurrentPage(1);
-    }
     return sorted;
-  }, [enrichedEmployees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, villageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter, sortBy, sortOrder, mandatFilter]);
+  }, [enrichedEmployees, deferredSearchTerm, deferredDepartmentFilter, deferredStatusFilter, deferredCnpsFilter, deferredSexeFilter, deferredPersonnelTypeFilter, deferredVillageFilter, isGeoTab, deferredRegionFilter, deferredGeoDepartementFilter, deferredSubPrefectureFilter, sortBy, sortOrder, deferredMandatFilter]);
+
+  const chiefMetrics = useMemo(() => {
+    let canton = 0;
+    let tribu = 0;
+    let village = 0;
+    let multi = 0;
+    let roi = 0;
+
+    const list = isGeoTab ? filteredEmployees : employees;
+    list.forEach(emp => {
+      const st = getMemberChiefStatuses(emp);
+      if (st.includes("Chef de Canton")) canton++;
+      if (st.includes("Chef de Tribu")) tribu++;
+      if (st.includes("Chef de Village")) village++;
+      if (st.includes("Roi") || st.includes("Chef de Province")) roi++;
+      if (st.length > 1) multi++;
+    });
+
+    return { canton, tribu, village, multi, roi };
+  }, [filteredEmployees, employees, isGeoTab]);
+
+  // Adjust page safely
+  const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / itemsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const paginatedEmployees = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
+    const startIndex = (safeCurrentPage - 1) * itemsPerPage;
     return filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredEmployees, currentPage, itemsPerPage]);
-
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  }, [filteredEmployees, safeCurrentPage, itemsPerPage]);
 
   const downloadFile = (content: string, fileName: string, contentType: string) => {
     const blob = new Blob([content], { type: contentType });
@@ -471,6 +503,7 @@ export default function EmployeesPage() {
 
 
   const handlePrint = async (selectedColumns: ColumnKeys[], orientation: 'portrait' | 'landscape') => {
+    setIsPrintDialogOpen(false);
     setColumnsToPrint(selectedColumns);
     setPrintOrientation(orientation);
     const now = new Date();
@@ -485,8 +518,9 @@ export default function EmployeesPage() {
       }
     }
 
-    setIsPrintDialogOpen(false);
-    setIsPrinting(true);
+    startTransition(() => {
+      setIsPrinting(true);
+    });
   };
 
   const getAvatarBgClass = (sexe?: 'Homme' | 'Femme' | 'Autre') => {
@@ -605,41 +639,75 @@ export default function EmployeesPage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              <Button 
-                onClick={() => setTimeout(() => setIsAddSheetOpen(true), 50)} 
-                className="h-11 px-6 rounded-lg bg-slate-900 shadow-xl shadow-slate-900/10 font-black uppercase tracking-widest text-sm md:text-xs hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
-              >
-                <PlusCircle className="mr-2 h-4 w-4 text-emerald-400" />
-                Intégrer Agent
-              </Button>
+              {hasPermission('employees:create') && (
+                <Button 
+                  onClick={() => setTimeout(() => setIsAddSheetOpen(true), 50)} 
+                  className="h-11 px-6 rounded-lg bg-slate-900 shadow-xl shadow-slate-900/10 font-black uppercase tracking-widest text-sm md:text-xs hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
+                >
+                  <PlusCircle className="mr-2 h-4 w-4 text-emerald-400" />
+                  Intégrer Agent
+                </Button>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {[
-              { label: "Effectif Total", value: employees.length, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
-              { label: "Agents Actifs", value: employees.filter(e => e.status === 'Actif').length, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
-              { label: "Nouveaux / 30j", value: employees.filter(e => e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
-              { label: "Parité H/F", value: `${Math.round((employees.filter(e => e.sexe === 'Homme').length / employees.length) * 100) || 0}%`, sub: "Ratio Hommes / Femmes", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
-            ].map((stat, i) => (
-              <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
-                <CardContent className="p-6 relative">
-                  <div className={cn("absolute -top-4 -right-4 h-16 w-16 rounded-full opacity-5 transition-transform group-hover:scale-150 duration-700", stat.bg)} />
-                  <div className="flex flex-col gap-3">
-                    <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shadow-inner border border-white/50", stat.bg)}>
-                      <stat.icon className={cn("h-5 w-5", stat.color)} />
-                    </div>
-                    <div>
-                      <p className="text-sm md:text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">{stat.label}</p>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
-                        <span className="text-sm md:text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.sub}</span>
+          {/* Customary Chiefs KPIs for Regional / Geo tabs vs Standard HR KPIs */}
+          <div className={cn(
+            "grid gap-4 mb-6",
+            isGeoTab ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+          )}>
+            {isGeoTab ? (
+              [
+                { label: "Effectif Total", value: filteredEmployees.length, sub: "Membres du périmètre", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
+                { label: "Chefs de Canton", value: chiefMetrics.canton, sub: "Autorités cantonales", icon: Crown, color: "text-amber-600", bg: "bg-amber-50/50" },
+                { label: "Chefs de Tribu", value: chiefMetrics.tribu, sub: "Autorités de tribu", icon: Shield, color: "text-blue-600", bg: "bg-blue-50/50" },
+                { label: "Chefs de Village", value: chiefMetrics.village, sub: "Autorités villageoises", icon: Building, color: "text-emerald-600", bg: "bg-emerald-50/50" },
+                { label: "Plusieurs Casquettes", value: chiefMetrics.multi, sub: "Cumul de mandats/titres", icon: Layers, color: "text-purple-600", bg: "bg-purple-50/50" },
+              ].map((stat, i) => (
+                <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
+                  <CardContent className="p-5 relative">
+                    <div className={cn("absolute -top-4 -right-4 h-16 w-16 rounded-full opacity-5 transition-transform group-hover:scale-150 duration-700", stat.bg)} />
+                    <div className="flex flex-col gap-2.5">
+                      <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center shadow-inner border border-white/50", stat.bg)}>
+                        <stat.icon className={cn("h-4 w-4", stat.color)} />
+                      </div>
+                      <div>
+                        <p className="text-[11px] md:text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 mb-0.5">{stat.label}</p>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{stat.sub}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              [
+                { label: "Effectif Total", value: employees.length, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
+                { label: "Agents Actifs", value: employees.filter(e => e.status === 'Actif').length, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
+                { label: "Nouveaux / 30j", value: employees.filter(e => e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
+                { label: "Parité H/F", value: `${Math.round((employees.filter(e => e.sexe === 'Homme').length / (employees.length || 1)) * 100) || 0}%`, sub: "Ratio Hommes / Femmes", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
+              ].map((stat, i) => (
+                <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
+                  <CardContent className="p-6 relative">
+                    <div className={cn("absolute -top-4 -right-4 h-16 w-16 rounded-full opacity-5 transition-transform group-hover:scale-150 duration-700", stat.bg)} />
+                    <div className="flex flex-col gap-3">
+                      <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shadow-inner border border-white/50", stat.bg)}>
+                        <stat.icon className={cn("h-5 w-5", stat.color)} />
+                      </div>
+                      <div>
+                        <p className="text-sm md:text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">{stat.label}</p>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
+                          <span className="text-sm md:text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.sub}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
@@ -793,7 +861,7 @@ export default function EmployeesPage() {
                             </SelectTrigger>
                             <SelectContent className="rounded-lg border-slate-100 shadow-xl max-h-[300px]">
                               <SelectItem value="all" className="font-medium">Toutes les régions</SelectItem>
-                              {Object.keys(divisions).sort().map(reg => (
+                              {availableRegions.map(reg => (
                                 <SelectItem key={reg} value={reg} className="font-medium">{reg}</SelectItem>
                               ))}
                             </SelectContent>
@@ -813,7 +881,7 @@ export default function EmployeesPage() {
                             </SelectTrigger>
                             <SelectContent className="rounded-lg border-slate-100 shadow-xl max-h-[300px]">
                               <SelectItem value="all" className="font-medium">Tous les départements</SelectItem>
-                              {Object.keys(divisions[regionFilter] || {}).sort().map(dep => (
+                              {availableGeoDepartments.map(dep => (
                                 <SelectItem key={dep} value={dep} className="font-medium">{dep}</SelectItem>
                               ))}
                             </SelectContent>
@@ -929,6 +997,14 @@ export default function EmployeesPage() {
                                   <div className="flex flex-col">
                                     <span className="font-black text-slate-900 uppercase tracking-tight text-base md:text-sm group-hover:text-blue-600 transition-colors flex items-center gap-2">
                                       <span>{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</span>
+                                      {employee.sexe && (
+                                        <span className={cn(
+                                          "text-[9px] font-black uppercase px-1.5 py-0.2 rounded border shadow-2xs",
+                                          employee.sexe === 'Femme' ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-blue-50 text-blue-700 border-blue-200"
+                                        )}>
+                                          {employee.sexe === 'Femme' ? 'F' : 'H'}
+                                        </span>
+                                      )}
                                       {employee.calculatedGroup === 'garde-republicaine' && employee.Date_Depart && (
                                         (() => {
                                           const now = new Date();
@@ -963,7 +1039,16 @@ export default function EmployeesPage() {
                                 
                                 {isGeoTab ? (
                                   <>
-                                    <TableCell className="text-sm md:text-xs truncate max-w-[150px] font-bold text-slate-700">{employee.poste}</TableCell>
+                                    <TableCell className="text-sm md:text-xs max-w-[220px]">
+                                      <div className="font-bold text-slate-800 truncate">{employee.poste}</div>
+                                      <div className="flex flex-wrap gap-1 mt-1">
+                                        {getMemberChiefStatuses(employee).map(s => (
+                                          <span key={s} className="px-1.5 py-0.5 bg-amber-50 border border-amber-200/80 text-amber-800 rounded font-black text-[9px] uppercase tracking-wider whitespace-nowrap">
+                                            {s}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </TableCell>
                                     <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region || '-'}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement || '-'}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-700">{employee.resolvedVillage || employee.Village || employee.village || '-'}</TableCell>
@@ -997,18 +1082,22 @@ export default function EmployeesPage() {
                                       >
                                         <Eye className="mr-2 h-4 w-4 text-blue-500" /> Profil Complet
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem 
-                                        onSelect={() => router.push(`/employees/${employee.id}/edit`)} 
-                                        className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer"
-                                      >
-                                        <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier Données
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem 
-                                        onSelect={() => setTimeout(() => setDeleteTarget(employee), 50)} 
-                                        className="rounded-xl text-rose-600 font-bold py-2.5 px-3 focus:bg-rose-50 focus:text-rose-600 cursor-pointer"
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" /> Radiation Agent
-                                      </DropdownMenuItem>
+                                      {hasPermission('employees:update') && (
+                                        <DropdownMenuItem 
+                                          onSelect={() => router.push(`/employees/${employee.id}/edit`)} 
+                                          className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer"
+                                        >
+                                          <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier Données
+                                        </DropdownMenuItem>
+                                      )}
+                                      {hasPermission('employees:delete') && (
+                                        <DropdownMenuItem 
+                                          onSelect={() => setTimeout(() => setDeleteTarget(employee), 50)} 
+                                          className="rounded-xl text-rose-600 font-bold py-2.5 px-3 focus:bg-rose-50 focus:text-rose-600 cursor-pointer"
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" /> Radiation Agent
+                                        </DropdownMenuItem>
+                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </TableCell>

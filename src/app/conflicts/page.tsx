@@ -133,9 +133,9 @@ export default function ConflictsPage() {
     const [isPending, startTransition] = useTransition();
     const [activeTab, setActiveTab] = useState("list");
 
-    const canDelete = hasPermission('page:admin:view') || hasPermission('feature:conflicts:delete');
-    const canEdit = hasPermission('page:conflicts:view') || hasPermission('feature:conflicts:edit');
-    const canAdd = hasPermission('page:conflicts:view') || true; // Everyone can report (standard MGP)
+    const canDelete = hasPermission('conflicts:delete') || hasPermission('feature:conflicts:delete');
+    const canEdit = hasPermission('conflicts:update') || hasPermission('feature:conflicts:edit');
+    const canAdd = hasPermission('conflicts:create') || hasPermission('page:conflicts:create');
 
     const loading = conflicts === null || chiefs === null || heritageItems === null;
 
@@ -514,9 +514,11 @@ export default function ConflictsPage() {
                                         </Link>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                                <Button size="sm" onClick={() => setIsAddSheetOpen(true)} className="h-9 rounded-lg font-bold shadow-md w-full sm:w-auto">
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Nouveau Dossier
-                                </Button>
+                                {canAdd && (
+                                    <Button size="sm" onClick={() => setIsAddSheetOpen(true)} className="h-9 rounded-lg font-bold shadow-md w-full sm:w-auto">
+                                        <PlusCircle className="mr-2 h-4 w-4" /> Nouveau Dossier
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </CardHeader>

@@ -52,7 +52,7 @@ import { Printer, Download } from "lucide-react";
 import { exportToExcel } from "@/lib/export-utils";
 import { cn } from "@/lib/utils";
 import type { OrganizationSettings } from "@/lib/data";
-
+import { useAuth } from "@/hooks/use-auth";
 
 const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outline" | "destructive"> = {
   'Disponible': 'default',
@@ -63,6 +63,7 @@ const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outli
 };
 
 export default function FleetPage() {
+  const { hasPermission } = useAuth();
   const [vehicles, setVehicles] = useState<Fleet[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
@@ -212,13 +213,15 @@ export default function FleetPage() {
               <Download className="mr-3 h-5 w-5 text-emerald-500" />
               Exporter Excel
             </Button>
-            <Button
-              onClick={() => setIsAddSheetOpen(true)}
-              className="h-14 px-5 rounded-[1.5rem] bg-slate-900 shadow-2xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10 w-full sm:w-auto justify-center"
-            >
-              <PlusCircle className="mr-3 h-5 w-5 text-emerald-400" />
-              Intégrer Véhicule
-            </Button>
+            {hasPermission('fleet:create') && (
+              <Button
+                onClick={() => setIsAddSheetOpen(true)}
+                className="h-14 px-5 rounded-[1.5rem] bg-slate-900 shadow-2xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10 w-full sm:w-auto justify-center"
+              >
+                <PlusCircle className="mr-3 h-5 w-5 text-emerald-400" />
+                Intégrer Véhicule
+              </Button>
+            )}
           </div>
         </div>
         <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl px-2">
@@ -337,14 +340,18 @@ export default function FleetPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
                               <DropdownMenuLabel className="px-3 py-2 font-black uppercase text-[9px] tracking-[0.2em] text-slate-400">Actions Flotte</DropdownMenuLabel>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/fleet/${vehicle.plate}/edit`} className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer flex items-center">
-                                  <Pencil className="mr-2 h-4 w-4 text-slate-600" /> Modifier les données
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setDeleteTarget(vehicle)} className="rounded-xl text-rose-600 font-bold py-2.5 px-3 focus:bg-rose-50 focus:text-rose-600 cursor-pointer flex items-center">
-                                <Trash2 className="mr-2 h-4 w-4" /> Retrait Définitif
-                              </DropdownMenuItem>
+                              {hasPermission('fleet:update') && (
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/fleet/${vehicle.plate}/edit`} className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer flex items-center">
+                                    <Pencil className="mr-2 h-4 w-4 text-slate-600" /> Modifier les données
+                                  </Link>
+                                </DropdownMenuItem>
+                              )}
+                              {hasPermission('fleet:delete') && (
+                                <DropdownMenuItem onClick={() => setDeleteTarget(vehicle)} className="rounded-xl text-rose-600 font-bold py-2.5 px-3 focus:bg-rose-50 focus:text-rose-600 cursor-pointer flex items-center">
+                                  <Trash2 className="mr-2 h-4 w-4" /> Retrait Définitif
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -391,21 +398,27 @@ export default function FleetPage() {
                       </div>
                     </CardContent>
                     <CardFooter className="flex justify-end p-4 pt-0 border-t border-slate-100">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="font-black uppercase text-[10px] tracking-widest text-slate-400">Actions</Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-xl shadow-xl p-2">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/fleet/${vehicle.plate}/edit`} className="font-bold rounded-lg px-3 py-2 flex items-center">
-                              <Pencil className="mr-2 h-4 w-4" /> Modifier
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setDeleteTarget(vehicle)} className="text-rose-600 font-bold rounded-lg px-3 py-2 flex items-center">
-                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {(hasPermission('fleet:update') || hasPermission('fleet:delete')) && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="font-black uppercase text-[10px] tracking-widest text-slate-400">Actions</Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="rounded-xl shadow-xl p-2">
+                            {hasPermission('fleet:update') && (
+                              <DropdownMenuItem asChild>
+                                <Link href={`/fleet/${vehicle.plate}/edit`} className="font-bold rounded-lg px-3 py-2 flex items-center">
+                                  <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                </Link>
+                              </DropdownMenuItem>
+                            )}
+                            {hasPermission('fleet:delete') && (
+                              <DropdownMenuItem onClick={() => setDeleteTarget(vehicle)} className="text-rose-600 font-bold rounded-lg px-3 py-2 flex items-center">
+                                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </CardFooter>
                   </Card>
                 ))

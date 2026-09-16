@@ -85,8 +85,8 @@ function OrganizationSettingsContent() {
                 
                 setSignatoryName(loadedSettings.globalSignatoryName || "NANAN AHOUA KOUASSI III");
                 setInitialSignatoryName(loadedSettings.globalSignatoryName || "NANAN AHOUA KOUASSI III");
-                setSignatoryTitle(loadedSettings.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT");
-                setInitialSignatoryTitle(loadedSettings.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT");
+                setSignatoryTitle(loadedSettings.globalSignatoryTitle || "Le Directeur de l'Observatoire National, CNRCT");
+                setInitialSignatoryTitle(loadedSettings.globalSignatoryTitle || "Le Directeur de l'Observatoire National, CNRCT");
                 setShowRegional(loadedSettings.showRegionalSignatories !== undefined ? loadedSettings.showRegionalSignatories : true);
                 setInitialShowRegional(loadedSettings.showRegionalSignatories !== undefined ? loadedSettings.showRegionalSignatories : true);
                 setWhiteLabelMode(loadedSettings.whiteLabelMode === true);
@@ -262,7 +262,7 @@ function OrganizationSettingsContent() {
                     </div>
                     <div className="grid w-full gap-1.5">
                         <Label htmlFor="sig-title">Titre du Signataire Principal</Label>
-                        <Input id="sig-title" value={signatoryTitle} onChange={e => setSignatoryTitle(e.target.value)} placeholder="ex: Directeur de l'Observatoire National" />
+                        <Input id="sig-title" value={signatoryTitle} onChange={e => setSignatoryTitle(e.target.value)} placeholder="ex: Le Directeur de l'Observatoire National" />
                     </div>
                     <div className="flex items-center space-x-2 pt-2">
                         <Checkbox id="show-regional" checked={showRegional} onCheckedChange={(checked) => setShowRegional(checked as boolean)} />

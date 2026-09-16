@@ -32,7 +32,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import type { Mission } from "@/lib/data";
 import { getLatestMissionNumber } from "@/services/mission-service";
-import { cn } from "@/lib/utils";
+import { cn, formatSignataireTitle } from "@/lib/utils";
 import { CalendarIcon, Loader2, LogOut, PlusCircle, MapPin, FileText, AlertCircle, Bookmark, UserCheck } from "lucide-react";
 import type { Employe } from "@/lib/data";
 import { subscribeToEmployees } from "@/services/employee-service";
@@ -108,7 +108,7 @@ export function AddMissionSheet({
       if (emp) {
           const label = formatEmployeeName(emp.lastName, emp.firstName, emp.name);
           setSignataireName(label);
-          setSignataireTitle(emp.poste || "");
+          setSignataireTitle(formatSignataireTitle(emp.poste || "Secrétaire Général"));
       }
   };
 

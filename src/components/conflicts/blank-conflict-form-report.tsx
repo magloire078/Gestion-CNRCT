@@ -271,7 +271,7 @@ export function BlankConflictFormReport({
                     <div className="mt-4">
                         <InstitutionalFooter 
                             signatoryName="SECRÉTARIAT GÉNÉRAL"
-                            signatoryTitle="Directeur DMGC, CNRCT"
+                            signatoryTitle="Le Directeur DMGC, CNRCT"
                             showCertification={false}
                             showSignatures={false}
                         />

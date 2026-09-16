@@ -287,7 +287,7 @@ export function ChiefsOfficialReport({
 
                     <InstitutionalFooter 
                         signatoryName={organizationSettings?.globalSignatoryName || "NANAN AHOUA KOUASSI III"}
-                        signatoryTitle={organizationSettings?.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT"}
+                        signatoryTitle={organizationSettings?.globalSignatoryTitle || "Le Directeur de l'Observatoire National, CNRCT"}
                         showCertification={true}
                     />
                 </div>

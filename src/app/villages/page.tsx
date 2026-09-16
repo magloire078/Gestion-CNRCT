@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo, useTransition, forwardRef } from "react";
+import { useState, useEffect, useMemo, useDeferredValue, useTransition, forwardRef } from "react";
 import Fuse from "fuse.js";
 import { TableVirtuoso, VirtuosoGrid } from "react-virtuoso";
 import { 
@@ -96,6 +96,7 @@ export default function VillagesPage() {
     
     // UI State
     const [searchQuery, setSearchQuery] = useState("");
+    const deferredSearchQuery = useDeferredValue(searchQuery);
     const [selectedRegion, setSelectedRegion] = useState<string>("all");
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
     const [selectedCommune, setSelectedCommune] = useState<string>("all");
@@ -264,9 +265,10 @@ export default function VillagesPage() {
     const filteredVillages = useMemo(() => {
         let baseEntries = villageEntries;
 
-        // 1. Search Filter (Fuzzy)
-        if (searchQuery.trim() !== '') {
-            const results = fuseInstance.search(searchQuery);
+        // 1. Search Filter (Fuzzy with deferred query)
+        const q = deferredSearchQuery.trim();
+        if (q !== '') {
+            const results = fuseInstance.search(q);
             baseEntries = results.map(result => result.item);
         }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, forwardRef } from "react";
+import { useState, useEffect, useMemo, useDeferredValue, forwardRef } from "react";
 import Fuse from "fuse.js";
 import { TableVirtuoso, VirtuosoGrid } from "react-virtuoso";
 import { 
@@ -83,6 +83,7 @@ function ChiefsPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const deferredSearchTerm = useDeferredValue(searchTerm);
   const { toast } = useToast();
   const router = useRouter();
   const { hasPermission } = useAuth();
@@ -207,9 +208,10 @@ function ChiefsPageContent() {
   const filteredChiefs = useMemo(() => {
     let baseChiefs = chiefs;
 
-    // 1. Search Filter (Fuzzy)
-    if (searchTerm.trim() !== '') {
-      const results = fuseInstance.search(searchTerm);
+    // 1. Search Filter (Fuzzy with deferred search term for 0ms input lag)
+    const term = deferredSearchTerm.trim();
+    if (term !== '') {
+      const results = fuseInstance.search(term);
       baseChiefs = results.map(result => result.item);
     }
 
@@ -236,7 +238,7 @@ function ChiefsPageContent() {
     });
 
     // Default sorting: Alphabetical by Region -> Department -> SubPrefecture -> Village -> Name
-    if (searchTerm.trim() === '') {
+    if (term === '') {
         baseChiefs.sort((a, b) => {
             const regA = (a.region || '').toLowerCase();
             const regB = (b.region || '').toLowerCase();
@@ -261,7 +263,7 @@ function ChiefsPageContent() {
     }
 
     return baseChiefs;
-  }, [chiefs, fuseInstance, searchTerm, selectedRole, selectedRegion, selectedDepartment, selectedSubPrefecture, selectedCanton, selectedTribu, selectedStatus, selectedAffiliation, selectedKingdom]);
+  }, [chiefs, fuseInstance, deferredSearchTerm, selectedRole, selectedRegion, selectedDepartment, selectedSubPrefecture, selectedCanton, selectedTribu, selectedStatus, selectedAffiliation, selectedKingdom]);
 
   const departments = useMemo(() => {
       if (selectedRegion === 'all' || !selectedRegion || !divisions[selectedRegion]) return [];
@@ -356,10 +358,12 @@ function ChiefsPageContent() {
             <Printer className="mr-2 h-4 w-4" />
             Imprimer PDF
           </Button>
-          <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 rounded-lg h-10 px-6 font-bold shadow-xl shadow-slate-200">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Ajouter un Chef
-          </Button>
+          {hasPermission('chiefs:create') && (
+            <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 rounded-lg h-10 px-6 font-bold shadow-xl shadow-slate-200">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Ajouter un Chef
+            </Button>
+          )}
         </div>
       </div>
 
@@ -604,8 +608,8 @@ function ChiefsPageContent() {
                       key={chief.id} 
                       chief={chief} 
                       onClick={() => handleShowQuickView(chief)} 
-                      onEdit={(e) => { e.stopPropagation(); router.push(`/chiefs/${chief.id}/edit`); }}
-                      onLink={(e) => { e.stopPropagation(); setLinkChief(chief); }}
+                      onEdit={hasPermission('chiefs:update') ? (e) => { e.stopPropagation(); router.push(`/chiefs/${chief.id}/edit`); } : undefined}
+                      onLink={hasPermission('chiefs:update') ? (e) => { e.stopPropagation(); setLinkChief(chief); } : undefined}
                     />
                 )}
               />
@@ -689,16 +693,22 @@ function ChiefsPageContent() {
                                         >
                                             <Eye className="mr-2 h-4 w-4 text-blue-500" /> Dossier Individuel
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem 
-                                            onSelect={() => router.push(`/chiefs/${chief.id}/edit`)} 
-                                            className="rounded-lg m-1 cursor-pointer flex items-center"
-                                        >
-                                            <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier la Fiche
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="rounded-lg m-1 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
-                                            <Trash2 className="mr-2 h-4 w-4" /> Retirer du Registre
-                                        </DropdownMenuItem>
+                                        {hasPermission('chiefs:update') && (
+                                            <DropdownMenuItem 
+                                                onSelect={() => router.push(`/chiefs/${chief.id}/edit`)} 
+                                                className="rounded-lg m-1 cursor-pointer flex items-center"
+                                            >
+                                                <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier la Fiche
+                                            </DropdownMenuItem>
+                                        )}
+                                        {hasPermission('chiefs:delete') && (
+                                            <>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="rounded-lg m-1 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Retirer du Registre
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </td>

@@ -128,7 +128,7 @@ export function PressConflictPrintReport({
         <div className="mt-8 pt-4">
           <InstitutionalFooter 
             signatoryName={organizationSettings?.globalSignatoryName}
-            signatoryTitle={organizationSettings?.globalSignatoryTitle || "Contrôleur Interne et Qualité, CNRCT"}
+            signatoryTitle={organizationSettings?.globalSignatoryTitle || "Le Contrôleur Interne et Qualité, CNRCT"}
           />
         </div>
       </div>

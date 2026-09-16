@@ -35,10 +35,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
-import { getOfficialRegion, getOfficialDepartment } from "@/lib/normalization-utils";
+import { getOfficialRegion, getOfficialDepartment, getRegionFromDepartment } from "@/lib/normalization-utils";
+import { ALL_CHIEF_STATUSES, getMemberChiefStatuses, type ChiefStatusType } from "@/lib/comites-regionaux-2026";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VillageCombobox } from "@/components/chiefs/village-combobox";
+import { Badge } from "@/components/ui/badge";
+import { Crown, Layers } from "lucide-react";
 
 interface EditEmployeeFormProps {
   employee: Employe;
@@ -48,7 +51,28 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<Partial<Employe>>(employee);
+  const [formData, setFormData] = useState<Partial<Employe>>(() => {
+    const rawReg = employee.Region || (employee as any).region || '';
+    const normReg = getOfficialRegion(rawReg);
+    const reg = (normReg && (IVORIAN_REGIONS as readonly string[]).includes(normReg))
+      ? normReg
+      : (getRegionFromDepartment(employee.Departement || (employee as any).departement || employee.department || '') || rawReg);
+
+    const rawDept = employee.Departement || (employee as any).departement || '';
+    const dept = reg ? getOfficialDepartment(reg, rawDept) : rawDept;
+
+    const initialStatuts = (employee.statutChef && employee.statutChef.length > 0)
+      ? employee.statutChef
+      : getMemberChiefStatuses(employee);
+
+    return {
+      ...employee,
+      Region: reg,
+      Departement: dept,
+      sexe: employee.sexe || 'Homme',
+      statutChef: initialStatuts,
+    };
+  });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState(employee.photoUrl || `https://placehold.co/100x100.png`);
   
@@ -422,6 +446,51 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           subPrefecture={formData.subPrefecture}
                           disabled={!formData.subPrefecture}
                       />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* --- STATUTS COUTUMIERS & CASQUETTES DE CHEF --- */}
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50 flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Crown className="h-4 w-4 text-amber-500" />
+                      <CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Statuts Coutumiers & Titres de Chef</CardTitle>
+                    </div>
+                    {Array.isArray(formData.statutChef) && formData.statutChef.length > 1 && (
+                      <Badge className="bg-amber-500 text-white font-black text-[9px] uppercase tracking-widest px-2.5 py-1">
+                        <Layers className="h-3 w-3 mr-1" />
+                        Plusieurs Casquettes ({formData.statutChef.length})
+                      </Badge>
+                    )}
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                      Sélectionnez les statuts et casquettes coutumières applicables à ce membre (possibilité de cumul de mandats/titres) :
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {ALL_CHIEF_STATUSES.map(status => {
+                        const isSelected = Array.isArray(formData.statutChef) && formData.statutChef.includes(status);
+                        return (
+                          <div
+                            key={status}
+                            onClick={() => {
+                              const current = Array.isArray(formData.statutChef) ? [...formData.statutChef] : [];
+                              const next = isSelected ? current.filter(s => s !== status) : [...current, status];
+                              setFormData(prev => ({ ...prev, statutChef: next }));
+                            }}
+                            className={cn(
+                              "flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer select-none",
+                              isSelected 
+                                ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10 scale-[1.01]" 
+                                : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                            )}
+                          >
+                            <Checkbox checked={isSelected} className={cn("rounded-md pointer-events-none", isSelected ? "border-white data-[state=checked]:bg-white data-[state=checked]:text-slate-900" : "")} />
+                            <span className="text-xs font-black uppercase tracking-tight">{status}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>

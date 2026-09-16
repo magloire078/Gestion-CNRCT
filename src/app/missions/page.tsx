@@ -27,12 +27,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Mission, OrganizationSettings } from "@/lib/data";
+import type { Mission, OrganizationSettings, MissionParticipant } from "@/lib/data";
 import { AddMissionSheet } from "@/components/missions/add-mission-sheet";
 import { Input } from "@/components/ui/input";
 import { subscribeToMissions, addMission, deleteMission } from "@/services/mission-service";
 import { getOrganizationSettings } from "@/services/organization-service";
-import { CollectiveMissionOrderPrint, GroupedIndividualMissionsPrint, GroupMissionRequestPrint } from "@/components/missions/mission-print-templates";
+import { CollectiveMissionOrderPrint, GroupedIndividualMissionsPrint, GroupMissionRequestPrint, IndividualMissionSlipPrint } from "@/components/missions/mission-print-templates";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -98,6 +98,7 @@ export default function MissionsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { user, hasPermission } = useAuth();
+  const { can } = usePermissions();
   const [deleteTarget, setDeleteTarget] = useState<Mission | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -108,6 +109,8 @@ export default function MissionsPage() {
   const [showCollectivePrint, setShowCollectivePrint] = useState(false);
   const [showGroupedIndividualPrint, setShowGroupedIndividualPrint] = useState(false);
   const [showGroupPrint, setShowGroupPrint] = useState(false);
+  const [showIndividualPrint, setShowIndividualPrint] = useState(false);
+  const [selectedIndividualParticipant, setSelectedIndividualParticipant] = useState<MissionParticipant | null>(null);
 
   const formatDateRange = (start: string, end: string) => {
     try {
@@ -132,10 +135,15 @@ export default function MissionsPage() {
     }
   };
 
+  const canCreate = can('missions', 'create') || hasPermission('missions:create') || hasPermission('page:missions:create') || hasPermission('page:missions:add') || hasPermission('page:admin:view');
+  const canUpdate = can('missions', 'update') || hasPermission('missions:update') || hasPermission('page:missions:update') || hasPermission('page:missions:edit') || hasPermission('page:admin:view');
+  const canDelete = can('missions', 'delete') || hasPermission('missions:delete') || hasPermission('page:missions:delete') || hasPermission('page:admin:view');
+  const canManageAllMissions = canCreate || canUpdate || canDelete || hasPermission('page:admin:view') || ['administrateur', 'super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'manager-rh', 'chef-de-service'].includes(user?.roleId || '');
+
   useEffect(() => {
     getOrganizationSettings().then(setLogos).catch(console.error);
 
-    const isAdmin = hasPermission('page:missions:view');
+    const isAdmin = canManageAllMissions;
     const unsubscribe = subscribeToMissions(
       (fetchedMissions) => {
         setMissions(fetchedMissions);
@@ -152,7 +160,7 @@ export default function MissionsPage() {
       isAdmin
     );
     return () => unsubscribe();
-  }, [user, hasPermission]);
+  }, [user, hasPermission, can]);
 
   const handleAddMission = async (newMissionData: Omit<Mission, "id">) => {
     try {
@@ -188,16 +196,14 @@ export default function MissionsPage() {
     }
   };
 
-  const { can } = usePermissions();
-  const canCreate = hasPermission('page:missions:view') && can('missions', 'create');
-  const canUpdate = hasPermission('page:missions:view') && can('missions', 'update');
-  const canDelete = hasPermission('page:missions:view') && can('missions', 'delete');
-
   const filteredMissions = useMemo(() => {
     return missions.filter(mission => {
-      // Data-level filtering: If not admin/HR, only show missions where user is a participant
-      if (!hasPermission('page:missions:view') && user?.employeeId) {
-        const isParticipant = (mission.participants || []).some(p => p.employeeId === user.employeeId);
+      // Data-level filtering: If not admin/HR/manager, only show missions where user is a participant
+      if (!canManageAllMissions && user?.employeeId) {
+        const isParticipant = (mission.participants || []).some(p => 
+          p.employeeId === user.employeeId || 
+          (user.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
+        );
         if (!isParticipant) return false;
       }
 
@@ -218,7 +224,7 @@ export default function MissionsPage() {
         mission.description.toLowerCase().includes(searchTermLower)
       );
     });
-  }, [missions, searchTerm, selectedStatus, hasPermission, user?.employeeId]);
+  }, [missions, searchTerm, selectedStatus, canManageAllMissions, user?.employeeId]);
 
   useEffect(() => {
     const maxPages = Math.max(1, Math.ceil(filteredMissions.length / itemsPerPage));
@@ -235,11 +241,11 @@ export default function MissionsPage() {
   const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
 
   const userMissions = useMemo(() => {
-    if (!hasPermission('page:missions:view') && user?.employeeId) {
+    if (!canManageAllMissions && user?.employeeId) {
       return missions.filter(m => (m.participants || []).some(p => p.employeeId === user.employeeId));
     }
     return missions;
-  }, [missions, hasPermission, user?.employeeId]);
+  }, [missions, canManageAllMissions, user?.employeeId]);
 
   const stats = useMemo(() => {
     const total = userMissions.length;
@@ -257,21 +263,21 @@ export default function MissionsPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md">
-                {hasPermission('page:missions:view') ? "Direction des Opérations" : "Mon Espace Personnel"}
+                {canManageAllMissions ? "Direction des Opérations" : "Mon Espace Personnel"}
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 uppercase">
-              {hasPermission('page:missions:view') ? "Missions & Déplacements" : "Mes Missions & Déplacements"}
+              {canManageAllMissions ? "Missions & Déplacements" : "Mes Missions & Déplacements"}
             </h1>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
-              {hasPermission('page:missions:view') 
+              {canManageAllMissions 
                 ? "Gestion et suivi des ordres de mission institutionnels du CNRCT" 
                 : "Consultez et suivez vos ordres de mission au CNRCT"}
             </p>
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            {hasPermission('page:missions:view') && (
+            {canManageAllMissions && (
               <Button 
                 variant="outline" 
                 asChild 
@@ -509,8 +515,11 @@ export default function MissionsPage() {
                     return (
                       <TableRow
                         key={mission.id}
-                        onClick={() => router.push(`/missions/${mission.id}`)}
-                        className="cursor-pointer border-b border-slate-100 hover:bg-slate-50/70 transition-colors group"
+                        onClick={canManageAllMissions ? () => router.push(`/missions/${mission.id}`) : undefined}
+                        className={cn(
+                          "border-b border-slate-100 transition-colors group",
+                          canManageAllMissions ? "cursor-pointer hover:bg-slate-50/70" : "hover:bg-slate-50/40"
+                        )}
                       >
                         {/* N° Dossier */}
                         <TableCell className="pl-6 font-bold text-xs text-slate-900">
@@ -522,7 +531,10 @@ export default function MissionsPage() {
                         {/* Titre */}
                         <TableCell className="max-w-[320px]">
                           <div className="space-y-0.5">
-                            <span className="font-bold text-slate-900 text-xs line-clamp-1 group-hover:text-indigo-600 transition-colors uppercase">
+                            <span className={cn(
+                              "font-bold text-slate-900 text-xs line-clamp-1 uppercase transition-colors",
+                              canManageAllMissions && "group-hover:text-indigo-600"
+                            )}>
                               {mission.title}
                             </span>
                             {mission.dateSaisie && (
@@ -591,81 +603,116 @@ export default function MissionsPage() {
 
                         {/* Actions */}
                         <TableCell className="text-right pr-6" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-1">
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              title="Imprimer l'Ordre de Mission Collectif"
-                              onClick={() => {
-                                setPrintTargetMission(mission);
-                                setShowCollectivePrint(true);
-                              }} 
-                              className="h-8 w-8 rounded-lg hover:bg-purple-50 text-slate-400 hover:text-purple-600 transition-colors"
-                            >
-                              <Printer className="h-4 w-4" />
-                            </Button>
+                          {(() => {
+                            const userParticipant = (mission.participants || []).find(p => 
+                              (user?.employeeId && p.employeeId === user.employeeId) ||
+                              (user?.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
+                            );
 
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-800">
-                                  <MoreHorizontal className="h-4 w-4" />
+                            return (
+                              <div className="flex items-center justify-end gap-1">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  title={canManageAllMissions ? "Imprimer l'Ordre de Mission Collectif" : "Imprimer mon Ordre de Mission"}
+                                  onClick={() => {
+                                    setPrintTargetMission(mission);
+                                    if (!canManageAllMissions && userParticipant) {
+                                      setSelectedIndividualParticipant(userParticipant);
+                                      setShowIndividualPrint(true);
+                                    } else {
+                                      setShowCollectivePrint(true);
+                                    }
+                                  }} 
+                                  className={cn(
+                                    "h-8 w-8 rounded-lg transition-colors",
+                                    canManageAllMissions ? "hover:bg-purple-50 text-slate-400 hover:text-purple-600" : "hover:bg-indigo-50 text-slate-400 hover:text-indigo-600"
+                                  )}
+                                >
+                                  <Printer className="h-4 w-4" />
                                 </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl border-slate-200 shadow-xl bg-white">
-                                <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}`)} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
-                                  <Eye className="mr-2 h-3.5 w-3.5 text-blue-600" /> Voir le dossier
-                                </DropdownMenuItem>
 
-                                <DropdownMenuSeparator />
-                                <DropdownMenuLabel className="px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400">
-                                  Impressions & Documents
-                                </DropdownMenuLabel>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-800">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl border-slate-200 shadow-xl bg-white">
+                                    {canManageAllMissions ? (
+                                      <>
+                                        <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}`)} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
+                                          <Eye className="mr-2 h-3.5 w-3.5 text-blue-600" /> Voir le dossier
+                                        </DropdownMenuItem>
 
-                                <DropdownMenuItem 
-                                  onSelect={() => {
-                                    setPrintTargetMission(mission);
-                                    setShowCollectivePrint(true);
-                                  }} 
-                                  className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-purple-600"
-                                >
-                                  <Printer className="mr-2 h-3.5 w-3.5 text-purple-600" /> Ordre Collectif
-                                </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuLabel className="px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400">
+                                          Impressions & Documents
+                                        </DropdownMenuLabel>
 
-                                <DropdownMenuItem 
-                                  onSelect={() => {
-                                    setPrintTargetMission(mission);
-                                    setShowGroupedIndividualPrint(true);
-                                  }} 
-                                  className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-emerald-600"
-                                >
-                                  <Printer className="mr-2 h-3.5 w-3.5 text-emerald-600" /> Ordres Individuels
-                                </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onSelect={() => {
+                                            setPrintTargetMission(mission);
+                                            setShowCollectivePrint(true);
+                                          }} 
+                                          className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-purple-600"
+                                        >
+                                          <Printer className="mr-2 h-3.5 w-3.5 text-purple-600" /> Ordre Collectif
+                                        </DropdownMenuItem>
 
-                                <DropdownMenuItem 
-                                  onSelect={() => {
-                                    setPrintTargetMission(mission);
-                                    setShowGroupPrint(true);
-                                  }} 
-                                  className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-blue-600"
-                                >
-                                  <FileText className="mr-2 h-3.5 w-3.5 text-blue-600" /> Demande d'Ordre
-                                </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onSelect={() => {
+                                            setPrintTargetMission(mission);
+                                            setShowGroupedIndividualPrint(true);
+                                          }} 
+                                          className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-emerald-600"
+                                        >
+                                          <Printer className="mr-2 h-3.5 w-3.5 text-emerald-600" /> Ordres Individuels
+                                        </DropdownMenuItem>
 
-                                <DropdownMenuSeparator />
+                                        <DropdownMenuItem 
+                                          onSelect={() => {
+                                            setPrintTargetMission(mission);
+                                            setShowGroupPrint(true);
+                                          }} 
+                                          className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-blue-600"
+                                        >
+                                          <FileText className="mr-2 h-3.5 w-3.5 text-blue-600" /> Demande d'Ordre
+                                        </DropdownMenuItem>
+                                      </>
+                                    ) : (
+                                      userParticipant && (
+                                        <DropdownMenuItem 
+                                          onSelect={() => {
+                                            setPrintTargetMission(mission);
+                                            setSelectedIndividualParticipant(userParticipant);
+                                            setShowIndividualPrint(true);
+                                          }} 
+                                          className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-indigo-600"
+                                        >
+                                          <Printer className="mr-2 h-3.5 w-3.5 text-indigo-600" /> Imprimer mon Ordre
+                                        </DropdownMenuItem>
+                                      )
+                                    )}
 
-                                {canUpdate && (
-                                  <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}/edit`)} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
-                                    <Pencil className="mr-2 h-3.5 w-3.5 text-slate-600" /> Modifier
-                                  </DropdownMenuItem>
-                                )}
-                                {canDelete && (
-                                  <DropdownMenuItem onSelect={() => setDeleteTarget(mission)} className="rounded-lg text-xs font-bold py-2 text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
-                                    <Trash2 className="mr-2 h-3.5 w-3.5" /> Supprimer
-                                  </DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
+                                    {canUpdate && (
+                                      <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}/edit`)} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
+                                          <Pencil className="mr-2 h-3.5 w-3.5 text-slate-600" /> Modifier
+                                        </DropdownMenuItem>
+                                      </>
+                                    )}
+                                    {canDelete && (
+                                      <DropdownMenuItem onSelect={() => setDeleteTarget(mission)} className="rounded-lg text-xs font-bold py-2 text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                                        <Trash2 className="mr-2 h-3.5 w-3.5" /> Supprimer
+                                      </DropdownMenuItem>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                       </TableRow>
                     );
@@ -688,12 +735,19 @@ export default function MissionsPage() {
             ) : (
               paginatedMissions.map((mission) => {
                 const statusConfig = statusBadgeStyles[mission.status as Status] || statusBadgeStyles['Planifiée'];
+                const userParticipant = (mission.participants || []).find(p => 
+                  (user?.employeeId && p.employeeId === user.employeeId) ||
+                  (user?.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
+                );
 
                 return (
                   <div
                     key={mission.id}
-                    onClick={() => router.push(`/missions/${mission.id}`)}
-                    className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-sm active:scale-98 transition-all space-y-3"
+                    onClick={canManageAllMissions ? () => router.push(`/missions/${mission.id}`) : undefined}
+                    className={cn(
+                      "p-4 rounded-xl bg-white border border-slate-200/80 shadow-sm transition-all space-y-3",
+                      canManageAllMissions && "cursor-pointer active:scale-98"
+                    )}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="bg-slate-100 text-slate-800 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">
@@ -723,21 +777,41 @@ export default function MissionsPage() {
                         {formatDateRange(mission.startDate, mission.endDate)}
                       </span>
                       <div className="flex items-center gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPrintTargetMission(mission);
-                            setShowCollectivePrint(true);
-                          }}
-                          className="h-7 px-2 text-[10px] font-bold text-purple-600 hover:bg-purple-50"
-                        >
-                          <Printer className="h-3.5 w-3.5 mr-1" /> Imprimer
-                        </Button>
-                        <span className="font-bold text-indigo-600 flex items-center gap-0.5">
-                          Détails <ChevronRight className="h-3.5 w-3.5" />
-                        </span>
+                        {canManageAllMissions ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPrintTargetMission(mission);
+                                setShowCollectivePrint(true);
+                              }}
+                              className="h-7 px-2 text-[10px] font-bold text-purple-600 hover:bg-purple-50"
+                            >
+                              <Printer className="h-3.5 w-3.5 mr-1" /> Imprimer
+                            </Button>
+                            <span className="font-bold text-indigo-600 flex items-center gap-0.5">
+                              Détails <ChevronRight className="h-3.5 w-3.5" />
+                            </span>
+                          </>
+                        ) : (
+                          userParticipant && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPrintTargetMission(mission);
+                                setSelectedIndividualParticipant(userParticipant);
+                                setShowIndividualPrint(true);
+                              }}
+                              className="h-7 px-2 text-[10px] font-bold text-indigo-600 hover:bg-indigo-50"
+                            >
+                              <Printer className="h-3.5 w-3.5 mr-1" /> Imprimer mon Ordre
+                            </Button>
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -804,6 +878,19 @@ export default function MissionsPage() {
             logos={logos}
             onCloseAction={() => {
               setShowGroupPrint(false);
+              setPrintTargetMission(null);
+            }}
+          />
+        )}
+
+        {showIndividualPrint && printTargetMission && logos && selectedIndividualParticipant && (
+          <IndividualMissionSlipPrint
+            mission={printTargetMission}
+            participant={selectedIndividualParticipant}
+            logos={logos}
+            onCloseAction={() => {
+              setShowIndividualPrint(false);
+              setSelectedIndividualParticipant(null);
               setPrintTargetMission(null);
             }}
           />

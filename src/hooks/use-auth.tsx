@@ -144,10 +144,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (rolePermissions[resourceId] && rolePermissions[resourceId][action] !== undefined) {
         return rolePermissions[resourceId][action] === true;
       }
+
+      // Safe default for intranet read: all authenticated users can view the intranet portal
+      if (resourceId === 'intranet' && action === 'read') {
+        return true;
+      }
     }
 
     // 4. Fallback to legacy permissions array only if not governed by resource matrix
     if (user.permissions?.includes(permission)) return true;
+
+    // Direct fallback for intranet view
+    if (permission === 'page:intranet:view') return true;
 
     return false;
   }, [loading, user]);

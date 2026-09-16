@@ -164,34 +164,34 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         procurement: ALL_READ,
     }),
     'chef-de-service': buildDefault({
-        dashboard: ALL_READ, employees: ALL_READ, leaves: ALL_CRUD,
+        dashboard: ALL_READ, intranet: ALL_READ, employees: ALL_READ, leaves: ALL_CRUD,
         missions: ALL_CRUD, evaluations: ALL_CRUD, tickets: ALL_CRUD,
         repository: READ_CREATE, assistant: ALL_READ, documents: READ_CREATE, mails: ALL_CRUD,
     }),
     'employe': buildDefault({
-        dashboard: ALL_READ, repository: ALL_READ, assistant: ALL_READ,
+        dashboard: ALL_READ, intranet: ALL_READ, repository: ALL_READ, assistant: ALL_READ,
         tickets: NO_ACCESS, 'my-space': ALL_READ,
         missions: NO_ACCESS,
     }),
     'stagiaire': buildDefault({
-        dashboard: ALL_READ, repository: ALL_READ, assistant: ALL_READ,
+        dashboard: ALL_READ, intranet: ALL_READ, repository: ALL_READ, assistant: ALL_READ,
         tickets: READ_CREATE,
     }),
     'auditeur': buildDefault({
-        dashboard: ALL_READ, employees: ALL_READ, payroll: ALL_READ,
+        dashboard: ALL_READ, intranet: ALL_READ, employees: ALL_READ, payroll: ALL_READ,
         budget: ALL_READ, 'audit-log': ALL_READ, repository: ALL_READ,
     }),
     'responsable-it': buildDefault({
-        dashboard: ALL_READ, 'it-assets': ALL_CRUD, fleet: ALL_CRUD,
+        dashboard: ALL_READ, intranet: ALL_READ, 'it-assets': ALL_CRUD, fleet: ALL_CRUD,
         supplies: ALL_CRUD, management: ALL_READ, tickets: ALL_CRUD, repository: READ_CREATE,
         assistant: ALL_READ, documents: READ_CREATE, mails: ALL_CRUD,
     }),
     'gestionnaire-stock': buildDefault({
-        dashboard: ALL_READ, supplies: ALL_CRUD, management: ALL_READ, repository: READ_CREATE,
+        dashboard: ALL_READ, intranet: ALL_READ, supplies: ALL_CRUD, management: ALL_READ, repository: READ_CREATE,
         tickets: ALL_READ, assistant: ALL_READ,
     }),
     'gestionnaire-carburant': buildDefault({
-        dashboard: ALL_READ, fuel: ALL_CRUD, management: ALL_READ, repository: READ_CREATE,
+        dashboard: ALL_READ, intranet: ALL_READ, fuel: ALL_CRUD, management: ALL_READ, repository: READ_CREATE,
         tickets: ALL_READ, assistant: ALL_READ,
     }),
     'directoire-central': buildDefault({

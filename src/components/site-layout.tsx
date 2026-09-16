@@ -87,6 +87,9 @@ import { ALL_MENU_ITEMS, MenuItem, SubMenuItem } from "@/constants/navigation";
 const getRequiredPermission = (path: string): string | undefined => {
   const purePath = path.split('?')[0];
 
+  // Intranet is the universal institutional portal for all authenticated members
+  if (purePath === '/intranet') return undefined;
+
   for (const item of ALL_MENU_ITEMS) {
     if (item.href === purePath && item.permission) return item.permission;
     if (item.isCollapsible && item.subItems) {

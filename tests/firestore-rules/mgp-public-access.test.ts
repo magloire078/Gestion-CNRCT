@@ -17,7 +17,7 @@ import { seed, setupEnv } from './helpers';
 let env: RulesTestEnvironment;
 
 beforeAll(async () => {
-  env = await setupEnv();
+  env = await setupEnv('mgp');
 });
 
 afterAll(async () => {

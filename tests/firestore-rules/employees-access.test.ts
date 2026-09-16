@@ -23,7 +23,7 @@ const DIRECTOIRE_DEPT_ID = '9ywKFDgVMS86rZLPYhpm';
 let env: RulesTestEnvironment;
 
 beforeAll(async () => {
-  env = await setupEnv();
+  env = await setupEnv('employees');
 });
 
 afterAll(async () => {

@@ -696,57 +696,33 @@ export async function getOrganizationalUnits() {
     }
 }
 
+/**
+ * Alimente le bureau du Directoire de la page d'accueil publique via
+ * /api/institution/directoire : la route filtre les champs côté serveur, ce
+ * qui permet aux règles Firestore de garder /employees fermé aux visiteurs
+ * anonymes. La fiche agent porte le salaire et le RIB, elle n'a rien à faire
+ * dans une réponse publique.
+ */
 export async function getDirectoireMembers(): Promise<Employe[]> {
     try {
-        const DIRECTOIRE_DEPT_ID = '9ywKFDgVMS86rZLPYhpm';
-        
-        // Fetch only authorized members via server-side query to satisfy security rules
-        const q = query(
-            employeesCollection, 
-            and(
-                where('status', '==', 'Actif'),
-                or(
-                    where('departmentId', '==', DIRECTOIRE_DEPT_ID),
-                    and(where('matricule', '>=', 'DIR'), where('matricule', '<=', 'DIR\uf8ff')),
-                    and(where('matricule', '>=', 'PRE'), where('matricule', '<=', 'PRE\uf8ff')),
-                    and(where('matricule', '>=', 'D 0'), where('matricule', '<=', 'D 0\uf8ff')),
-                    or(
-                        where('poste', 'in', [
-                            'Membre du Directoire', 'membre du directoire', 'MEMBRE DU DIRECTOIRE', 'Membre Du Directoire',
-                            'Président', 'president', 'President', 'PRESIDENT', 'PRÉSIDENT', 'Point Focal'
-                        ]),
-                        where('poste', 'in', [
-                            'Secrétaire Général', 'secretaire general', 'SECRETAIRE GENERAL', 'SECRÉTAIRE GÉNÉRAL',
-                            'Directrice de Cabinet', 'Directrice de cabinet', 'directrice de cabinet', 'DIRECTRICE DE CABINET',
-                            'Directeur de Cabinet', 'Directeur de cabinet'
-                        ]),
-                        where('poste', 'in', [
-                            'directeur de cabinet', 'DIRECTEUR DE CABINET', 'Point Focal Régional', 'Point focal régional'
-                        ])
-                    )
-                )
-            )
-        );
-        const snapshot = await getDocs(q);
-        
-        const directoireMembers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
+        const headers: Record<string, string> = {};
+        try {
+            const { getToken } = await import('firebase/app-check');
+            const { appCheck } = await import('@/lib/firebase');
+            if (appCheck) {
+                const appCheckToken = await getToken(appCheck, false);
+                headers['X-Firebase-AppCheck'] = appCheckToken.token;
+            }
+        } catch {
+            console.warn('[employee-service] AppCheck indisponible pour le bureau du Directoire');
+        }
 
-        // Sorting priority based on official hierarchy
-        const getRank = (poste: string = '') => {
-            const p = poste.toLowerCase();
-            if (p.includes('president') && !p.includes('vice')) return 1;
-            if (p.includes('1er vice-president') || p.includes('premier vice-president')) return 2;
-            if (p.includes('2eme vice-president') || p.includes('deuxième vice-president') || p.includes('2emevice-president')) return 3;
-            if (p.includes('3eme vice-president') || p.includes('troisième vice-president')) return 4;
-            if (p.includes('4eme vice-president') || p.includes('quatrième vice-president')) return 5;
-            if (p.includes('5eme vice-president') || p.includes('cinquième vice-president')) return 6;
-            if (p.includes('secrétaire général')) return 7;
-            if (p.includes('membre du bureau')) return 8;
-            if (p.includes('membre du directoire')) return 9;
-            return 99;
-        };
-
-        return directoireMembers.sort((a, b) => getRank(a.poste) - getRank(b.poste));
+        const response = await fetch('/api/institution/directoire', { headers });
+        if (!response.ok) {
+            console.warn('[employee-service] Directoire API failed with status', response.status);
+            return [];
+        }
+        return (await response.json()) as Employe[];
     } catch (error) {
         console.error('[employee-service] Error fetching directoire members:', error);
         return [];

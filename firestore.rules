@@ -29,7 +29,7 @@ service cloud.firestore {
     
     function isSuperAdmin() {
       return isSignedIn() && (
-        request.auth.token.email in ['magloire078@gmail.com', 'admin@cnrct.ci'] ||
+        request.auth.token.get('email', '') in ['magloire078@gmail.com', 'admin@cnrct.ci'] ||
         (hasUserDoc() && getUserData().get('roleId', '') in ['super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'administrateur', 'admin'])
       );
     }
@@ -93,14 +93,13 @@ service cloud.firestore {
     // --- EMPLOYEES & HR ---
     
     match /employees/{employeeId} {
-      allow read: if can('employees', 'read') || 
+      // Le bureau du Directoire affiché publiquement passe désormais par
+      // /api/institution/directoire, qui ne renvoie que nom, poste et photo.
+      // Aucune lecture anonyme ici : la fiche porte le salaire et le RIB.
+      allow read: if can('employees', 'read') ||
                    (isSignedIn() && (
                      employeeId == getUserData().get('employeeId', '') ||
                      resource.data.get('userId', '') == request.auth.uid
-                   )) ||
-                   (resource.data.status == 'Actif' && (
-                     resource.data.departmentId == '9ywKFDgVMS86rZLPYhpm' || 
-                     resource.data.poste in ['Président', 'Secrétaire Général', 'Membre du Directoire']
                    ));
       allow create: if can('employees', 'create');
       allow update: if can('employees', 'update');

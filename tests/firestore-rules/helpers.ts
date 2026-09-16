@@ -6,15 +6,19 @@ import { doc, setDoc } from 'firebase/firestore';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-export const PROJECT_ID = 'cnrct-rules-test';
-
-export async function setupEnv(): Promise<RulesTestEnvironment> {
+/**
+ * Chaque fichier de test passe son propre identifiant de projet : vitest
+ * exécute les fichiers en parallèle sur le même émulateur, et un projectId
+ * partagé ferait effacer par le clearFirestore() de l'un les données que
+ * l'autre vient d'écrire.
+ */
+export async function setupEnv(namespace: string): Promise<RulesTestEnvironment> {
   const rules = readFileSync(
     path.resolve(__dirname, '../../firestore.rules'),
     'utf8',
   );
   return initializeTestEnvironment({
-    projectId: PROJECT_ID,
+    projectId: `cnrct-rules-${namespace}`,
     firestore: {
       rules,
       host: '127.0.0.1',

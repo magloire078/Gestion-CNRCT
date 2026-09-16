@@ -69,17 +69,11 @@ export default function MissionDetailPage() {
                     getOrganizationSettings()
                 ]);
                 if (data) {
-                    // Restriction de sécurité : un agent sans droits étendus ne peut voir que les missions auxquelles il participe
-                    const canViewAll = canEdit || hasPermission('page:admin:view') || ['administrateur', 'super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'manager-rh', 'chef-de-service'].includes(user?.roleId || '');
-                    if (!canViewAll && user?.employeeId) {
-                        const isParticipant = (data.participants || []).some((p: any) => 
-                            p.employeeId === user.employeeId ||
-                            (user.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
-                        );
-                        if (!isParticipant) {
-                            router.replace('/missions');
-                            return;
-                        }
+                    // Restriction de sécurité : seuls les administrateurs et gestionnaires autorisés peuvent consulter le dossier complet
+                    const canViewAll = canEdit || can('missions', 'read') || hasPermission('missions:read') || hasPermission('page:admin:view') || ['administrateur', 'super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'manager-rh', 'chef-de-service'].includes(user?.roleId || '');
+                    if (!canViewAll) {
+                        router.replace('/missions');
+                        return;
                     }
                     setMission(data);
                 }
@@ -93,7 +87,7 @@ export default function MissionDetailPage() {
             }
         }
         fetchMission();
-    }, [id, hasPermission, user?.employeeId, router]);
+    }, [id, canEdit, can, hasPermission, user?.roleId, router]);
 
     useEffect(() => {
         if (!mission?.participants) return;

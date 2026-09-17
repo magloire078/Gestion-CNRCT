@@ -376,7 +376,34 @@ export function PermissionsEditor({ targetId, targetType, isSystem, roleName, on
     const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState<'all' | 'active' | 'inactive'>('all');
     const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+    const [superAdmin, setSuperAdmin] = useState(false);
+    const [superAdminSaving, setSuperAdminSaving] = useState(false);
     const { toast } = useToast();
+
+    // Enregistré immédiatement, sans passer par la barre « Publier les Droits » :
+    // ce drapeau ne fait pas partie de la matrice, il la court-circuite.
+    const handleToggleSuperAdmin = async (value: boolean) => {
+        setSuperAdminSaving(true);
+        try {
+            const { updateRole } = await import('@/services/role-service');
+            await updateRole(targetId, { isSuperAdmin: value });
+            setSuperAdmin(value);
+            toast({
+                title: value ? 'Profil élevé en super-administrateur' : 'Élévation retirée',
+                description: value
+                    ? 'Ce profil contourne désormais la matrice et accède à tout.'
+                    : 'Ce profil repasse sous le contrôle de la matrice des droits.',
+            });
+        } catch {
+            toast({
+                variant: 'destructive',
+                title: 'Erreur',
+                description: "Seul un super-administrateur peut modifier ce réglage.",
+            });
+        } finally {
+            setSuperAdminSaving(false);
+        }
+    };
 
     const loadPerms = useCallback(async () => {
         setLoading(true);
@@ -386,6 +413,10 @@ export function PermissionsEditor({ targetId, targetType, isSystem, roleName, on
                 const perms = await getResourcePermissions(targetId, targetType);
                 setPermissions(perms);
                 setOriginalPermissions(JSON.parse(JSON.stringify(perms)));
+
+                const { getDoc, doc, db } = await import('@/lib/firebase');
+                const roleSnap = await getDoc(doc(db, 'roles', targetId));
+                setSuperAdmin(roleSnap.exists() && roleSnap.data()?.isSuperAdmin === true);
             } else {
                 const { getDoc, doc } = await import('@/lib/firebase');
                 const { db } = await import('@/lib/firebase');
@@ -616,6 +647,40 @@ export function PermissionsEditor({ targetId, targetType, isSystem, roleName, on
 
     return (
         <div className="space-y-5">
+            {targetType === 'role' && (
+                <div className={cn(
+                    "p-4 rounded-lg border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4",
+                    superAdmin
+                        ? "bg-amber-50 border-amber-300"
+                        : "bg-white/70 dark:bg-slate-900/70 border-slate-200/80 dark:border-slate-800"
+                )}>
+                    <div className="space-y-1">
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <ShieldCheck className={cn("h-4 w-4", superAdmin ? "text-amber-600" : "text-slate-400")} />
+                            Super-administrateur
+                        </p>
+                        <p className="text-[11px] text-slate-500 max-w-xl leading-relaxed">
+                            Accorde un accès total, sans passer par la matrice ci-dessous. À réserver aux
+                            profils de direction du système. Seul un super-administrateur peut modifier ce réglage.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                        {superAdmin && (
+                            <Badge className="bg-amber-500 text-white font-bold uppercase tracking-wider text-[10px] py-1 px-3">
+                                Accès total
+                            </Badge>
+                        )}
+                        {superAdminSaving && <Loader2 className="h-4 w-4 animate-spin text-slate-400" />}
+                        <Switch
+                            checked={superAdmin}
+                            disabled={superAdminSaving}
+                            onCheckedChange={handleToggleSuperAdmin}
+                            aria-label="Activer le super-administrateur pour ce profil"
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Top Stats & Quick Actions Banner */}
             <div className="p-4 rounded-lg bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-sm backdrop-blur-md space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

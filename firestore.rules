@@ -27,10 +27,25 @@ service cloud.firestore {
 
     // --- ROLE CHECKS (Zero/One Read optimized) ---
     
+    // Le drapeau vit sur le document de rôle, que seul un super-admin peut
+    // écrire : un utilisateur ne peut donc pas se l'octroyer. Le lire ici
+    // plutôt que de lister des identifiants en dur rend la règle valable pour
+    // n'importe quelle institution, sans identifiant propre à la CNRCT.
+    function hasSuperAdminRole() {
+      return hasUserDoc() &&
+        hasRoleDoc(getUserData().get('roleId', null)) &&
+        getRoleData(getUserData().get('roleId', null)).get('isSuperAdmin', false) == true;
+    }
+
+    // Les deux listes en dur sont conservées le temps que le drapeau
+    // isSuperAdmin soit posé sur les rôles concernés (npm run db:flag-super-admins).
+    // Les retirer avant cette migration verrouillerait les administrateurs
+    // hors de l'application.
     function isSuperAdmin() {
       return isSignedIn() && (
         request.auth.token.get('email', '') in ['magloire078@gmail.com', 'admin@cnrct.ci'] ||
-        (hasUserDoc() && getUserData().get('roleId', '') in ['super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'administrateur', 'admin'])
+        (hasUserDoc() && getUserData().get('roleId', '') in ['super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'administrateur', 'admin']) ||
+        hasSuperAdminRole()
       );
     }
     

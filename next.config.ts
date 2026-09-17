@@ -78,7 +78,7 @@ const nextConfig: NextConfig = {
       }
     ]
   },
-  serverExternalPackages: ['genkit', '@genkit-ai', 'google-auth-library', 'xlsx', 'firebase-admin', 'docx'],
+  serverExternalPackages: ['google-auth-library', 'xlsx', 'firebase-admin', 'docx'],
 };
 
 export default withPWA(nextConfig);

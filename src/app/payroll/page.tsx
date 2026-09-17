@@ -456,7 +456,7 @@ export default function PayrollPage() {
 
 
   return (
-    <PermissionGuard permission="page:payroll:view" allowPersonal>
+    <PermissionGuard permission="page:payroll:view">
       <div className={isProcessingBulk ? 'print-hidden' : ''}>
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">

@@ -136,7 +136,6 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
   const { requiredPermission, isPersonalPage } = React.useMemo(() => {
     const purePath = pathname.split('?')[0];
     const isPersonal = 
-      purePath === '/payroll' || purePath.startsWith('/payroll/') ||
       purePath === '/leave' || purePath.startsWith('/leave/') ||
       purePath === '/missions' || purePath.startsWith('/missions/');
     return {
@@ -339,15 +338,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     });
 
     if (user.employeeId) {
+      const subItems = [
+        ...(hasPermission('page:payroll:view') ? [{ href: "/payroll", label: "Ma Paie", icon: Landmark, permission: "page:payroll:view" }] : []),
+        { href: "/leave", label: "Mes Congés", icon: CalendarOff, permission: "" },
+        { href: "/missions", label: "Mes Missions", icon: Briefcase, permission: "" },
+      ];
+
       const monEspaceItem = {
         isCollapsible: true,
         label: "Mon Espace",
         icon: UserSquareIcon,
-        subItems: [
-          { href: "/payroll", label: "Ma Paie", icon: Landmark, permission: "" },
-          { href: "/leave", label: "Mes Congés", icon: CalendarOff, permission: "" },
-          { href: "/missions", label: "Mes Missions", icon: Briefcase, permission: "" },
-        ]
+        subItems
       };
 
       const personnelIndex = items.findIndex((item: MenuItem) => item.label === "Personnel" || item.label === "Personnel & RH");

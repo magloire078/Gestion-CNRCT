@@ -50,14 +50,14 @@ export default function PayslipDetailPage() {
     useEffect(() => {
         if (authLoading || !employeeId) return;
 
-        // Restriction de sécurité : un utilisateur sans rôle RH ne peut voir QUE son propre bulletin
-        if (!isHrAdmin && user?.employeeId && user.employeeId !== employeeId) {
+        // Restriction de sécurité : accès strictement réservé aux gestionnaires RH
+        if (!isHrAdmin) {
             toast({
                 variant: "destructive",
                 title: "Accès Refusé",
-                description: "Vous ne pouvez consulter que votre propre bulletin de paie."
+                description: "La consultation et l'impression des bulletins de paie sont réservées aux gestionnaires RH."
             });
-            router.replace("/payroll");
+            router.replace("/intranet");
             return;
         }
 

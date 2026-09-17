@@ -308,13 +308,22 @@ export default function EmployeesPage() {
       const normSubPref = (emp.subPrefecture || emp.Commune || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const chiefStatuses = getMemberChiefStatuses(emp);
 
+      const _sortName = `${(emp.lastName || '').toLowerCase()} ${(emp.firstName || '').toLowerCase()}`;
+      const _sortMatricule = normMatricule;
+      const _sortRegion = `${normRegion} ${normDept} ${normSubPref} ${normVillage}`;
+      const _birthTimestamp = emp.Date_Naissance ? new Date(emp.Date_Naissance).getTime() : 0;
+
       return {
         ...emp,
         calculatedGroup: getEmployeeGroup(emp, departments),
         resolvedVillage,
         chiefStatuses,
         _searchTokens: [normFullName, normName, normMatricule, normVillage, normPoste, normRegion, normDept, normSubPref],
-        _normVillage: normVillage
+        _normVillage: normVillage,
+        _sortName,
+        _sortMatricule,
+        _sortRegion,
+        _birthTimestamp
       };
     });
   }, [employees, departments, chiefLookup]);
@@ -357,24 +366,13 @@ export default function EmployeesPage() {
     const sorted = [...filtered].sort((a, b) => {
       let comparison = 0;
       if (sortBy === 'name') {
-        comparison = (a.lastName || '').localeCompare(b.lastName || '') || 
-                     (a.firstName || '').localeCompare(b.firstName || '') ||
-                     (a.matricule || '').localeCompare(b.matricule || '');
+        comparison = a._sortName.localeCompare(b._sortName) || a._sortMatricule.localeCompare(b._sortMatricule);
       } else if (sortBy === 'Date_Naissance') {
-        const dateA = a.Date_Naissance ? new Date(a.Date_Naissance).getTime() : 0;
-        const dateB = b.Date_Naissance ? new Date(b.Date_Naissance).getTime() : 0;
-        comparison = dateA - dateB || (a.lastName || '').localeCompare(b.lastName || '');
+        comparison = a._birthTimestamp - b._birthTimestamp || a._sortName.localeCompare(b._sortName);
       } else if (sortBy === 'Region') {
-        comparison = (a.Region || '').localeCompare(b.Region || '') ||
-                     (a.Departement || '').localeCompare(b.Departement || '') ||
-                     (a.subPrefecture || '').localeCompare(b.subPrefecture || '') ||
-                     (a.Village || '').localeCompare(b.Village || '') ||
-                     (a.lastName || '').localeCompare(b.lastName || '') ||
-                     (a.firstName || '').localeCompare(b.firstName || '') ||
-                     (a.matricule || '').localeCompare(b.matricule || '');
+        comparison = a._sortRegion.localeCompare(b._sortRegion) || a._sortName.localeCompare(b._sortName);
       } else {
-        comparison = (a.matricule || '').localeCompare(b.matricule || '') ||
-                     (a.lastName || '').localeCompare(b.lastName || '');
+        comparison = a._sortMatricule.localeCompare(b._sortMatricule) || a._sortName.localeCompare(b._sortName);
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
@@ -820,11 +818,11 @@ export default function EmployeesPage() {
                           </SelectContent>
                         </Select>
 
-                        <Select value={`${sortBy}-${sortOrder}`} onValueChange={(val) => {
+                        <Select value={`${sortBy}-${sortOrder}`} onValueChange={(val) => startTransition(() => {
                           const [newSortBy, newSortOrder] = val.split('-') as [any, any];
                           setSortBy(newSortBy);
                           setSortOrder(newSortOrder);
-                        }}>
+                        })}>
                           <SelectTrigger className="h-10 w-full md:w-[180px] rounded-lg border-slate-200 bg-white font-medium text-sm text-slate-700">
                             <SelectValue placeholder="Trier par" />
                           </SelectTrigger>
@@ -990,7 +988,7 @@ export default function EmployeesPage() {
                             paginatedEmployees.map((employee, index) => (
                               <TableRow 
                                 key={employee.id} 
-                                onClick={() => router.push(`/employees/${employee.id}`)}
+                                onClick={() => startTransition(() => router.push(`/employees/${employee.id}`))}
                                 className="cursor-pointer border-b border-slate-50 hover:bg-white/60 transition-all group h-14"
                               >
                                 <TableCell className="text-center font-black text-slate-300">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
@@ -1086,14 +1084,14 @@ export default function EmployeesPage() {
                                     <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
                                       <DropdownMenuLabel className="px-3 py-2 font-black uppercase text-sm md:text-xs tracking-[0.2em] text-slate-400">Actions Dossier</DropdownMenuLabel>
                                       <DropdownMenuItem 
-                                        onSelect={() => router.push(`/employees/${employee.id}`)} 
+                                        onSelect={() => startTransition(() => router.push(`/employees/${employee.id}`))} 
                                         className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer"
                                       >
                                         <Eye className="mr-2 h-4 w-4 text-blue-500" /> Profil Complet
                                       </DropdownMenuItem>
                                       {hasPermission('employees:update') && (
                                         <DropdownMenuItem 
-                                          onSelect={() => router.push(`/employees/${employee.id}/edit`)} 
+                                          onSelect={() => startTransition(() => router.push(`/employees/${employee.id}/edit`))} 
                                           className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer"
                                         >
                                           <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier Données
@@ -1134,7 +1132,7 @@ export default function EmployeesPage() {
                           paginatedEmployees.map((employee) => (
                             <Card 
                               key={employee.id} 
-                              onClick={() => router.push(`/employees/${employee.id}`)}
+                              onClick={() => startTransition(() => router.push(`/employees/${employee.id}`))}
                               className="group cursor-pointer border-slate-100 hover:border-[#006039]/20 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl overflow-hidden relative"
                             >
                               <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-br from-slate-100 to-slate-50" />
@@ -1211,7 +1209,10 @@ export default function EmployeesPage() {
                         totalPages={totalPages}
                         onPageChange={(page) => startTransition(() => setCurrentPage(page))}
                         itemsPerPage={itemsPerPage}
-                        onItemsPerPageChange={setItemsPerPage}
+                        onItemsPerPageChange={(count) => startTransition(() => {
+                          setItemsPerPage(count);
+                          setCurrentPage(1);
+                        })}
                         totalItems={filteredEmployees.length}
                         isPending={isPending}
                       />

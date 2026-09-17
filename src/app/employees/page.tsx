@@ -389,7 +389,9 @@ export default function EmployeesPage() {
 
     const list = isGeoTab ? filteredEmployees : enrichedEmployees;
     for (let i = 0; i < list.length; i++) {
-      const st = (list[i] as any).chiefStatuses || [];
+      const emp = list[i] as any;
+      if (emp.status === 'Décédé' || emp.status === 'Remplacé' || emp.status === 'Licencié') continue;
+      const st = emp.chiefStatuses || [];
       if (st.includes("Chef de Canton")) canton++;
       if (st.includes("Chef de Tribu")) tribu++;
       if (st.includes("Chef de Village")) village++;
@@ -700,8 +702,8 @@ export default function EmployeesPage() {
               [
                 { label: "Effectif Total", value: employees.length, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
                 { label: "Agents Actifs", value: employees.filter(e => e.status === 'Actif').length, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
-                { label: "Nouveaux / 30j", value: employees.filter(e => e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
-                { label: "Parité H/F", value: `${Math.round((employees.filter(e => e.sexe === 'Homme').length / (employees.length || 1)) * 100) || 0}%`, sub: "Ratio Hommes / Femmes", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
+                { label: "Nouveaux / 30j", value: employees.filter(e => (e.status === 'Actif' || !e.status) && e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
+                { label: "Taux Féminin", value: `${Math.round((employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé').filter(e => e.sexe === 'Femme').length / (employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé').length || 1)) * 100) || 0}%`, sub: "Parité active (F/Total)", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
               ].map((stat, i) => (
                 <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
                   <CardContent className="p-6 relative">

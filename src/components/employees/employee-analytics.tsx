@@ -50,8 +50,12 @@ const GENDER_COLORS = {
 };
 
 export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
+    // Only active personnel (Actif / En congé) for operational & demographic statistics
+    const activeEmployees = useMemo(() => {
+        return employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé');
+    }, [employees]);
     
-    // 1. Age Distribution
+    // 1. Age Distribution (Active only)
     const ageData = useMemo(() => {
         const ranges = {
             '18-25': 0,
@@ -63,7 +67,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
         };
 
         const now = new Date();
-        employees.forEach(emp => {
+        activeEmployees.forEach(emp => {
             if (emp.Date_Naissance) {
                 const age = differenceInYears(now, parseISO(emp.Date_Naissance));
                 if (age <= 25) ranges['18-25']++;
@@ -76,19 +80,19 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
         });
 
         return Object.entries(ranges).map(([range, count]) => ({ range, count }));
-    }, [employees]);
+    }, [activeEmployees]);
 
-    // 2. Gender Distribution
+    // 2. Gender Distribution (Active only)
     const genderData = useMemo(() => {
         const counts: Record<string, number> = {};
-        employees.forEach(emp => {
+        activeEmployees.forEach(emp => {
             const sexe = emp.sexe || 'Autre';
             counts[sexe] = (counts[sexe] || 0) + 1;
         });
         return Object.entries(counts).map(([name, value]) => ({ name, value }));
-    }, [employees]);
+    }, [activeEmployees]);
 
-    // 3. Seniority Distribution (Years of service)
+    // 3. Seniority Distribution (Active only)
     const seniorityData = useMemo(() => {
         const now = new Date();
         const seniorityCounts: Record<string, number> = {
@@ -99,7 +103,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
             '20+ ans': 0
         };
 
-        employees.forEach(emp => {
+        activeEmployees.forEach(emp => {
             if (emp.dateEmbauche) {
                 const years = differenceInYears(now, parseISO(emp.dateEmbauche));
                 if (years < 2) seniorityCounts['< 2 ans']++;
@@ -111,13 +115,14 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
         });
 
         return Object.entries(seniorityCounts).map(([name, value]) => ({ name, value }));
-    }, [employees]);
+    }, [activeEmployees]);
 
-    // 4. Status Breakdown
+    // 4. Status Breakdown (All registered)
     const statusData = useMemo(() => {
         const counts: Record<string, number> = {};
         employees.forEach(emp => {
-            counts[emp.status] = (counts[emp.status] || 0) + 1;
+            const statusKey = emp.status || 'Actif';
+            counts[statusKey] = (counts[statusKey] || 0) + 1;
         });
         return Object.entries(counts).map(([name, value]) => ({ name, value }));
     }, [employees]);
@@ -160,11 +165,11 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Index Parité</CardTitle>
                         <div className="flex items-end gap-3 mt-4">
                             <span className="text-6xl font-black tracking-tighter leading-none text-slate-900">
-                                {Math.round((employees.filter(e => e.sexe === 'Femme').length / employees.length) * 100)}%
+                                {Math.round((activeEmployees.filter(e => e.sexe === 'Femme').length / (activeEmployees.length || 1)) * 100)}%
                             </span>
                             <div className="flex flex-col mb-1">
                                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none">Féminin</span>
-                                <span className="text-[8px] font-bold text-slate-400 uppercase leading-none mt-1">Représentation</span>
+                                <span className="text-[8px] font-bold text-slate-400 uppercase leading-none mt-1">Représentation (Actifs)</span>
                             </div>
                         </div>
                     </CardHeader>

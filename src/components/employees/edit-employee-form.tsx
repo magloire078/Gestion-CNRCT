@@ -43,6 +43,25 @@ import { VillageCombobox } from "@/components/chiefs/village-combobox";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Layers } from "lucide-react";
 
+const MILITARY_RANKS = [
+  "Soldat de 2ème classe",
+  "Soldat de 1ère classe",
+  "Caporal",
+  "Caporal-Chef",
+  "Gendarme",
+  "Sergent",
+  "Sergent-Chef",
+  "Maréchal des Logis (MDL)",
+  "Maréchal des Logis-Chef (MDL-Chef)",
+  "Adjudant",
+  "Adjudant-Chef",
+  "Adjudant-Chef Major",
+  "Aspirant",
+  "Sous-Lieutenant",
+  "Lieutenant",
+  "Capitaine"
+];
+
 interface EditEmployeeFormProps {
   employee: Employe;
 }
@@ -50,6 +69,7 @@ interface EditEmployeeFormProps {
 export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("identity");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<Partial<Employe>>(() => {
     const rawReg = employee.Region || (employee as any).region || '';
@@ -115,25 +135,6 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     const deptName = departmentList.find(d => d.id === formData.departmentId)?.name;
     return deptName === "Garde Républicaine" || deptName === "Gendarmes";
   }, [formData.departmentId, departmentList]);
-
-  const militaryRanks = [
-    "Soldat de 2ème classe",
-    "Soldat de 1ère classe",
-    "Caporal",
-    "Caporal-Chef",
-    "Gendarme",
-    "Sergent",
-    "Sergent-Chef",
-    "Maréchal des Logis (MDL)",
-    "Maréchal des Logis-Chef (MDL-Chef)",
-    "Adjudant",
-    "Adjudant-Chef",
-    "Adjudant-Chef Major",
-    "Aspirant",
-    "Sous-Lieutenant",
-    "Lieutenant",
-    "Capitaine"
-  ];
 
   const filteredDirections = useMemo(() => {
     if (!formData.departmentId) return [];
@@ -351,7 +352,15 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
         {/* --- MAIN CONTENT: DETAILS TABS --- */}
         <div className="lg:col-span-3">
-          <Tabs defaultValue="identity" className="w-full space-y-6">
+          <Tabs 
+            value={activeTab} 
+            onValueChange={(val) => {
+              startTransition(() => {
+                setActiveTab(val);
+              });
+            }} 
+            className="w-full space-y-6"
+          >
             <TabsList className="flex bg-white/40 backdrop-blur-xl border border-white/20 p-1.5 rounded-2xl shadow-xl shadow-slate-200/40 w-fit h-auto gap-1">
               <TabsTrigger value="identity" className="rounded-xl px-6 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
                 <UserCircle2 className="mr-2 h-4 w-4" /> Identity
@@ -524,7 +533,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                             <SelectValue placeholder="Sélectionner le grade..." />
                           </SelectTrigger>
                           <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                            {militaryRanks.map(r => <SelectItem key={r} value={r} className="font-bold py-3 uppercase text-[9px] tracking-widest">{r}</SelectItem>)}
+                            {MILITARY_RANKS.map(r => <SelectItem key={r} value={r} className="font-bold py-3 uppercase text-[9px] tracking-widest">{r}</SelectItem>)}
                           </SelectContent>
                         </Select>
                       ) : (

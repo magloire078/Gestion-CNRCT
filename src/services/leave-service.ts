@@ -47,9 +47,13 @@ async function findUserIdByEmployeeId(employeeId: string): Promise<string | null
 
 export function subscribeToLeaves(
     callback: (leaves: Leave[]) => void,
-    onError: (error: Error) => void
+    onError: (error: Error) => void,
+    employeeId?: string,
+    isAdmin: boolean = false
 ): Unsubscribe {
-    const q = query(leavesCollection, orderBy("startDate", "desc"));
+    const q = (!isAdmin && employeeId)
+        ? query(leavesCollection, where("employeeId", "==", employeeId))
+        : query(leavesCollection, orderBy("startDate", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const leaves = snapshot.docs.map((doc: any) => {
@@ -60,6 +64,13 @@ export function subscribeToLeaves(
                     return data as unknown as Leave;
                 }
                 return result.data as unknown as Leave;
+            });
+            leaves.sort((a: Leave, b: Leave) => {
+                try {
+                    return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+                } catch {
+                    return 0;
+                }
             });
             callback(leaves);
         },

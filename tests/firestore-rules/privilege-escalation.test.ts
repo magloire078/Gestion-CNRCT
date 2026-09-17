@@ -82,4 +82,25 @@ describe('Élévation de privilèges', () => {
       setDoc(doc(db, 'roles/agent-simple'), { resourcePermissions: { employees: { read: true } } }),
     );
   });
+
+  test("un utilisateur ne peut pas s'octroyer le drapeau super-admin sur son rôle", async () => {
+    const db = env.authenticatedContext('existant').firestore();
+    await assertFails(updateDoc(doc(db, 'roles/agent-simple'), { isSuperAdmin: true }));
+  });
+});
+
+describe('Super-admin porté par le rôle', () => {
+  test("un rôle marqué isSuperAdmin confère les droits d'administration", async () => {
+    await seed(env, {
+      users: { patron: { roleId: 'direction' } },
+      roles: { direction: { isSuperAdmin: true } },
+    });
+    const db = env.authenticatedContext('patron').firestore();
+    await assertSucceeds(setDoc(doc(db, 'roles/nouveau-role'), { resourcePermissions: {} }));
+  });
+
+  test("un rôle sans le drapeau ne confère rien", async () => {
+    const db = env.authenticatedContext('existant').firestore();
+    await assertFails(setDoc(doc(db, 'roles/nouveau-role'), { resourcePermissions: {} }));
+  });
 });

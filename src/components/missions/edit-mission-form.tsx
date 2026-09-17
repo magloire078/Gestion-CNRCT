@@ -273,10 +273,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                     <Input 
                                         id="numeroMission" 
                                         value={numeroMission} 
-                                        onChange={(e) => {
-                                            const v = e.target.value;
-                                            startTransition(() => setNumeroMission(v));
-                                        }} 
+                                        onChange={(e) => setNumeroMission(e.target.value)} 
                                         className="h-12 w-48 rounded-xl border-slate-200 bg-white/50 font-black text-slate-900 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm px-4" 
                                     />
                                 </div>
@@ -285,10 +282,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                     <Input 
                                         id="title" 
                                         value={title} 
-                                        onChange={(e) => {
-                                            const v = e.target.value;
-                                            startTransition(() => setTitle(v));
-                                        }} 
+                                        onChange={(e) => setTitle(e.target.value)} 
                                         className="h-14 rounded-2xl border-slate-200 bg-white/50 font-black text-slate-900 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm px-6" 
                                     />
                                 </div>
@@ -297,10 +291,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                     <Textarea 
                                         id="description" 
                                         value={description} 
-                                        onChange={(e) => {
-                                            const v = e.target.value;
-                                            startTransition(() => setDescription(v));
-                                        }} 
+                                        onChange={(e) => setDescription(e.target.value)} 
                                         rows={8} 
                                         className="rounded-2xl border-slate-200 bg-white/50 font-medium text-slate-700 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm p-6" 
                                     />
@@ -324,10 +315,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                             <Input 
                                                 id="lieu" 
                                                 value={lieuMission} 
-                                                onChange={(e) => {
-                                                    const v = e.target.value;
-                                                    startTransition(() => setLieuMission(v));
-                                                }} 
+                                                onChange={(e) => setLieuMission(e.target.value)} 
                                                 className="h-12 pl-12 rounded-xl border-slate-200 bg-white/50 font-bold text-sm" 
                                             />
                                         </div>

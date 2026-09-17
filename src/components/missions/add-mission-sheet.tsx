@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, startTransition } from "react";
+import { useState, useEffect, useCallback, startTransition } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,14 +103,14 @@ export function AddMissionSheet({
           .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
   }, [employees]);
 
-  const handleSelectSignataire = (employeeId: string) => {
+  const handleSelectSignataire = useCallback((employeeId: string) => {
       const emp = employees.find(e => e.id === employeeId);
       if (emp) {
           const label = formatEmployeeName(emp.lastName, emp.firstName, emp.name);
           setSignataireName(label);
           setSignataireTitle(formatSignataireTitle(emp.poste || "Secrétaire Général"));
       }
-  };
+  }, [employees]);
 
   const resetForm = () => {
     setTitle("");
@@ -229,10 +229,7 @@ export function AddMissionSheet({
                   <Input 
                     id="title" 
                     value={title} 
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      startTransition(() => setTitle(v));
-                    }} 
+                    onChange={(e) => setTitle(e.target.value)} 
                     placeholder="Ex: Mission d'inspection technique..."
                     className="h-12 rounded-xl border-slate-200 bg-white font-semibold text-sm focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all pl-4"
                   />
@@ -248,10 +245,7 @@ export function AddMissionSheet({
                     <Input 
                       id="lieuMission" 
                       value={lieuMission} 
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        startTransition(() => setLieuMission(v));
-                      }} 
+                      onChange={(e) => setLieuMission(e.target.value)} 
                       placeholder="Ville, District ou localité cible..."
                       className="h-12 rounded-xl border-slate-200 bg-white font-semibold text-sm focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all pl-10"
                     />

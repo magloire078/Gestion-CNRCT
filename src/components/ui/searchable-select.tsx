@@ -69,34 +69,36 @@ export const SearchableSelect = React.memo(({
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command>
-                    <CommandInput placeholder={searchPlaceholder} />
-                    <CommandList>
-                        <CommandEmpty>{emptyMessage}</CommandEmpty>
-                        <CommandGroup>
-                            {items.map((item) => (
-                                <CommandItem
-                                    key={item.value}
-                                    value={item.searchTerms || item.label}
-                                    onSelect={() => {
-                                        onValueChange(item.value)
-                                        setOpen(false)
-                                    }}
-                                >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            value === item.value ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
-                                    {item.label}
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
-            </PopoverContent>
+            {open && (
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                        <CommandInput placeholder={searchPlaceholder} />
+                        <CommandList>
+                            <CommandEmpty>{emptyMessage}</CommandEmpty>
+                            <CommandGroup>
+                                {items.map((item) => (
+                                    <CommandItem
+                                        key={item.value}
+                                        value={item.searchTerms || item.label}
+                                        onSelect={() => {
+                                            onValueChange(item.value)
+                                            setOpen(false)
+                                        }}
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                value === item.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                        />
+                                        {item.label}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            )}
         </Popover>
     )
 });

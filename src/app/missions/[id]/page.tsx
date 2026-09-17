@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, startTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
     ChevronLeft, Pencil, Calendar, 
@@ -289,7 +289,7 @@ export default function MissionDetailPage() {
 
                                 <Button 
                                     variant="outline" 
-                                    onClick={() => setShowGroupPrint(true)}
+                                    onClick={() => startTransition(() => setShowGroupPrint(true))}
                                     className="h-10 px-3.5 rounded-xl border-slate-200 bg-white shadow-sm font-bold text-xs hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-700"
                                 >
                                     <FileText className="mr-2 h-4 w-4 text-blue-600" /> Demande d'Ordre
@@ -297,7 +297,7 @@ export default function MissionDetailPage() {
 
                                 {canEdit && (
                                     <Button 
-                                        onClick={() => router.push(`/missions/${id}/edit`)} 
+                                        onClick={() => startTransition(() => router.push(`/missions/${id}/edit`))} 
                                         className="h-10 px-4 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-all shadow-md shadow-slate-900/15 active:scale-95"
                                     >
                                         <Pencil className="mr-1.5 h-3.5 w-3.5 text-amber-400" /> Modifier
@@ -308,8 +308,10 @@ export default function MissionDetailPage() {
                             currentUserParticipant && (
                                 <Button 
                                     onClick={() => {
-                                        setSelectedParticipant(currentUserParticipant);
-                                        setShowIndividualPrint(true);
+                                        startTransition(() => {
+                                            setSelectedParticipant(currentUserParticipant);
+                                            setShowIndividualPrint(true);
+                                        });
                                     }}
                                     className="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition-all active:scale-95"
                                 >

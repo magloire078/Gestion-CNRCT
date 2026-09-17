@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useTransition } from "react";
+import { useState, useMemo, useEffect, useTransition, startTransition } from "react";
 import Link from 'next/link';
 import { 
   PlusCircle, Check, X, Search, FileText, Pencil, Trash2, 
@@ -302,7 +302,7 @@ export default function LeavePage() {
 
             {(canManageLeaves || !!user?.employeeId) && (
               <Button 
-                onClick={() => setIsAddSheetOpen(true)}
+                onClick={() => startTransition(() => setIsAddSheetOpen(true))}
                 className="h-10 rounded-xl bg-slate-900 px-4 font-bold text-xs shadow-md shadow-slate-900/15 active:scale-95 transition-all text-white hover:bg-slate-800 gap-2"
               >
                 <PlusCircle className="h-4 w-4 text-emerald-400" />
@@ -316,7 +316,7 @@ export default function LeavePage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 lg:gap-4">
           {/* En attente */}
           <div 
-            onClick={() => setStatusFilter("En attente")}
+            onClick={() => startTransition(() => setStatusFilter("En attente"))}
             className={cn(
               "rounded-2xl bg-white p-4 lg:p-5 border shadow-sm transition-all duration-200 cursor-pointer group",
               statusFilter === "En attente" ? "border-amber-500 ring-2 ring-amber-500/10 shadow-md" : "border-slate-200/70 hover:border-slate-300"
@@ -341,7 +341,7 @@ export default function LeavePage() {
 
           {/* Approuvées */}
           <div 
-            onClick={() => setStatusFilter("Approuvé")}
+            onClick={() => startTransition(() => setStatusFilter("Approuvé"))}
             className={cn(
               "rounded-2xl bg-white p-4 lg:p-5 border shadow-sm transition-all duration-200 cursor-pointer group",
               statusFilter === "Approuvé" ? "border-emerald-500 ring-2 ring-emerald-500/10 shadow-md" : "border-slate-200/70 hover:border-slate-300"

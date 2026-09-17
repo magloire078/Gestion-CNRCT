@@ -32,26 +32,47 @@ function normalize(value: string): string {
   return value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+function isPresidentPoste(poste: string = ''): boolean {
+  const p = normalize(poste);
+  if (!p.includes('president')) return false;
+  if (p.includes('vice')) return false;
+  const isSupportStaff = [
+    'secretar', 'secreta', 'cabinet', 'assistant', 'assistante', 
+    'conseil', 'charge', 'chauffeur', 'aide', 'protocole', 'garde', 'directeur', 'directrice'
+  ].some(ex => p.includes(ex));
+  return !isSupportStaff;
+}
+
 function isDirectoireMember(data: FirebaseFirestore.DocumentData): boolean {
   if (data.status && data.status !== 'Actif' && data.status !== 'En congé' && data.status !== 'actif') return false;
+
+  const poste = normalize(data.poste || '');
+  const isSupportStaff = [
+    'secretariat', 'secretaire', 'assistant', 'assistante', 
+    'chauffeur', 'protocole', 'garde', 'charge de mission', 'chargee de mission'
+  ].some(kw => poste.includes(kw)) && !poste.includes('secretaire general');
+
+  if (isSupportStaff) return false;
+
   if (data.departmentId === DIRECTOIRE_DEPT_ID) return true;
 
   const matricule: string = data.matricule || '';
   if (DIRECTOIRE_MATRICULE_PREFIXES.some((prefix) => matricule.startsWith(prefix))) return true;
 
-  const poste = normalize(data.poste || '');
   return poste.length > 0 && DIRECTOIRE_POSTE_KEYWORDS.some((keyword) => poste.includes(normalize(keyword)));
 }
 
 function rankOf(poste: string = ''): number {
   const p = normalize(poste);
-  if (p.includes('president') && !p.includes('vice')) return 1;
+  if (isPresidentPoste(p)) return 1;
   if (p.includes('1er vice-president') || p.includes('premier vice-president')) return 2;
   if (p.includes('2eme vice-president') || p.includes('deuxieme vice-president')) return 3;
   if (p.includes('3eme vice-president') || p.includes('troisieme vice-president')) return 4;
   if (p.includes('4eme vice-president') || p.includes('quatrieme vice-president')) return 5;
   if (p.includes('5eme vice-president') || p.includes('cinquieme vice-president')) return 6;
+  if (p.includes('vice-president')) return 6.5;
   if (p.includes('secretaire general')) return 7;
+  if (p.includes('directrice de cabinet') || p.includes('directeur de cabinet')) return 7.5;
   if (p.includes('membre du bureau')) return 8;
   if (p.includes('membre du directoire')) return 9;
   return 99;

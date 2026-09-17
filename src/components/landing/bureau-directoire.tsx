@@ -27,13 +27,24 @@ export function BureauDirectoire({ loading, members, allDirectors = [], pastDire
   const showStatus = canSeeGovernanceStatus();
   const isEmpActive = (m: Employe) => !m.status || m.status === 'Actif' || m.status === 'En congé';
 
-  const president = members.find(m => isEmpActive(m) && m.poste?.toLowerCase().includes('president') && !m.poste?.toLowerCase().includes('vice'));
+  const isPresident = (p: string = '') => {
+    const norm = p.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    if (!norm.includes('president')) return false;
+    if (norm.includes('vice')) return false;
+    const isSupportStaff = [
+      'secretar', 'secreta', 'cabinet', 'assistant', 'assistante', 
+      'conseil', 'charge', 'chauffeur', 'aide', 'protocole', 'garde', 'directeur', 'directrice'
+    ].some(ex => norm.includes(ex));
+    return !isSupportStaff;
+  };
+
+  const president = members.find(m => isEmpActive(m) && isPresident(m.poste || ''));
   const vicePresidents = members.filter(m => isEmpActive(m) && m.poste?.toLowerCase().includes('vice-president'));
 
   const bureauMembers = members.filter(m =>
     isEmpActive(m) &&
     (m.poste?.toLowerCase().includes('membre du bureau') || m.poste?.toLowerCase().includes('membre du directoire')) &&
-    !m.poste?.toLowerCase().includes('president') &&
+    !isPresident(m.poste || '') &&
     !m.poste?.toLowerCase().includes('vice-president')
   );
 

@@ -34,13 +34,15 @@ export default function InstitutionPage() {
                 if (members.length === 0 && directory.length > 0) {
                     const DIRECTOIRE_DEPT_ID = '9ywKFDgVMS86rZLPYhpm';
                     const DIRECTOIRE_KEYWORDS = [
-                        'president', 'président', 'vice-president', 'vice-président', 
+                        'president du directoire', 'président du directoire', 'vice-president', 'vice-président', 
                         'secretaire general', 'secrétaire général', 'membre du directoire', 
                         'membre du bureau', 'directrice de cabinet', 'directeur de cabinet'
                     ];
                     members = directory.filter(emp => {
-                        if (emp.departmentId === DIRECTOIRE_DEPT_ID) return true;
                         const p = (emp.poste || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        const isSupport = ['secretariat', 'secretaire', 'assistant', 'assistante', 'chauffeur', 'protocole'].some(kw => p.includes(kw)) && !p.includes('secretaire general');
+                        if (isSupport) return false;
+                        if (emp.departmentId === DIRECTOIRE_DEPT_ID) return true;
                         return DIRECTOIRE_KEYWORDS.some(kw => p.includes(kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '')));
                     });
                 }

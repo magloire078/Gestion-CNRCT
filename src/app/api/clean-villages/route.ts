@@ -37,6 +37,9 @@ function normalizeKey(str: string): string {
 
 export async function POST() {
     try {
+        if (!adminDb) {
+            return NextResponse.json({ success: false, error: 'Database service unavailable' }, { status: 503 });
+        }
         console.log('[CleanVillages API] Starting cleanup & deduplication...');
         const villageSnap = await adminDb.collection('villages').get();
         const villages = villageSnap.docs.map(d => ({ id: d.id, ...d.data() as any, ref: d.ref }));

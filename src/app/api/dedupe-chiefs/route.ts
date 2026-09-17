@@ -3,6 +3,9 @@ import { adminDb } from '@/lib/firebase-admin';
 
 export async function GET() {
   try {
+    if (!adminDb) {
+      return NextResponse.json({ success: false, error: 'Database service unavailable' }, { status: 503 });
+    }
     const chiefsRef = adminDb.collection('chiefs');
     const snapshot = await chiefsRef.get();
     

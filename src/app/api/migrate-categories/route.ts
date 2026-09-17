@@ -5,8 +5,6 @@ import { requireSuperAdmin, requireAppCheck } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-const db = adminDb;
-
 export async function GET(req: NextRequest) {
     try {
         const appCheckError = await requireAppCheck(req);
@@ -14,6 +12,11 @@ export async function GET(req: NextRequest) {
 
         const { errorResponse } = await requireSuperAdmin(req);
         if (errorResponse) return errorResponse;
+
+        if (!adminDb) {
+            return NextResponse.json({ success: false, error: 'Database service unavailable' }, { status: 503 });
+        }
+        const db = adminDb;
 
         const OLD_NAMES = [
             "Fourniture de bureau et documentation",

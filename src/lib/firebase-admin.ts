@@ -1,8 +1,7 @@
 import 'server-only';
 import * as admin from 'firebase-admin';
 
-// Support pour Vercel : On essaye de charger la clé depuis une variable d'environnement
-// sinon on retombe sur applicationDefault()
+// Support pour Vercel / Local : On essaye de charger la clé depuis une variable d'environnement
 let credential;
 
 try {
@@ -14,26 +13,24 @@ try {
     }
     const serviceAccount = JSON.parse(key);
     credential = admin.credential.cert(serviceAccount);
-  } else {
+  } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     credential = admin.credential.applicationDefault();
   }
 } catch (e) {
-  console.warn("Could not parse FIREBASE_SERVICE_ACCOUNT_KEY, falling back to applicationDefault()");
-  credential = admin.credential.applicationDefault();
+  console.warn("[FirebaseAdmin] Could not parse FIREBASE_SERVICE_ACCOUNT_KEY");
 }
 
-if (!admin.apps.length) {
+if (!admin.apps.length && credential) {
   try {
     admin.initializeApp({
       credential: credential,
     });
     console.log("[FirebaseAdmin] Initialized successfully.");
   } catch (error: any) {
-    console.error("[FirebaseAdmin] Initialization CRITICAL error:", error.message);
-    if (error.stack) console.error(error.stack);
+    console.warn("[FirebaseAdmin] Initialization warning:", error.message);
   }
 }
 
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
-export const adminStorage = admin.storage();
+export const adminDb: FirebaseFirestore.Firestore | null = admin.apps.length ? admin.firestore() : null;
+export const adminAuth: admin.auth.Auth | null = admin.apps.length ? admin.auth() : null;
+export const adminStorage: admin.storage.Storage | null = admin.apps.length ? admin.storage() : null;

@@ -18,6 +18,11 @@ async function verifyBearerToken(req: NextRequest): Promise<AuthContext | null> 
   }
 
   const token = authHeader.split('Bearer ')[1];
+  if (!adminAuth) {
+    console.warn('[API Auth] adminAuth is not available');
+    return null;
+  }
+
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
     

@@ -119,11 +119,16 @@ service cloud.firestore {
     match /employees/{employeeId} {
       // Le bureau du Directoire affiché publiquement passe désormais par
       // /api/institution/directoire, qui ne renvoie que nom, poste et photo.
-      // Aucune lecture anonyme ici : la fiche porte le salaire et le RIB.
+      // L'accès anonyme reste strictement fermé. Les utilisateurs authentifiés
+      // accèdent aux fiches actives du Directoire pour le fonctionnement interne.
       allow read: if can('employees', 'read') ||
                    (isSignedIn() && (
                      employeeId == getUserData().get('employeeId', '') ||
-                     resource.data.get('userId', '') == request.auth.uid
+                     resource.data.get('userId', '') == request.auth.uid ||
+                     (resource.data.status == 'Actif' && (
+                       resource.data.departmentId == '9ywKFDgVMS86rZLPYhpm' || 
+                       resource.data.poste in ['Président', 'Secrétaire Général', 'Membre du Directoire']
+                     ))
                    ));
       allow create: if can('employees', 'create');
       allow update: if can('employees', 'update');

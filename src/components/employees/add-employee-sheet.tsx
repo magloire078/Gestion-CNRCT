@@ -322,7 +322,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       <div className="grid grid-cols-2 gap-5">
                          <div className="space-y-2">
                           <Label htmlFor="matricule" className="text-slate-700 font-medium">N° Matricule</Label>
-                          <Input id="matricule" value={matricule} onChange={(e) => setMatricule(e.target.value)} required className="h-11 rounded-lg bg-slate-50 border-slate-200 focus-visible:ring-blue-500/50" />
+                          <Input id="matricule" value={matricule} onChange={(e) => { const v = e.target.value; startTransition(() => setMatricule(v)); }} required className="h-11 rounded-lg bg-slate-50 border-slate-200 focus-visible:ring-blue-500/50" />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="sexe" className="text-slate-700 font-medium">Genre</Label>
@@ -339,15 +339,15 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName" className="text-slate-700 font-medium">Nom de Famille</Label>
-                        <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="h-11 rounded-lg border-slate-200 uppercase" />
+                        <Input id="lastName" value={lastName} onChange={(e) => { const v = e.target.value; startTransition(() => setLastName(v)); }} required className="h-11 rounded-lg border-slate-200 uppercase" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="firstName" className="text-slate-700 font-medium">Prénom(s)</Label>
-                        <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-11 rounded-lg border-slate-200 capitalize" />
+                        <Input id="firstName" value={firstName} onChange={(e) => { const v = e.target.value; startTransition(() => setFirstName(v)); }} required className="h-11 rounded-lg border-slate-200 capitalize" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-slate-700 font-medium">Canal Email (Personnel)</Label>
-                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-lg border-slate-200" placeholder="exemple@cnrct.ci" />
+                        <Input id="email" type="email" value={email} onChange={(e) => { const v = e.target.value; startTransition(() => setEmail(v)); }} className="h-11 rounded-lg border-slate-200" placeholder="exemple@cnrct.ci" />
                       </div>
                     </div>
 
@@ -359,12 +359,12 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="poste" className="text-slate-700 font-medium">Intitulé du Poste</Label>
-                        <Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} required className="h-11 rounded-lg border-slate-200" />
+                        <Input id="poste" value={poste} onChange={(e) => { const v = e.target.value; startTransition(() => setPoste(v)); }} required className="h-11 rounded-lg border-slate-200" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="grade" className="text-slate-700 font-medium">Grade / Rang</Label>
                         {isGardeOrGendarme ? (
-                          <Select value={grade} onValueChange={setGrade}>
+                          <Select value={grade} onValueChange={(val) => startTransition(() => setGrade(val))}>
                             <SelectTrigger id="grade" className="h-11 rounded-lg border-slate-200 bg-white font-medium text-slate-700">
                               <SelectValue placeholder="Sélectionner le grade..." />
                             </SelectTrigger>
@@ -373,7 +373,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Input id="grade" value={grade} onChange={(e) => setGrade(e.target.value)} className="h-11 rounded-lg border-slate-200" placeholder="EX: Sergent, MDL-Chef, Capitaine..." />
+                          <Input id="grade" value={grade} onChange={(e) => { const v = e.target.value; startTransition(() => setGrade(v)); }} className="h-11 rounded-lg border-slate-200" placeholder="EX: Sergent, MDL-Chef, Capitaine..." />
                         )}
                       </div>
                       <div className="space-y-4">
@@ -533,7 +533,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         <h3 className="text-base font-semibold text-slate-800">Paramètres de Gestion RH</h3>
                       </div>
                       <div className="grid grid-cols-2 gap-5">
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                           <Label htmlFor="status" className="text-slate-700 font-medium">Statut Courant</Label>
                           <Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required>
                             <SelectTrigger className={cn("h-11 rounded-lg border-slate-200 bg-white font-medium", status === 'Actif' ? 'text-emerald-600' : 'text-slate-600')}>
@@ -551,7 +551,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="numDecision" className="text-slate-700 font-medium">Référence Décision</Label>
-                          <Input id="numDecision" value={numDecision} onChange={(e) => setNumDecision(e.target.value)} className="h-11 rounded-lg border-slate-200 bg-white" placeholder="EX: DEC-2024-..." />
+                          <Input id="numDecision" value={numDecision} onChange={(e) => { const v = e.target.value; startTransition(() => setNumDecision(v)); }} className="h-11 rounded-lg border-slate-200 bg-white" placeholder="EX: DEC-2024-..." />
                         </div>
                       </div>
 
@@ -584,7 +584,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                             id="dateDepart" 
                             type="date" 
                             value={dateDepart} 
-                            onChange={(e) => setDateDepart(e.target.value)} 
+                            onChange={(e) => { const v = e.target.value; startTransition(() => setDateDepart(v)); }} 
                             className="h-11 rounded-lg border-slate-200 bg-white text-rose-600 font-medium" 
                           />
                         </div>
@@ -611,19 +611,19 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                             <div className="space-y-2">
                               <Label className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Date d'immatriculation</Label>
                               <Input 
-                                type="date"
+                                type="date" 
                                 value={dateImmatriculation} 
-                                onChange={(e) => setDateImmatriculation(e.target.value)}
-                                className="h-11 rounded-lg border-blue-200 bg-white focus-visible:ring-blue-500"
+                                onChange={(e) => { const v = e.target.value; startTransition(() => setDateImmatriculation(v)); }} 
+                                className="h-11 rounded-lg border-blue-200 bg-white focus-visible:ring-blue-500" 
                               />
                             </div>
                             <div className="space-y-2">
                               <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cessation (Optionnel)</Label>
                               <Input 
-                                type="date"
+                                type="date" 
                                 value={dateCessationCNPS} 
-                                onChange={(e) => setDateCessationCNPS(e.target.value)}
-                                className="h-11 rounded-lg border-slate-200 bg-white focus-visible:ring-slate-500"
+                                onChange={(e) => { const v = e.target.value; startTransition(() => setDateCessationCNPS(v)); }} 
+                                className="h-11 rounded-lg border-slate-200 bg-white focus-visible:ring-slate-500" 
                               />
                             </div>
                           </div>
@@ -635,7 +635,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         <Textarea 
                           id="skills" 
                           value={skills} 
-                          onChange={(e) => setSkills(e.target.value)} 
+                          onChange={(e) => { const v = e.target.value; startTransition(() => setSkills(v)); }} 
                           className="rounded-xl border-slate-200 bg-white min-h-[100px] p-4 text-sm focus-visible:ring-blue-500/50" 
                           placeholder="EX: Gestion de Projet, Informatique, Mécanique..." 
                         />

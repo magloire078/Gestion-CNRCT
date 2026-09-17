@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, getDoc, updateDoc, deleteDoc, limit, runTransaction, where } from '@/lib/firebase';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, getDoc, setDoc, updateDoc, deleteDoc, limit, runTransaction, where } from '@/lib/firebase';
 import type { Mission } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { missionSchema } from '@/lib/schemas/mission-schema';
@@ -122,29 +122,25 @@ export async function getMission(id: string): Promise<Mission | null> {
 export async function addMission(missionDataToAdd: Omit<Mission, 'id'>): Promise<Mission> {
     const participantIds = syncParticipantIds(missionDataToAdd);
     
-    // Auto-increment the counter inside a transaction during actual document creation
-    const counterId = 'missions';
-    const counterRef = doc(db, 'counters', counterId);
-    let assignedNumber = 1;
+    let finalNumeroMission = (missionDataToAdd.numeroMission || '').trim();
 
-    try {
-        assignedNumber = await runTransaction(db, async (transaction) => {
-            const counterDoc = await transaction.get(counterRef);
-            if (!counterDoc.exists()) {
-                transaction.set(counterRef, { lastNumber: 1 });
-                return 1;
-            }
-            const newLastNumber = counterDoc.data().lastNumber + 1;
-            transaction.update(counterRef, { lastNumber: newLastNumber });
-            return newLastNumber;
-        });
-    } catch (err) {
-        console.error("Failed to increment mission number transaction, using fallback:", err);
-        const fallback = parseInt(missionDataToAdd.numeroMission, 10);
-        assignedNumber = isNaN(fallback) ? Math.floor(Math.random() * 100) + 1 : fallback;
+    // Auto-compute next mission number if empty, "000", or if "001" was defaulted while higher numbers exist
+    const nextAvailable = await getLatestMissionNumber(true);
+    if (!finalNumeroMission || finalNumeroMission === '000' || (finalNumeroMission === '001' && nextAvailable > 2)) {
+        finalNumeroMission = nextAvailable.toString().padStart(3, '0');
     }
 
-    const finalNumeroMission = assignedNumber.toString().padStart(3, '0');
+    // Try updating counter document in background
+    try {
+        const numVal = parseInt(finalNumeroMission, 10);
+        if (!isNaN(numVal)) {
+            const counterRef = doc(db, 'counters', 'missions');
+            await setDoc(counterRef, { lastNumber: numVal }, { merge: true });
+        }
+    } catch {
+        // Non-blocking
+    }
+
     const finalData = { 
         ...missionDataToAdd, 
         numeroMission: finalNumeroMission,
@@ -187,18 +183,58 @@ export async function deleteMission(id: string): Promise<void> {
 
 export async function getLatestMissionNumber(isDossier: boolean = true): Promise<number> {
     const counterId = isDossier ? 'missions' : 'missionOrders';
-    const counterRef = doc(db, 'counters', counterId);
+    let maxFromMissions = 0;
 
     try {
-        const counterDoc = await getDoc(counterRef);
-        if (!counterDoc.exists()) {
-            return isDossier ? 1 : 1000;
-        }
-        return counterDoc.data().lastNumber + 1;
+        const snapshot = await getDocs(missionsCollection);
+        snapshot.docs.forEach(docSnap => {
+            const data = docSnap.data();
+            if (isDossier) {
+                if (data.numeroMission) {
+                    const match = String(data.numeroMission).match(/(\d+)/);
+                    if (match) {
+                        const num = parseInt(match[1], 10);
+                        if (!isNaN(num) && num > maxFromMissions) {
+                            maxFromMissions = num;
+                        }
+                    }
+                }
+            } else {
+                if (data.participants && Array.isArray(data.participants)) {
+                    data.participants.forEach((p: any) => {
+                        if (p.numeroOrdre) {
+                            const match = String(p.numeroOrdre).match(/(\d+)/);
+                            if (match) {
+                                const num = parseInt(match[1], 10);
+                                if (!isNaN(num) && num > maxFromMissions) {
+                                    maxFromMissions = num;
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
     } catch (error) {
-        console.error(`Error peeking latest number for ${counterId}:`, error);
-        return 1;
+        console.warn(`Could not scan missions for max number:`, error);
     }
+
+    let counterVal = 0;
+    try {
+        const counterRef = doc(db, 'counters', counterId);
+        const counterDoc = await getDoc(counterRef);
+        if (counterDoc.exists() && typeof counterDoc.data().lastNumber === 'number') {
+            counterVal = counterDoc.data().lastNumber;
+        }
+    } catch {
+        // ignore
+    }
+
+    const nextNumber = Math.max(maxFromMissions, counterVal) + 1;
+    if (!isDossier && nextNumber < 1000) {
+        return 1000;
+    }
+    return nextNumber;
 }
 
 /**

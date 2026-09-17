@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, startTransition } from "react";
 import {
   PlusCircle, Search, Eye, Pencil, Trash2,
   MoreHorizontal, FileText, Calendar,
@@ -292,7 +292,7 @@ export default function MissionsPage() {
 
             {canCreate && (
               <Button 
-                onClick={() => setIsSheetOpen(true)} 
+                onClick={() => startTransition(() => setIsSheetOpen(true))} 
                 className="h-10 rounded-xl bg-slate-900 px-4 font-bold text-xs shadow-md shadow-slate-900/15 active:scale-95 transition-all text-white hover:bg-slate-800 gap-2"
               >
                 <PlusCircle className="h-4 w-4 text-emerald-400" />

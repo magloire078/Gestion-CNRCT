@@ -249,6 +249,10 @@ service cloud.firestore {
       allow delete: if can('fuel', 'delete');
     }
 
+    match /counters/{id} {
+      allow read, write: if isSignedIn();
+    }
+
     match /supplies/{supplyId} {
       allow read: if can('supplies', 'read');
       allow create: if can('supplies', 'create');

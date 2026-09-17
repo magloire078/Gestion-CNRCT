@@ -23,4 +23,6 @@ export type Role = {
     name: string;
     permissions: string[]; // Legacy permissions
     resourcePermissions?: ResourcePermissions; // New CRUD matrix
+    /** Lu directement par firestore.rules : contourne toute la matrice de droits. */
+    isSuperAdmin?: boolean;
 }

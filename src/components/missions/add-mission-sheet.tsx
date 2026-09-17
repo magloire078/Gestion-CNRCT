@@ -183,24 +183,20 @@ export function AddMissionSheet({
             </div>
           </DialogHeader>
 
-          {loadingInitial ? (
-            <div className="flex flex-col items-center justify-center h-80 gap-4 bg-slate-50">
-              <div className="h-12 w-12 rounded-full border-4 border-slate-200 border-t-slate-900 animate-spin" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Génération du numéro de dossier...</p>
-            </div>
-          ) : (
             <div className="overflow-y-auto max-h-[65vh] p-6 bg-slate-50 space-y-4">
               {/* Status & ID Header */}
               <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-100 gap-4">
                 <div className="space-y-1 flex-1">
-                  <Label htmlFor="numeroMission" className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  <Label htmlFor="numeroMission" className="text-[9px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
                     N° Dossier (Généré automatiquement)
+                    {loadingInitial && <Loader2 className="h-3 w-3 animate-spin text-slate-400" />}
                   </Label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-400">ORD-</span>
                     <Input 
                       id="numeroMission"
                       value={numeroMission}
+                      placeholder={loadingInitial ? "Calcul..." : "001"}
                       onChange={(e) => setNumeroMission(e.target.value)}
                       className="h-9 w-28 rounded-lg border-slate-200 bg-slate-50 font-black text-sm text-slate-900"
                     />
@@ -398,7 +394,6 @@ export function AddMissionSheet({
                 )}
               </div>
             </div>
-          )}
 
           <DialogFooter className="p-6 bg-white border-t border-slate-100 sm:flex-row gap-3 rounded-b-[1.5rem] mt-auto">
             <DialogClose asChild>
@@ -408,7 +403,7 @@ export function AddMissionSheet({
             </DialogClose>
             <Button 
               type="submit" 
-              disabled={isSubmitting || loadingInitial}
+              disabled={isSubmitting}
               className="flex-[2] h-12 rounded-xl bg-slate-900 shadow-xl shadow-slate-900/20 font-bold uppercase tracking-wider text-[11px] hover:bg-black active:scale-95 transition-all text-white"
             >
               {isSubmitting ? "Initialisation..." : "Créer et Programmer l'Équipage"}

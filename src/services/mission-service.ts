@@ -183,10 +183,26 @@ export async function deleteMission(id: string): Promise<void> {
 
 export async function getLatestMissionNumber(isDossier: boolean = true): Promise<number> {
     const counterId = isDossier ? 'missions' : 'missionOrders';
-    let maxFromMissions = 0;
 
+    // 1. Ultra-fast direct check on counter doc (single doc lookup < 50ms)
     try {
-        const snapshot = await getDocs(missionsCollection);
+        const counterRef = doc(db, 'counters', counterId);
+        const counterDoc = await getDoc(counterRef);
+        if (counterDoc.exists()) {
+            const lastNumber = counterDoc.data()?.lastNumber;
+            if (typeof lastNumber === 'number' && lastNumber > 0) {
+                const next = lastNumber + 1;
+                return (!isDossier && next < 1000) ? 1000 : next;
+            }
+        }
+    } catch {
+        // Fallback to limited scan
+    }
+
+    let maxFromMissions = 0;
+    try {
+        const q = query(missionsCollection, limit(50));
+        const snapshot = await getDocs(q);
         snapshot.docs.forEach(docSnap => {
             const data = docSnap.data();
             if (isDossier) {
@@ -219,18 +235,7 @@ export async function getLatestMissionNumber(isDossier: boolean = true): Promise
         console.warn(`Could not scan missions for max number:`, error);
     }
 
-    let counterVal = 0;
-    try {
-        const counterRef = doc(db, 'counters', counterId);
-        const counterDoc = await getDoc(counterRef);
-        if (counterDoc.exists() && typeof counterDoc.data().lastNumber === 'number') {
-            counterVal = counterDoc.data().lastNumber;
-        }
-    } catch {
-        // ignore
-    }
-
-    const nextNumber = Math.max(maxFromMissions, counterVal) + 1;
+    const nextNumber = maxFromMissions + 1;
     if (!isDossier && nextNumber < 1000) {
         return 1000;
     }

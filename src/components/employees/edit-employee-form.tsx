@@ -26,7 +26,7 @@ import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
 import { updateEmployee, getEmployeeDirectory } from "@/services/employee-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Loader2, Save, X, Trash2, UserCircle2, Briefcase } from "lucide-react";
+import { Upload, Loader2, Save, X, Trash2, UserCircle2, Briefcase, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -489,15 +489,20 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                                 : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                             )}
                           >
-                            <Checkbox 
-                              checked={isSelected} 
-                              tabIndex={-1}
-                              className={cn("rounded-md pointer-events-none", isSelected ? "border-white data-[state=checked]:bg-white data-[state=checked]:text-slate-900" : "")} 
-                            />
-                            <span className="text-xs font-black uppercase tracking-tight">{status}</span>
-                          </button>
-                        );
-                      })}
+                              <div 
+                                className={cn(
+                                  "h-4 w-4 shrink-0 rounded-sm border flex items-center justify-center transition-colors pointer-events-none",
+                                  isSelected 
+                                    ? "border-white bg-white text-slate-900" 
+                                    : "border-slate-300 bg-white text-transparent"
+                                )}
+                              >
+                                <Check className={cn("h-3 w-3 stroke-[3]", isSelected ? "opacity-100" : "opacity-0")} />
+                              </div>
+                              <span className="text-xs font-black uppercase tracking-tight">{status}</span>
+                            </button>
+                          );
+                        })}
                     </div>
                   </CardContent>
                 </Card>

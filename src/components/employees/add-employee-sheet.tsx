@@ -38,7 +38,7 @@ import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
 import { getLatestMatricule } from "@/services/employee-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Loader2, UserCircle2, Building2, MapPin, ShieldCheck, Briefcase, Info, Save, XCircle } from "lucide-react";
+import { Upload, Loader2, UserCircle2, Building2, MapPin, ShieldCheck, Briefcase, Info, Save, XCircle, Check } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { IVORIAN_REGIONS } from "@/constants/regions";
@@ -514,11 +514,16 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                                   : "bg-slate-50/50 border-slate-200 text-slate-700 hover:bg-slate-100"
                               )}
                             >
-                              <Checkbox 
-                                checked={isSelected} 
-                                tabIndex={-1}
-                                className={cn("rounded-md pointer-events-none", isSelected ? "border-white data-[state=checked]:bg-white data-[state=checked]:text-slate-900" : "")} 
-                              />
+                              <div 
+                                className={cn(
+                                  "h-4 w-4 shrink-0 rounded-sm border flex items-center justify-center transition-colors pointer-events-none",
+                                  isSelected 
+                                    ? "border-white bg-white text-slate-900" 
+                                    : "border-slate-300 bg-white text-transparent"
+                                )}
+                              >
+                                <Check className={cn("h-3 w-3 stroke-[3]", isSelected ? "opacity-100" : "opacity-0")} />
+                              </div>
                               <span className="uppercase text-[10px] tracking-tight">{status}</span>
                             </button>
                           );

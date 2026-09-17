@@ -322,12 +322,16 @@ export async function getEmployees(): Promise<Employe[]> {
 export async function getEmployeeDirectory(): Promise<Employe[]> {
     try {
         let headers: HeadersInit = {};
+        let isAuthenticated = false;
         try {
             const { getAuth } = await import('firebase/auth');
             const auth = getAuth();
             if (auth.currentUser) {
                 const token = await auth.currentUser.getIdToken();
-                headers = { 'Authorization': `Bearer ${token}` };
+                if (token) {
+                    headers = { 'Authorization': `Bearer ${token}` };
+                    isAuthenticated = true;
+                }
             }
             
             const { getToken } = await import('firebase/app-check');
@@ -337,12 +341,25 @@ export async function getEmployeeDirectory(): Promise<Employe[]> {
                 (headers as any)['X-Firebase-AppCheck'] = appCheckToken.token;
             }
         } catch (authErr) {
-            console.warn('[EmployeeService] Auth/AppCheck not available for directory fetch');
+            // Auth/AppCheck not initialized yet
+        }
+
+        // If not authenticated, avoid triggering 401 error from directory API
+        if (!isAuthenticated) {
+            if (typeof window !== 'undefined') {
+                const cached = localStorage.getItem('cnrct_cached_employees');
+                if (cached) {
+                    try {
+                        return JSON.parse(cached);
+                    } catch {}
+                }
+            }
+            return [];
         }
 
         const response = await fetch('/api/employees/directory', { headers });
         if (!response.ok) {
-            console.warn('[EmployeeService] Directory API failed, falling back to client-side fetch');
+            console.warn('[EmployeeService] Directory API response not ok, attempting fallback');
             return await getEmployees();
         }
         const data = await response.json();
@@ -355,19 +372,19 @@ export async function getEmployeeDirectory(): Promise<Employe[]> {
         }
         return data;
     } catch (error) {
-        console.error('[EmployeeService] Failed to fetch employee directory API, falling back to client-side fetch:', error);
+        console.warn('[EmployeeService] Directory API unavailable, attempting client fallback');
         try {
             return await getEmployees();
         } catch (fallbackError) {
-            console.error('[EmployeeService] Fallback to getEmployees also failed:', fallbackError);
             if (typeof window !== 'undefined') {
                 const cached = localStorage.getItem('cnrct_cached_employees');
                 if (cached) {
-                    console.warn('[EmployeeService] Returning cached employees from localStorage due to fetch failure');
-                    return JSON.parse(cached);
+                    try {
+                        return JSON.parse(cached);
+                    } catch {}
                 }
             }
-            throw error;
+            return [];
         }
     }
 }
@@ -714,13 +731,18 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
                 headers['X-Firebase-AppCheck'] = appCheckToken.token;
             }
         } catch {
-            console.warn('[employee-service] AppCheck indisponible pour le bureau du Directoire');
+            // AppCheck optional
         }
 
         const response = await fetch('/api/institution/directoire', { headers });
         if (response.ok) {
             const data = await response.json();
             if (Array.isArray(data) && data.length > 0) {
+                if (typeof window !== 'undefined') {
+                    try {
+                        localStorage.setItem('cnrct_cached_directoire', JSON.stringify(data));
+                    } catch {}
+                }
                 return data as Employe[];
             }
         }
@@ -746,9 +768,21 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
                 if (['DIR', 'PRE', 'D 0'].some(prefix => (emp.matricule || '').startsWith(prefix))) return true;
                 return ['president', 'secretaire general', 'membre du directoire', 'membre du bureau', 'directrice de cabinet', 'directeur de cabinet'].some(kw => poste.includes(kw));
             });
+        if (members.length > 0 && typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('cnrct_cached_directoire', JSON.stringify(members));
+            } catch {}
+        }
         return members;
     } catch (fallbackErr) {
-        console.error('[employee-service] Client-side fetch for directoire members failed:', fallbackErr);
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('cnrct_cached_directoire');
+            if (cached) {
+                try {
+                    return JSON.parse(cached);
+                } catch {}
+            }
+        }
         return [];
     }
 }

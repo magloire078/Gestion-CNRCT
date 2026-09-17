@@ -169,13 +169,20 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         repository: READ_CREATE, assistant: ALL_READ, documents: READ_CREATE, mails: ALL_CRUD,
     }),
     'employe': buildDefault({
-        dashboard: ALL_READ, intranet: ALL_READ, repository: ALL_READ, assistant: ALL_READ,
-        tickets: NO_ACCESS, 'my-space': ALL_READ,
-        missions: NO_ACCESS,
+        intranet: ALL_READ, assistant: ALL_READ,
+        tickets: READ_CREATE, 'my-space': ALL_READ,
+    }),
+    'employe-operationnel': buildDefault({
+        intranet: ALL_READ, assistant: ALL_READ,
+        tickets: READ_CREATE, 'my-space': ALL_READ,
     }),
     'stagiaire': buildDefault({
-        dashboard: ALL_READ, intranet: ALL_READ, repository: ALL_READ, assistant: ALL_READ,
-        tickets: READ_CREATE,
+        intranet: ALL_READ, assistant: ALL_READ,
+        tickets: READ_CREATE, 'my-space': ALL_READ,
+    }),
+    'stagiaire-apprenti': buildDefault({
+        intranet: ALL_READ, assistant: ALL_READ,
+        tickets: READ_CREATE, 'my-space': ALL_READ,
     }),
     'auditeur': buildDefault({
         dashboard: ALL_READ, intranet: ALL_READ, employees: ALL_READ, payroll: ALL_READ,
@@ -233,5 +240,7 @@ export const ENTERPRISE_ROLES: RoleConfig[] = [
     { id: 'directoire-central', label: 'Membre du Directoire Central', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['directoire-central'] },
     { id: 'comite-regional', label: 'Membre de Comité Régional', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['comite-regional'] },
     { id: 'employe', label: 'Employé Opérationnel', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['employe'] },
+    { id: 'employe-operationnel', label: 'Employé Opérationnel', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['employe-operationnel'] },
     { id: 'stagiaire', label: 'Stagiaire / Apprenti', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['stagiaire'] },
+    { id: 'stagiaire-apprenti', label: 'Stagiaire / Apprenti', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['stagiaire-apprenti'] },
 ];

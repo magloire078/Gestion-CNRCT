@@ -47,14 +47,42 @@ export const SearchableSelect = React.memo(({
     disabled = false,
 }: SearchableSelectProps) => {
     const [open, setOpen] = React.useState(false)
+    const [searchQuery, setSearchQuery] = React.useState("")
+    const deferredQuery = React.useDeferredValue(searchQuery)
 
     const selectedItem = React.useMemo(
         () => items.find((item) => item.value === value),
         [items, value]
     )
 
+    const handleOpenChange = React.useCallback((nextOpen: boolean) => {
+        React.startTransition(() => {
+            setOpen(nextOpen)
+            if (!nextOpen) {
+                setSearchQuery("")
+            }
+        })
+    }, [])
+
+    const filteredItems = React.useMemo(() => {
+        const q = deferredQuery.trim().toLowerCase()
+        if (!q) {
+            return items.slice(0, 40)
+        }
+        const matches: SearchableSelectItem[] = []
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i]
+            const searchTarget = (item.searchTerms ? `${item.searchTerms} ${item.label}` : item.label).toLowerCase()
+            if (searchTarget.includes(q)) {
+                matches.push(item)
+                if (matches.length >= 40) break
+            }
+        }
+        return matches
+    }, [items, deferredQuery])
+
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={handleOpenChange}>
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
@@ -71,30 +99,37 @@ export const SearchableSelect = React.memo(({
             </PopoverTrigger>
             {open && (
                 <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <Command>
-                        <CommandInput placeholder={searchPlaceholder} />
+                    <Command shouldFilter={false}>
+                        <CommandInput 
+                            placeholder={searchPlaceholder} 
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                        />
                         <CommandList>
-                            <CommandEmpty>{emptyMessage}</CommandEmpty>
-                            <CommandGroup>
-                                {items.map((item) => (
-                                    <CommandItem
-                                        key={item.value}
-                                        value={item.searchTerms || item.label}
-                                        onSelect={() => {
-                                            onValueChange(item.value)
-                                            setOpen(false)
-                                        }}
-                                    >
-                                        <Check
-                                            className={cn(
-                                                "mr-2 h-4 w-4",
-                                                value === item.value ? "opacity-100" : "opacity-0"
-                                            )}
-                                        />
-                                        {item.label}
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
+                            {filteredItems.length === 0 ? (
+                                <CommandEmpty>{emptyMessage}</CommandEmpty>
+                            ) : (
+                                <CommandGroup>
+                                    {filteredItems.map((item) => (
+                                        <CommandItem
+                                            key={item.value}
+                                            value={item.value}
+                                            onSelect={() => {
+                                                onValueChange(item.value)
+                                                handleOpenChange(false)
+                                            }}
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    value === item.value ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                            {item.label}
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            )}
                         </CommandList>
                     </Command>
                 </PopoverContent>

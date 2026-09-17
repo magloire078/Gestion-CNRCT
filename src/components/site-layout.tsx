@@ -339,7 +339,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
     if (user.employeeId) {
       const subItems = [
-        ...(hasPermission('page:payroll:view') ? [{ href: "/payroll", label: "Ma Paie", icon: Landmark, permission: "page:payroll:view" }] : []),
         { href: "/leave", label: "Mes Congés", icon: CalendarOff, permission: "" },
         { href: "/missions", label: "Mes Missions", icon: Briefcase, permission: "" },
       ];

@@ -11,6 +11,7 @@ import { InstitutionalHeader } from "./institutional-header";
 import { InstitutionalFooter } from "./institutional-footer";
 import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
 import { findComiteRegionalMember, getMemberChiefStatuses } from "@/lib/comites-regionaux-2026";
+import { getOfficialRegion, getOfficialDepartment } from "@/lib/normalization-utils";
 
 interface EmployeeOfficialReportProps {
     employees: Employe[];
@@ -26,6 +27,35 @@ interface EmployeeOfficialReportProps {
     orientation?: 'portrait' | 'landscape';
     isPrinting: boolean;
     onAfterPrint?: () => void;
+}
+
+function formatPhone(contact?: string | null): string {
+    if (!contact || contact === '---') return '';
+    const clean = contact.replace(/[^\d+]/g, '');
+    if (clean.length === 10) {
+        return clean.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+    }
+    if (clean.startsWith('225') && clean.length === 13) {
+        const digits = clean.slice(3);
+        return `+225 ${digits.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5')}`;
+    }
+    if (clean.length === 8) {
+        return clean.replace(/(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+    }
+    return contact;
+}
+
+function cleanVillage(raw?: string | null): string {
+    if (!raw || raw === '---') return '';
+    let val = raw.trim();
+    val = val.replace(/^[\/\\:\-\s]+/, '');
+    val = val.replace(/^(Chef\s+(du\s+village|de\s+village|de\s+Canton|de\s+canton|de\s+la\s+Tribu|de\s+tribu|central|de\s+province))\s*[\/:\-]?\s*(de\s+|du\s+|d')?/i, '');
+    val = val.trim();
+    if (!val) return raw.trim();
+    return val.split(/([\s-]+)/).map(w => {
+        if (w.trim() === '' || w === '-') return w;
+        return w.charAt(0).toUpperCase() + w.slice(1);
+    }).join('');
 }
 
 export function EmployeeOfficialReport({ 
@@ -74,25 +104,37 @@ export function EmployeeOfficialReport({
         switch (key) {
             case 'index': return idx + 1;
             case 'name': return fullName;
-            case 'department': return emp.department || '---';
+            case 'department': return emp.department || <span className="text-slate-300">-</span>;
             case 'CNPS': return emp.CNPS ? 'OUI' : 'NON';
-            case 'sexe': return emp.sexe || '---';
+            case 'sexe': {
+                const s = emp.sexe?.trim();
+                if (!s || s === '---') return <span className="text-slate-300 font-bold text-[8px]">-</span>;
+                const isFemme = s.toLowerCase().startsWith('f');
+                return (
+                    <span className={cn(
+                        "font-bold text-[8px]",
+                        isFemme ? "text-rose-700 font-black" : "text-slate-800"
+                    )}>
+                        {isFemme ? "Femme" : "Homme"}
+                    </span>
+                );
+            }
             case 'statutChef': {
                 const statuses = getMemberChiefStatuses(emp);
-                if (statuses.length === 0) return '---';
+                if (statuses.length === 0) return <span className="text-slate-300 font-bold text-[8px]">-</span>;
                 return (
                     <div className="flex flex-wrap gap-1 justify-center items-center">
                         {statuses.map(s => (
                             <span 
                                 key={s} 
                                 className={cn(
-                                    "px-1 py-0.5 rounded text-[7.5px] font-black uppercase tracking-tight whitespace-nowrap",
-                                    s === "Chef de Canton" && "bg-amber-100 text-amber-900",
-                                    s === "Chef de Tribu" && "bg-blue-100 text-blue-900",
-                                    s === "Chef de Village" && "bg-emerald-100 text-emerald-900",
-                                    s === "Roi" && "bg-purple-100 text-purple-900",
-                                    s === "Chef de Province" && "bg-indigo-100 text-indigo-900",
-                                    s === "Chef Central" && "bg-slate-200 text-slate-900"
+                                    "px-1.5 py-0.5 rounded border text-[7.5px] font-black uppercase tracking-tight whitespace-nowrap",
+                                    s === "Chef de Canton" && "bg-amber-50 border-amber-200 text-amber-900",
+                                    s === "Chef de Tribu" && "bg-blue-50 border-blue-200 text-blue-900",
+                                    s === "Chef de Village" && "bg-emerald-50 border-emerald-200 text-emerald-900",
+                                    s === "Roi" && "bg-purple-50 border-purple-200 text-purple-900",
+                                    s === "Chef de Province" && "bg-indigo-50 border-indigo-200 text-indigo-900",
+                                    s === "Chef Central" && "bg-slate-100 border-slate-300 text-slate-900"
                                 )}
                             >
                                 {s}
@@ -113,19 +155,26 @@ export function EmployeeOfficialReport({
                     (emp as any).Mobile || 
                     ((emp.email && !emp.email.includes('@intras') && !emp.email.includes('cnrct.ci')) ? emp.email : '');
                 
+                let contactStr = '';
                 if (directContact && directContact !== '---' && directContact.trim().length > 0) {
-                    return directContact.trim();
+                    contactStr = directContact.trim();
+                } else if (comiteInfo?.contacts) {
+                    contactStr = comiteInfo.contacts.trim();
                 }
-                if (comiteInfo?.contacts) {
-                    return comiteInfo.contacts.trim();
-                }
-                return '---';
+                
+                const formatted = formatPhone(contactStr);
+                if (!formatted) return <span className="text-slate-300 font-bold text-[8px]">-</span>;
+                return (
+                    <span className="font-mono tabular-nums font-bold tracking-tight text-slate-900 text-[8.5px]">
+                        {formatted}
+                    </span>
+                );
             }
             case 'Date_Naissance': 
             case 'dateEmbauche': 
             case 'Date_Depart': {
                 const val = (emp as any)[key];
-                if (!val) return '---';
+                if (!val) return <span className="text-slate-300 font-bold text-[8px]">-</span>;
                 try {
                     return format(new Date(val), 'dd/MM/yyyy');
                 } catch (e) {
@@ -133,37 +182,53 @@ export function EmployeeOfficialReport({
                 }
             }
             case 'age': {
-                if (!emp.Date_Naissance) return '---';
+                if (!emp.Date_Naissance) return <span className="text-slate-300 font-bold text-[8px]">-</span>;
                 const birthDate = new Date(emp.Date_Naissance);
                 const age = new Date().getFullYear() - birthDate.getFullYear();
                 return `${age} ans`;
             }
             case 'status': return (
                 <span className={cn(
-                    "font-black uppercase text-[7px]",
-                    emp.status === 'Actif' ? "text-emerald-700" : "text-slate-700"
+                    "font-black uppercase text-[7.5px] px-1.5 py-0.5 rounded",
+                    emp.status === 'Actif' ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-700 border border-slate-200"
                 )}>
                     {emp.status}
                 </span>
             );
-            case 'Departement': return (emp as any).Departement || (emp as any).departement || comiteInfo?.department || '---';
-            case 'Region': return (emp as any).Region || (emp as any).region || comiteInfo?.region || '---';
+            case 'Departement': {
+                const rawDept = (emp as any).Departement || (emp as any).departement || comiteInfo?.department;
+                const rawRegion = (emp as any).Region || (emp as any).region || comiteInfo?.region;
+                if (!rawDept || rawDept === '---') return <span className="text-slate-300 font-bold text-[8px]">-</span>;
+                return getOfficialDepartment(rawRegion || '', rawDept);
+            }
+            case 'Region': {
+                const raw = (emp as any).Region || (emp as any).region || comiteInfo?.region;
+                if (!raw || raw === '---') return <span className="text-slate-300 font-bold text-[8px]">-</span>;
+                return getOfficialRegion(raw);
+            }
             case 'subPrefecture': {
                 const sp = (emp as any).subPrefecture || (emp as any).sousPrefecture || (emp as any).Commune;
-                if (sp && sp !== '---') return sp;
+                const cleaned = cleanVillage(sp);
+                if (cleaned) return cleaned;
                 if (comiteInfo?.department) return comiteInfo.department;
-                return '---';
+                return <span className="text-slate-300 font-bold text-[8px]">-</span>;
             }
             case 'Village': {
                 const directVillage = (emp as any).Village || (emp as any).village || (emp as any).localite || (emp as any).villageName;
-                if (directVillage && directVillage !== '---') return directVillage;
+                const cleaned = cleanVillage(directVillage);
+                if (cleaned) return cleaned;
                 if (comiteInfo?.fonctionLocalite) {
-                    const clean = comiteInfo.fonctionLocalite.replace(/^Chef (du village|de village|de Canton|de canton|de la Tribu|de tribu|central)(\s+de|\s+du|\s*\/)?\s*/i, '').trim();
-                    if (clean) return clean;
+                    const cleanedLocalite = cleanVillage(comiteInfo.fonctionLocalite);
+                    if (cleanedLocalite) return cleanedLocalite;
                 }
-                return '---';
+                return <span className="text-slate-300 font-bold text-[8px]">-</span>;
             }
-            default: return (emp as any)[key] || '---';
+            case 'poste': {
+                const p = emp.poste || '';
+                if (!p || p === '---') return <span className="text-slate-300 font-bold text-[8px]">-</span>;
+                return <span className="italic text-slate-600 font-medium text-[8px]">{p}</span>;
+            }
+            default: return (emp as any)[key] || <span className="text-slate-300 font-bold text-[8px]">-</span>;
         }
     };
 
@@ -265,24 +330,24 @@ export function EmployeeOfficialReport({
                     </div>
 
                     {/* Data Table */}
-                    <div className="w-full overflow-visible mt-1">
-                        <table className="w-full border-collapse border border-slate-800 text-[8px] leading-tight">
+                    <div className="w-full overflow-visible mt-1 shadow-sm rounded-lg overflow-hidden border border-slate-300">
+                        <table className="w-full border-collapse text-[8px] leading-tight bg-white">
                             <thead>
-                                <tr className="bg-slate-100 text-slate-900 uppercase font-black text-center border-b border-slate-800 [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
+                                <tr className="bg-slate-900 text-white uppercase font-black text-center [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
                                     {columnsToDisplay.map((key) => (
                                         <th key={key} className={cn(
-                                            "border border-slate-700 p-1 align-middle break-words text-[8px]",
-                                            key === 'index' && "w-[24px]",
-                                            key === 'matricule' && "w-[48px]",
-                                            key === 'name' && "w-[150px]",
-                                            key === 'sexe' && "w-[30px]",
-                                            (key === 'contact' || key === 'email') && "w-[90px]",
-                                            key === 'status' && "w-[38px]",
-                                            (key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart') && "w-[65px]",
-                                            key === 'Lieu_Naissance' && "w-[90px]",
-                                            key === 'poste' && "w-[120px]",
-                                            key === 'statutChef' && "w-[120px]",
-                                            (key === 'department' || key === 'Departement' || key === 'subPrefecture' || key === 'Region' || key === 'Village') && "w-[90px]"
+                                            "border-r border-slate-700 last:border-r-0 py-2 px-1 align-middle break-words text-[8px] tracking-wider",
+                                            key === 'index' && "w-[28px] text-center",
+                                            key === 'matricule' && "w-[50px] text-center",
+                                            key === 'name' && "w-[155px] text-left pl-2.5",
+                                            key === 'sexe' && "w-[36px] text-center",
+                                            (key === 'contact' || key === 'email') && "w-[105px] text-center",
+                                            key === 'status' && "w-[44px] text-center",
+                                            (key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart') && "w-[65px] text-center",
+                                            key === 'Lieu_Naissance' && "w-[90px] text-left pl-1.5",
+                                            key === 'poste' && "w-[115px] text-left pl-1.5",
+                                            key === 'statutChef' && "w-[125px] text-center",
+                                            (key === 'department' || key === 'Departement' || key === 'subPrefecture' || key === 'Region' || key === 'Village') && "w-[95px] text-left pl-1.5"
                                         )}>
                                             {getColumnLabel(key)}
                                         </th>
@@ -291,16 +356,17 @@ export function EmployeeOfficialReport({
                             </thead>
                             <tbody>
                                 {employees.map((emp, idx) => (
-                                    <tr key={emp.id} className="border-b border-slate-300 even:bg-slate-50/60 break-inside-avoid">
+                                    <tr key={emp.id} className="border-b border-slate-200 even:bg-slate-50/60 hover:bg-slate-100/50 transition-colors break-inside-avoid">
                                         {columnsToDisplay.map((key) => (
                                             <td key={key} className={cn(
-                                                "border border-slate-300 p-1 align-middle",
-                                                (key === 'index' || key === 'sexe' || key === 'status' || key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart' || key === 'statutChef') && "text-center",
-                                                (key === 'contact' || key === 'email') && "font-mono font-bold text-slate-900 text-[8.5px] text-center whitespace-nowrap tracking-tight",
-                                                key === 'name' && "font-black uppercase text-slate-900 text-[8.5px]",
-                                                key === 'matricule' && "font-mono font-bold text-slate-600",
-                                                key === 'poste' && "italic break-words text-slate-700 text-[8px]",
-                                                key === 'department' && "break-words font-semibold text-[8px]"
+                                                "border-r border-slate-200 last:border-r-0 py-1.5 px-1.5 align-middle",
+                                                (key === 'index' || key === 'sexe' || key === 'status' || key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart' || key === 'statutChef' || key === 'CNPS') && "text-center",
+                                                key === 'index' && "font-bold text-slate-500 text-[8px]",
+                                                key === 'name' && "font-black uppercase text-slate-900 text-[8.5px] pl-2",
+                                                key === 'matricule' && "font-mono font-bold text-slate-600 text-center text-[8px]",
+                                                (key === 'contact' || key === 'email') && "text-center whitespace-nowrap",
+                                                key === 'poste' && "text-[8px] pl-1.5",
+                                                (key === 'department' || key === 'Departement' || key === 'Region' || key === 'Village' || key === 'subPrefecture') && "font-semibold text-slate-800 text-[8px] pl-1.5"
                                             )}>
                                                 {getCellContent(emp, key, idx)}
                                             </td>

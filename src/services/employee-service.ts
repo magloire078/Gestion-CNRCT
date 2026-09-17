@@ -718,13 +718,37 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
         }
 
         const response = await fetch('/api/institution/directoire', { headers });
-        if (!response.ok) {
-            console.warn('[employee-service] Directoire API failed with status', response.status);
-            return [];
+        if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+                return data as Employe[];
+            }
         }
-        return (await response.json()) as Employe[];
+        console.warn('[employee-service] Directoire API failed or returned empty, falling back to client-side fetch');
     } catch (error) {
-        console.error('[employee-service] Error fetching directoire members:', error);
+        console.warn('[employee-service] Error calling directoire API route, falling back to client-side fetch:', error);
+    }
+
+    try {
+        const q = query(
+            employeesCollection,
+            where('status', 'in', ['Actif', 'En congé'])
+        );
+        const snapshot = await getDocs(q);
+        const directoireDeptId = '9ywKFDgVMS86rZLPYhpm';
+        const members = snapshot.docs
+            .map(d => ({ id: d.id, ...d.data() } as Employe))
+            .filter(emp => {
+                const poste = (emp.poste || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const isSupport = ['secretariat', 'secretaire', 'assistant', 'assistante', 'chauffeur', 'protocole', 'garde', 'charge de mission', 'chargee de mission'].some(kw => poste.includes(kw)) && !poste.includes('secretaire general');
+                if (isSupport) return false;
+                if (emp.departmentId === directoireDeptId) return true;
+                if (['DIR', 'PRE', 'D 0'].some(prefix => (emp.matricule || '').startsWith(prefix))) return true;
+                return ['president', 'secretaire general', 'membre du directoire', 'membre du bureau', 'directrice de cabinet', 'directeur de cabinet'].some(kw => poste.includes(kw));
+            });
+        return members;
+    } catch (fallbackErr) {
+        console.error('[employee-service] Client-side fetch for directoire members failed:', fallbackErr);
         return [];
     }
 }

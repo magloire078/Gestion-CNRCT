@@ -82,7 +82,7 @@ export default function IntranetPage() {
 }
 
 function IntranetContent() {
-    const { user } = useAuth();
+    const { user, hasPermission } = useAuth();
     const [activeTab, setActiveTab] = useState("leaves");
     const [isPending, startTransition] = React.useTransition();
     const router = useRouter();
@@ -144,6 +144,28 @@ function IntranetContent() {
             setActiveTab(value);
         });
     };
+
+    const canViewExecutiveKPIs = useMemo(() => {
+        if (!user) return false;
+        if (
+            user.roleId === 'employe' || 
+            user.roleId === 'employe-operationnel' || 
+            user.roleId === 'stagiaire' || 
+            user.roleId === 'stagiaire-apprenti'
+        ) {
+            return false;
+        }
+        return (
+            user.roleId === 'dirigeant-president' ||
+            user.roleId === 'super-admin' ||
+            user.roleId === 'manager-rh' ||
+            user.roleId === 'chef-de-service' ||
+            user.roleId === 'administrateur' ||
+            hasPermission('page:employees:view') ||
+            hasPermission('employees:read') ||
+            hasPermission('page:dashboard:view')
+        );
+    }, [user, hasPermission]);
 
     return (
         <div className="pb-10 space-y-6">
@@ -216,81 +238,83 @@ function IntranetContent() {
                 </div>
             </div>
 
-            {/* Top KPI Metrics Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1">
-                {/* 1. Effectif Opérationnel */}
-                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
-                    <CardContent className="p-5 flex items-center justify-between">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Effectif Actif</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
-                                    {loading ? <Skeleton className="h-8 w-14" /> : globalStats.activeEmployees}
-                                </span>
-                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+2.4%</span>
+            {/* Top KPI Metrics Row (Visible for Direction / RH / Management only) */}
+            {canViewExecutiveKPIs && (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1">
+                    {/* 1. Effectif Opérationnel */}
+                    <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
+                        <CardContent className="p-5 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Effectif Actif</span>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                                        {loading ? <Skeleton className="h-8 w-14" /> : globalStats.activeEmployees}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+2.4%</span>
+                                </div>
+                                <p className="text-[10px] font-medium text-slate-400">Collaborateurs en poste</p>
                             </div>
-                            <p className="text-[10px] font-medium text-slate-400">Collaborateurs en poste</p>
-                        </div>
-                        <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                            <Users className="h-6 w-6" />
-                        </div>
-                    </CardContent>
-                </Card>
+                            <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                <Users className="h-6 w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                {/* 2. Pôles & Directions */}
-                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
-                    <CardContent className="p-5 flex items-center justify-between">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Pôles & Directions</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
-                                    {loading ? <Skeleton className="h-8 w-10" /> : globalStats.departments.length}
-                                </span>
+                    {/* 2. Pôles & Directions */}
+                    <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
+                        <CardContent className="p-5 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Pôles & Directions</span>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                                        {loading ? <Skeleton className="h-8 w-10" /> : globalStats.departments.length}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] font-medium text-slate-400">Structures d'organisation</p>
                             </div>
-                            <p className="text-[10px] font-medium text-slate-400">Structures d'organisation</p>
-                        </div>
-                        <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                            <Building className="h-6 w-6" />
-                        </div>
-                    </CardContent>
-                </Card>
+                            <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                <Building className="h-6 w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                {/* 3. Directoire Central */}
-                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
-                    <CardContent className="p-5 flex items-center justify-between">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Directoire</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
-                                    {loading ? <Skeleton className="h-8 w-10" /> : directoireMembers.length}
-                                </span>
+                    {/* 3. Directoire Central */}
+                    <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
+                        <CardContent className="p-5 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Directoire</span>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                                        {loading ? <Skeleton className="h-8 w-10" /> : directoireMembers.length}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] font-medium text-slate-400">Membres de l'exécutif</p>
                             </div>
-                            <p className="text-[10px] font-medium text-slate-400">Membres de l'exécutif</p>
-                        </div>
-                        <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                            <ShieldCheck className="h-6 w-6" />
-                        </div>
-                    </CardContent>
-                </Card>
+                            <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                <ShieldCheck className="h-6 w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                {/* 4. Réseau Territorial */}
-                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
-                    <CardContent className="p-5 flex items-center justify-between">
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Comités Régionaux</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
-                                    {Object.keys(divisions).length}
-                                </span>
+                    {/* 4. Réseau Territorial */}
+                    <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
+                        <CardContent className="p-5 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Comités Régionaux</span>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                                        {Object.keys(divisions).length}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] font-medium text-slate-400">31 Régions & 2 Districts</p>
                             </div>
-                            <p className="text-[10px] font-medium text-slate-400">31 Régions & 2 Districts</p>
-                        </div>
-                        <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                            <MapIcon className="h-6 w-6" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                            <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                <MapIcon className="h-6 w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {/* Main Interactive Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-1">

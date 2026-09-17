@@ -216,136 +216,196 @@ function IntranetContent() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-2">
-                {/* Left: Sidebar Mini-Widgets - Ultra Modern Masterpiece */}
-                <div className="lg:col-span-3 order-2 lg:order-1 space-y-4">
-                    <Card className="border-none shadow-[0_20px_50px_rgba(30,41,59,0.3)] rounded-xl bg-slate-950 text-white overflow-hidden group/stats relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-transparent to-transparent" />
-                        <div className="p-5 space-y-5 relative z-10">
-                            <div className="flex items-center justify-between">
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-indigo-400/80 italic">Data Architecture</span>
-                                    <h3 className="text-xl font-black tracking-tight leading-none">Global Metrics</h3>
-                                </div>
-                                <div className="h-14 w-14 rounded-[1.25rem] bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-3xl transition-all duration-700 group-hover/stats:rotate-[15deg] group-hover/stats:scale-110 shadow-2xl">
-                                    <Zap className="h-6 w-6 text-indigo-400 fill-indigo-400/20" />
-                                </div>
+            {/* Top KPI Metrics Row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1">
+                {/* 1. Effectif Opérationnel */}
+                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
+                    <CardContent className="p-5 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Effectif Actif</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                                    {loading ? <Skeleton className="h-8 w-14" /> : globalStats.activeEmployees}
+                                </span>
+                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+2.4%</span>
                             </div>
-                            
-                            <div className="grid grid-cols-2 gap-5">
-                                <div className="p-6 rounded-[1.75rem] bg-white/[0.02] border border-white/5 shadow-inner group/item transition-all duration-500 hover:bg-white/[0.05] hover:border-white/10">
-                                    <div className="flex items-center gap-3 mb-4 opacity-40 transition-opacity group-hover/item:opacity-100">
-                                        <Users className="h-4 w-4 text-indigo-400" />
-                                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">Effectif</span>
-                                    </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-4xl font-black text-white leading-none tracking-tighter">{globalStats.activeEmployees}</span>
-                                        <span className="text-[10px] font-bold text-emerald-400">+2.4%</span>
-                                    </div>
-                                </div>
-                                
-                                <div className="p-6 rounded-[1.75rem] bg-white/[0.02] border border-white/5 shadow-inner group/item transition-all duration-500 hover:bg-white/[0.05] hover:border-white/10">
-                                    <div className="flex items-center gap-3 mb-4 opacity-40 transition-opacity group-hover/item:opacity-100">
-                                        <Building className="h-4 w-4 text-purple-400" />
-                                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">Pôles</span>
-                                    </div>
-                                    <span className="text-4xl font-black text-white leading-none tracking-tighter">{globalStats.departments.length}</span>
-                                </div>
-
-                                <div className="p-6 rounded-[1.75rem] bg-white/[0.02] border border-white/5 shadow-inner group/item transition-all duration-500 hover:bg-white/[0.05] hover:border-white/10">
-                                    <div className="flex items-center gap-3 mb-4 text-amber-400/40 group-hover/item:text-amber-400/100 transition-colors">
-                                        <ShieldCheck className="h-4 w-4" />
-                                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">Directoire</span>
-                                    </div>
-                                    <span className="text-4xl font-black text-white leading-none tracking-tighter">{directoireMembers.length}</span>
-                                </div>
-
-                                <div className="p-6 rounded-[1.75rem] bg-white/[0.02] border border-white/5 shadow-inner group/item transition-all duration-500 hover:bg-white/[0.05] hover:border-white/10">
-                                    <div className="flex items-center gap-3 mb-4 text-blue-400/40 group-hover/item:text-blue-400/100 transition-colors">
-                                        <MapIcon className="h-4 w-4" />
-                                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">Comités</span>
-                                    </div>
-                                    <span className="text-4xl font-black text-white leading-none tracking-tighter">{Object.keys(divisions).length}</span>
-                                </div>
-
-                                <div className="col-span-2 p-5 rounded-xl bg-gradient-to-br from-emerald-500/10 via-transparent to-teal-500/5 border border-emerald-500/20 shadow-2xl flex items-center justify-between group/status transition-all duration-700 hover:from-emerald-500/20 hover:border-emerald-500/40">
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-3 opacity-60 text-emerald-400">
-                                            <Palmtree className="h-4 w-4 animate-bounce-slow" />
-                                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">Taux de Disponibilité</span>
-                                        </div>
-                                        <div className="flex items-baseline gap-3">
-                                            <span className="text-3xl font-black text-white tracking-tighter">{globalStats.activeEmployees - employeesOnLeave.length}</span>
-                                            <span className="text-[10px] font-bold text-slate-500">/ {globalStats.activeEmployees} opérationnels</span>
-                                        </div>
-                                    </div>
-                                    {(() => {
-                                        const activeCount = globalStats.activeEmployees || 0;
-                                        const leaveCount = employeesOnLeave?.length || 0;
-                                        const rawRatio = activeCount > 0 
-                                            ? Math.max(0, Math.min(1, (activeCount - leaveCount) / activeCount))
-                                            : 0;
-                                        
-                                        // Ensure availabilityRatio is a valid number to prevent "NaN" in SVG attributes
-                                        const availabilityRatio = isNaN(rawRatio) ? 0 : rawRatio;
-
-                                        const radius = 36;
-                                        const circumference = 2 * Math.PI * radius;
-                                        return (
-                                            <div className="relative h-20 w-20">
-                                                <svg className="h-full w-full -rotate-90 transform">
-                                                    <circle cx="40" cy="40" r={radius} stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
-                                                    <circle 
-                                                        cx="40" cy="40" r={radius} 
-                                                        stroke="currentColor" 
-                                                        strokeWidth="8" 
-                                                        fill="transparent" 
-                                                        strokeDasharray={circumference.toString()} 
-                                                        strokeDashoffset={(circumference * (1 - availabilityRatio)).toString()} 
-                                                        className="text-emerald-500 transition-all duration-1000 ease-out" 
-                                                    />
-                                                </svg>
-                                                <div className="absolute inset-0 flex items-center justify-center font-black text-sm text-emerald-400">
-                                                    {Math.round(availabilityRatio * 100)}%
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-                            </div>
+                            <p className="text-[10px] font-medium text-slate-400">Collaborateurs en poste</p>
                         </div>
+                        <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                            <Users className="h-6 w-6" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 2. Pôles & Directions */}
+                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
+                    <CardContent className="p-5 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Pôles & Directions</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                                    {loading ? <Skeleton className="h-8 w-10" /> : globalStats.departments.length}
+                                </span>
+                            </div>
+                            <p className="text-[10px] font-medium text-slate-400">Structures d'organisation</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                            <Building className="h-6 w-6" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 3. Directoire Central */}
+                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
+                    <CardContent className="p-5 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Directoire</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                                    {loading ? <Skeleton className="h-8 w-10" /> : directoireMembers.length}
+                                </span>
+                            </div>
+                            <p className="text-[10px] font-medium text-slate-400">Membres de l'exécutif</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                            <ShieldCheck className="h-6 w-6" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 4. Réseau Territorial */}
+                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
+                    <CardContent className="p-5 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Comités Régionaux</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                                    {Object.keys(divisions).length}
+                                </span>
+                            </div>
+                            <p className="text-[10px] font-medium text-slate-400">31 Régions & 2 Districts</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                            <MapIcon className="h-6 w-6" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Main Interactive Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-1">
+                {/* Left: Directoire Map Section */}
+                <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+                    <Card className="border-none shadow-sm rounded-2xl bg-white border border-slate-200/70 overflow-hidden">
+                        <CardHeader className="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
+                            <div className="space-y-1">
+                                <CardTitle className="text-lg font-black uppercase tracking-tight text-slate-900">
+                                    Déploiement Territorial du Directoire
+                                </CardTitle>
+                                <CardDescription className="text-xs font-semibold text-slate-500">
+                                    Cartographie interactive et géolocalisation des membres
+                                </CardDescription>
+                            </div>
+                            <Badge variant="outline" className="border-slate-300 text-slate-700 bg-white font-black text-[9px] uppercase tracking-widest px-3 py-1">
+                                {directoireMembers.length} Représentants
+                            </Badge>
+                        </CardHeader>
+                        <CardContent className="p-2 sm:p-4 bg-slate-50/30">
+                            <DirectoireMap 
+                                className="min-h-[780px] w-full shadow-sm rounded-xl"
+                                members={directoireMembers} 
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Right: Tactical Sidebar & RH Feeds */}
+                <div className="lg:col-span-5 xl:col-span-4 space-y-5">
+                    {/* Disponibilité Opérationnelle */}
+                    <Card className="border-none shadow-sm rounded-2xl bg-slate-950 text-white overflow-hidden relative group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-transparent to-transparent" />
+                        <CardContent className="p-5 relative z-10 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <span className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">Présence & Mobilité</span>
+                                    <h3 className="text-base font-black text-white">Disponibilité Globale</h3>
+                                </div>
+                                <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-emerald-400">
+                                    <Palmtree className="h-5 w-5" />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-white/5">
+                                <div className="space-y-1">
+                                    <div className="text-3xl font-black text-white tracking-tight">
+                                        {globalStats.activeEmployees - employeesOnLeave.length}
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                        sur {globalStats.activeEmployees} opérationnels
+                                    </span>
+                                </div>
+
+                                {(() => {
+                                    const activeCount = globalStats.activeEmployees || 0;
+                                    const leaveCount = employeesOnLeave?.length || 0;
+                                    const rawRatio = activeCount > 0 
+                                        ? Math.max(0, Math.min(1, (activeCount - leaveCount) / activeCount))
+                                        : 0;
+                                    
+                                    const availabilityRatio = isNaN(rawRatio) ? 0 : rawRatio;
+                                    const radius = 30;
+                                    const circumference = 2 * Math.PI * radius;
+                                    return (
+                                        <div className="relative h-16 w-16 shrink-0">
+                                            <svg className="h-full w-full -rotate-90 transform">
+                                                <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="6" fill="transparent" className="text-white/10" />
+                                                <circle 
+                                                    cx="32" cy="32" r={radius} 
+                                                    stroke="currentColor" 
+                                                    strokeWidth="6" 
+                                                    fill="transparent" 
+                                                    strokeDasharray={circumference.toString()} 
+                                                    strokeDashoffset={(circumference * (1 - availabilityRatio)).toString()} 
+                                                    className="text-emerald-400 transition-all duration-1000 ease-out" 
+                                                />
+                                            </svg>
+                                            <div className="absolute inset-0 flex items-center justify-center font-black text-xs text-emerald-400">
+                                                {Math.round(availabilityRatio * 100)}%
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </CardContent>
                     </Card>
 
-                    {/* Personal Leave Status - Premium Card */}
+                    {/* Personal Leave Status */}
                     {personalStats.latestLeave && (
-                        <Card className="border-none shadow-2xl shadow-emerald-900/5 rounded-xl bg-white overflow-hidden border border-emerald-100/50 group/leave relative">
-                            <div className="absolute top-0 right-0 p-5 opacity-[0.03] -rotate-12 transition-transform duration-700 group-hover/leave:rotate-0 group-hover/leave:scale-125">
-                                <Palmtree className="h-24 w-24 text-emerald-600" />
-                            </div>
-                            <div className="p-5 space-y-6 relative z-10">
+                        <Card className="border-none shadow-sm rounded-2xl bg-white border border-slate-200/70 overflow-hidden group/leave relative">
+                            <div className="p-5 space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                                            <Calendar className="h-5 w-5 text-emerald-600" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-9 w-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                            <Calendar className="h-4 w-4" />
                                         </div>
-                                        <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">Prochain Congé</span>
+                                        <span className="text-xs font-black uppercase tracking-widest text-slate-900">Mon Prochain Congé</span>
                                     </div>
                                     <Badge className={cn(
-                                        "text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest",
-                                        personalStats.latestLeave.status === 'Approuvé' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 
+                                        "text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider",
+                                        personalStats.latestLeave.status === 'Approuvé' ? 'bg-emerald-500 text-white' : 
                                         personalStats.latestLeave.status === 'Rejeté' ? 'bg-rose-500 text-white' : 'bg-amber-400 text-white'
                                     )}>
                                         {personalStats.latestLeave.status}
                                     </Badge>
                                 </div>
-                                <div className="space-y-2">
-                                    <div className="text-lg font-black text-slate-900 tracking-tight leading-none">{personalStats.latestLeave.type}</div>
-                                    <div className="text-[11px] text-slate-500 font-medium italic flex items-center gap-2">
+                                <div className="space-y-1.5">
+                                    <div className="text-base font-black text-slate-900">{personalStats.latestLeave.type}</div>
+                                    <div className="text-xs text-slate-500 font-medium italic flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                         Du {formatDate(personalStats.latestLeave.startDate)} au {formatDate(personalStats.latestLeave.endDate)}
                                     </div>
                                     {personalStats.latestLeave.num_decision && (
-                                        <div className="inline-flex items-center gap-2 text-[10px] text-emerald-700 font-black mt-4 bg-emerald-50/50 px-3 py-1.5 rounded-xl border border-emerald-100">
+                                        <div className="inline-flex items-center gap-2 text-[10px] text-emerald-700 font-black mt-2 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
                                             <FileText className="h-3 w-3" />
                                             DÉCISION : {personalStats.latestLeave.num_decision}
                                         </div>
@@ -355,138 +415,119 @@ function IntranetContent() {
                         </Card>
                     )}
 
-                    {/* Celebrations & Attendance - Premium Dashboard Style */}
-                    <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden bg-white/80 backdrop-blur-xl border border-slate-100">
-                        <div className="bg-slate-50/80 backdrop-blur-md p-6 border-b border-slate-100 flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
-                                    <Search className="h-5 w-5" />
+                    {/* Mouvements RH & Célébrations */}
+                    <Card className="border-none shadow-sm rounded-2xl bg-white border border-slate-200/70 overflow-hidden">
+                        <div className="bg-slate-50/80 p-5 border-b border-slate-100 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-9 w-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-sm">
+                                    <Search className="h-4 w-4" />
                                 </div>
-                                <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">Mouvements RH</span>
+                                <span className="text-xs font-black uppercase tracking-widest text-slate-900">Mouvements RH</span>
                             </div>
                             {employeesOnLeave.length > 0 && (
-                                <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full border border-emerald-100">
-                                     <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                    </span>
-                                    <span className="text-[10px] font-black uppercase">{employeesOnLeave.length} en pause</span>
-                                </div>
+                                <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] font-black uppercase">
+                                    {employeesOnLeave.length} en absence
+                                </Badge>
                             )}
                         </div>
-                        <div className="p-5">
+                        <div className="p-4 sm:p-5">
                             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                                <TabsList className="grid w-full grid-cols-3 bg-slate-100/50 mb-4 h-12 p-1.5 rounded-[1.25rem]">
-                                    <TabsTrigger value="leaves" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-lg rounded-xl transition-all">
+                                <TabsList className="grid w-full grid-cols-3 bg-slate-100 p-1 rounded-xl mb-4 h-10">
+                                    <TabsTrigger value="leaves" className="text-[9px] font-black uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm rounded-lg transition-all">
                                         Congés
                                     </TabsTrigger>
-                                    <TabsTrigger value="birthdays" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-rose-600 data-[state=active]:shadow-lg rounded-xl transition-all">
+                                    <TabsTrigger value="birthdays" className="text-[9px] font-black uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-rose-700 data-[state=active]:shadow-sm rounded-lg transition-all">
                                         Fêtes
                                     </TabsTrigger>
-                                    <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-lg rounded-xl transition-all">
-                                        Success
+                                    <TabsTrigger value="seniority" className="text-[9px] font-black uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm rounded-lg transition-all">
+                                        Fidélité
                                     </TabsTrigger>
                                 </TabsList>
 
                                 {loading ? (
-                                    <div className="space-y-4">
-                                        {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-2xl" />)}
+                                    <div className="space-y-3">
+                                        {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                                     </div>
                                 ) : (
-                                    <div className="max-h-[500px] overflow-y-auto custom-scrollbar pr-2 space-y-4">
-                                        <TabsContent value="leaves" className="space-y-4 focus-visible:outline-none mt-0">
+                                    <div className="max-h-[420px] overflow-y-auto pr-1 space-y-3">
+                                        <TabsContent value="leaves" className="space-y-3 focus-visible:outline-none mt-0">
                                             {employeesOnLeave.length > 0 ? (
                                                 employeesOnLeave.map(emp => (
-                                                    <div key={`leave-${emp.id}`} className="group/item flex items-center gap-5 p-4 bg-slate-50/50 hover:bg-white rounded-[1.5rem] transition-all duration-500 border border-transparent hover:border-slate-100 hover:shadow-xl hover:shadow-slate-200/50">
-                                                        <div className="relative">
-                                                            <Avatar className="h-14 w-14 border-2 border-white shadow-md shrink-0 transition-transform group-hover/item:scale-110 duration-500">
-                                                                <AvatarImage src={getValidPhotoUrl(emp.photoUrl)} alt={emp.name} className="object-cover" />
-                                                                <AvatarFallback className="bg-emerald-100 text-emerald-600 text-lg font-black">{emp.lastName?.charAt(0)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-emerald-500 rounded-full border-2 border-white" />
-                                                        </div>
+                                                    <div key={`leave-${emp.id}`} className="flex items-center gap-3.5 p-3.5 bg-slate-50/70 hover:bg-slate-100/70 rounded-xl transition-all border border-slate-100">
+                                                        <Avatar className="h-11 w-11 border border-white shadow-sm shrink-0">
+                                                            <AvatarImage src={getValidPhotoUrl(emp.photoUrl)} alt={emp.name} className="object-cover" />
+                                                            <AvatarFallback className="bg-emerald-100 text-emerald-700 text-sm font-black">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
                                                         <div className="flex flex-col flex-1 overflow-hidden">
-                                                            <div className="flex items-center justify-between gap-2 mb-1">
-                                                                <span className="text-base font-black text-slate-900 truncate tracking-tight">{emp.name}</span>
+                                                            <div className="flex items-center justify-between gap-1 mb-0.5">
+                                                                <span className="text-sm font-black text-slate-900 truncate">{emp.name}</span>
                                                                 {emp.Region && (
-                                                                    <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest text-slate-400 border-slate-200">
+                                                                    <span className="text-[8px] font-bold text-slate-400 uppercase truncate">
                                                                         {emp.Region}
-                                                                    </Badge>
+                                                                    </span>
                                                                 )}
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-[10px] text-emerald-600 font-black uppercase bg-emerald-50 px-2 py-0.5 rounded-lg tracking-widest border border-emerald-100/50">{emp.leaveType}</span>
-                                                                <span className="text-[10px] text-slate-400 font-bold italic">Retour : {formatDate(emp.returnDate)}</span>
+                                                                <span className="text-[9px] text-emerald-700 font-bold uppercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">{emp.leaveType}</span>
+                                                                <span className="text-[9px] text-slate-400 font-medium">Retour : {formatDate(emp.returnDate)}</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                                                    <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
-                                                        <Palmtree className="h-8 w-8 text-slate-300" />
-                                                    </div>
-                                                    <p className="text-xs text-slate-400 font-bold text-center italic">Tout l'effectif est mobilisé sur le terrain ! ✅</p>
+                                                <div className="flex flex-col items-center justify-center py-8 px-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                                    <Palmtree className="h-6 w-6 text-slate-300 mb-2" />
+                                                    <p className="text-xs text-slate-400 font-semibold text-center italic">Aucun agent en congé actuellement.</p>
                                                 </div>
                                             )}
                                         </TabsContent>
 
-                                        <TabsContent value="birthdays" className="space-y-4 focus-visible:outline-none mt-0">
+                                        <TabsContent value="birthdays" className="space-y-3 focus-visible:outline-none mt-0">
                                             {birthdayAnniversaries.length > 0 ? (
                                                 birthdayAnniversaries.map(emp => (
-                                                    <div key={`birth-${emp.id}`} className="group/item flex items-center gap-5 p-4 bg-rose-50/30 hover:bg-white rounded-[1.5rem] transition-all duration-500 border border-transparent hover:border-rose-100 hover:shadow-xl hover:shadow-rose-200/50">
-                                                        <div className="relative">
-                                                            <Avatar className="h-14 w-14 border-2 border-white shadow-md shrink-0 transition-transform group-hover/item:scale-110 duration-500">
-                                                                <AvatarImage src={getValidPhotoUrl(emp.photoUrl)} alt={emp.name} className="object-cover" />
-                                                                <AvatarFallback className="bg-rose-100 text-rose-600 text-lg font-black">{emp.lastName?.charAt(0)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-rose-500 rounded-full border-2 border-white animate-bounce" />
-                                                        </div>
+                                                    <div key={`birth-${emp.id}`} className="flex items-center gap-3.5 p-3.5 bg-rose-50/40 hover:bg-rose-50/70 rounded-xl transition-all border border-rose-100/60">
+                                                        <Avatar className="h-11 w-11 border border-white shadow-sm shrink-0">
+                                                            <AvatarImage src={getValidPhotoUrl(emp.photoUrl)} alt={emp.name} className="object-cover" />
+                                                            <AvatarFallback className="bg-rose-100 text-rose-700 text-sm font-black">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
                                                         <div className="flex flex-col flex-1 overflow-hidden">
-                                                            <span className="text-base font-black text-slate-900 truncate tracking-tight">{emp.name}</span>
-                                                            <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-sm font-black text-slate-900 truncate">{emp.name}</span>
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
                                                                 <Cake className="h-3 w-3 text-rose-500" />
-                                                                <span className="text-[10px] text-rose-500 font-black uppercase tracking-[0.2em]">C'est son jour ! Joyeux Anniversaire 🎂</span>
+                                                                <span className="text-[9px] text-rose-600 font-bold">Joyeux Anniversaire 🎂</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                                                    <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
-                                                        <Cake className="h-8 w-8 text-slate-300" />
-                                                    </div>
-                                                    <p className="text-xs text-slate-400 font-bold text-center italic">Aucune célébration prévue pour aujourd'hui.</p>
+                                                <div className="flex flex-col items-center justify-center py-8 px-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                                    <Cake className="h-6 w-6 text-slate-300 mb-2" />
+                                                    <p className="text-xs text-slate-400 font-semibold text-center italic">Aucun anniversaire aujourd'hui.</p>
                                                 </div>
                                             )}
                                         </TabsContent>
 
-                                        <TabsContent value="seniority" className="space-y-4 focus-visible:outline-none mt-0">
+                                        <TabsContent value="seniority" className="space-y-3 focus-visible:outline-none mt-0">
                                             {seniorityAnniversaries.length > 0 ? (
                                                 seniorityAnniversaries.map(emp => (
-                                                    <div key={`senior-${emp.id}`} className="group/item flex items-center gap-5 p-4 bg-indigo-50/30 hover:bg-white rounded-[1.5rem] transition-all duration-500 border border-transparent hover:border-indigo-100 hover:shadow-xl hover:shadow-indigo-200/50">
-                                                        <div className="relative">
-                                                            <Avatar className="h-14 w-14 border-2 border-white shadow-md shrink-0 transition-transform group-hover/item:scale-110 duration-500">
-                                                                <AvatarImage src={getValidPhotoUrl(emp.photoUrl)} alt={emp.name} className="object-cover" />
-                                                                <AvatarFallback className="bg-indigo-100 text-indigo-600 text-lg font-black">{emp.lastName?.charAt(0)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-indigo-500 rounded-full border-2 border-white" />
-                                                        </div>
+                                                    <div key={`senior-${emp.id}`} className="flex items-center gap-3.5 p-3.5 bg-indigo-50/40 hover:bg-indigo-50/70 rounded-xl transition-all border border-indigo-100/60">
+                                                        <Avatar className="h-11 w-11 border border-white shadow-sm shrink-0">
+                                                            <AvatarImage src={getValidPhotoUrl(emp.photoUrl)} alt={emp.name} className="object-cover" />
+                                                            <AvatarFallback className="bg-indigo-100 text-indigo-700 text-sm font-black">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
                                                         <div className="flex flex-col flex-1 overflow-hidden">
-                                                            <span className="text-base font-black text-slate-900 truncate tracking-tight">{emp.name}</span>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <Award className="h-3 w-3 text-indigo-500" />
-                                                                <span className="text-[10px] text-indigo-500 font-black uppercase tracking-[0.2em]">Félicitations pour vos années de service 🎖️</span>
+                                                            <span className="text-sm font-black text-slate-900 truncate">{emp.name}</span>
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                                <Award className="h-3 w-3 text-indigo-600" />
+                                                                <span className="text-[9px] text-indigo-600 font-bold">Félicitations pour vos années de service 🎖️</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                                                    <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
-                                                        <Award className="h-8 w-8 text-slate-300" />
-                                                    </div>
-                                                    <p className="text-xs text-slate-400 font-bold text-center italic">Aucun jubilé à célébrer ce mois-ci.</p>
+                                                <div className="flex flex-col items-center justify-center py-8 px-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                                    <Award className="h-6 w-6 text-slate-300 mb-2" />
+                                                    <p className="text-xs text-slate-400 font-semibold text-center italic">Aucun jubilé ce mois-ci.</p>
                                                 </div>
                                             )}
                                         </TabsContent>
@@ -495,16 +536,6 @@ function IntranetContent() {
                             </Tabs>
                         </div>
                     </Card>
-                </div>
-
-                {/* Right: Directoire Map Section - Increased to 9 columns for maximum width */}
-                <div className="lg:col-span-9 order-1 lg:order-2 space-y-6">
-                    <div className="relative group w-full rounded-2xl shadow-xl border border-slate-100/50 p-2 bg-slate-50">
-                        <DirectoireMap 
-                            className="min-h-[1000px] w-full shadow-md rounded-xl"
-                            members={directoireMembers} 
-                        />
-                    </div>
                 </div>
             </div>
         </div>

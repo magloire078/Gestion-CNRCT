@@ -350,11 +350,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         subItems
       };
 
-      const personnelIndex = items.findIndex((item: MenuItem) => item.label === "Personnel" || item.label === "Personnel & RH");
-      if (personnelIndex !== -1) {
-        items.splice(personnelIndex, 0, monEspaceItem as any);
+      // Toujours placer "Accueil Intranet" en premier au-dessus de "Mon Espace"
+      const intranetIndex = items.findIndex((item: MenuItem) => item.href === "/intranet" || item.label === "Accueil Intranet");
+      if (intranetIndex !== -1) {
+        items.splice(intranetIndex + 1, 0, monEspaceItem as any);
       } else {
-        items.unshift(monEspaceItem as any);
+        const personnelIndex = items.findIndex((item: MenuItem) => item.label === "Personnel" || item.label === "Personnel & RH");
+        if (personnelIndex !== -1) {
+          items.splice(personnelIndex, 0, monEspaceItem as any);
+        } else {
+          items.splice(1, 0, monEspaceItem as any);
+        }
       }
     }
 

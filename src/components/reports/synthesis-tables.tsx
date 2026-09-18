@@ -1,6 +1,7 @@
 import React from 'react';
 import { VillageEntry } from '@/types/village';
 import { Chief } from '@/types/chief';
+import { compareRegionsWithDistrictsFirst } from '@/lib/normalization-utils';
 
 export const GlobalSynthesisTable = ({ 
     villages, 
@@ -45,7 +46,7 @@ export const GlobalSynthesisTable = ({
         });
     }
 
-    const regions = Object.keys(stats).sort();
+    const regions = Object.keys(stats).sort(compareRegionsWithDistrictsFirst);
     if (regions.length === 0) return null;
 
     return (

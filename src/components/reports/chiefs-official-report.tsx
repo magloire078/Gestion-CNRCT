@@ -18,6 +18,7 @@ import { InstitutionalFooter } from "./institutional-footer";
 import { InstitutionalCover } from "./institutional-cover";
 import { GlobalSynthesisTable, RegionSynthesisTable } from "./synthesis-tables";
 import { InstitutionalReportWrapper } from "./institutional-report-wrapper";
+import { compareRegionsWithDistrictsFirst } from "@/lib/normalization-utils";
 
 interface ChiefsOfficialReportProps {
     chiefs: Chief[];
@@ -85,7 +86,7 @@ export function ChiefsOfficialReport({
                 {/* --- PAGES DÉTAILLÉES (PAYSAGE) --- */}
                 <div className="landscape-section min-h-screen p-12 relative print:p-5 pt-0 print:pt-0">
                     <div className="space-y-6 mt-4">
-                        {Object.entries(chiefsByRegion).sort().map(([region, regionChiefs]) => {
+                        {Object.entries(chiefsByRegion).sort(([regA], [regB]) => compareRegionsWithDistrictsFirst(regA, regB)).map(([region, regionChiefs]) => {
                             const uniqueDepts = new Set(regionChiefs.map(c => (c.department || '').trim().toUpperCase()).filter(Boolean));
                             const uniqueSPs = new Set(regionChiefs.map(c => (c.subPrefecture || '').trim().toUpperCase()).filter(Boolean));
                             const uniqueVillages = new Set(regionChiefs.map(c => (c.village || '').trim().toUpperCase()).filter(Boolean));

@@ -24,17 +24,17 @@ interface IndividualPrintProps extends PrintProps {
 
 function PrintHeader({ logos }: { logos: OrganizationSettings }) {
     return (
-        <header className="flex justify-between items-start mb-4 h-[100px]">
+        <header className="flex justify-between items-start mb-4 h-[110px]">
             <div className="w-1/3 text-center flex flex-col justify-center items-center h-full">
-                <p className="font-bold text-[10px] leading-tight">Chambre Nationale des Rois et Chefs Traditionnels</p>
-                {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
-                <p className="font-bold text-[10px] mt-1">SECRETARIAT GENERAL</p>
+                <p className="font-bold text-[10.5px] leading-tight text-slate-900">Chambre Nationale des Rois<br />et Chefs Traditionnels</p>
+                {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1 object-contain" />}
+                <p className="font-bold text-[10px] mt-1 tracking-wider text-slate-800">SECRETARIAT GENERAL</p>
             </div>
             <div className="w-1/3"></div>
             <div className="w-1/3 text-center flex flex-col justify-center items-center h-full">
-                <p className="font-bold text-[10px] whitespace-nowrap">République de Côte d'Ivoire</p>
-                {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-12 max-w-full h-auto w-auto my-1" />}
-                <p className="text-[8px]">Union - Discipline - Travail</p>
+                <p className="font-bold text-[11px] whitespace-nowrap text-slate-900 uppercase">République de Côte d'Ivoire</p>
+                {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto my-1 object-contain" />}
+                <p className="text-[9px] font-semibold text-slate-600">Union - Discipline - Travail</p>
             </div>
         </header>
     );

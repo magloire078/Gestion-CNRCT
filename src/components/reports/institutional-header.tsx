@@ -39,41 +39,45 @@ export function InstitutionalHeader({
   }, [initialSettings]);
 
   return (
-    <div className={`flex justify-between items-start relative break-inside-avoid ${
+    <div className={`flex justify-between items-start relative break-inside-avoid w-full ${
       compact 
         ? (showDivider ? "border-b-2 border-slate-900 pb-3 mb-4" : "pb-2 mb-2")
         : (showDivider ? "border-b-2 border-slate-900 pb-5 mb-8" : "pb-4 mb-4")
     }`}>
       {/* Left Column: Local Institution Details */}
       <div className={cn(
-        "flex flex-col items-center gap-0.5 text-slate-800 font-black uppercase text-center",
-        compact ? "text-[8px] leading-none w-[28%]" : "text-[10px] leading-tight tracking-tighter w-[30%]"
+        "flex flex-col items-center gap-0.5 text-slate-900 font-black uppercase text-center shrink-0",
+        compact ? "text-[8.5px] leading-tight w-[36%] max-w-[40%]" : "text-[10px] leading-tight tracking-tight w-[36%] max-w-[40%]"
       )}>
-        <span className={compact ? "text-xs font-black" : "text-sm"}>Chambre Nationale des Rois</span>
-        <span className={compact ? "text-xs font-black" : "text-sm"}>et Chefs Traditionnels</span>
+        <span className={compact ? "text-xs font-black tracking-tight" : "text-sm font-black tracking-tight"}>
+          Chambre Nationale des Rois
+        </span>
+        <span className={compact ? "text-xs font-black tracking-tight" : "text-sm font-black tracking-tight"}>
+          et Chefs Traditionnels
+        </span>
         
         {settings?.mainLogoUrl && (
-          <div className={compact ? "my-1" : "my-2"}>
+          <div className={compact ? "my-1.5" : "my-2"}>
             <img 
               src={settings.mainLogoUrl} 
               alt="Logo CNRCT" 
-              className={compact ? "h-12 w-auto object-contain" : "h-16 w-auto object-contain"}
+              className={compact ? "h-16 sm:h-18 max-h-18 w-auto object-contain" : "h-20 sm:h-24 max-h-24 w-auto object-contain"}
             />
           </div>
         )}
 
-        <div className="w-12 h-0.5 bg-slate-900 my-1 rounded-full" />
+        <div className="w-14 h-0.5 bg-slate-900 my-1 rounded-full" />
         
         <div className={cn(
-          "flex flex-col gap-0.5 font-bold text-slate-500 normal-case italic w-full",
-          compact ? "mt-0.5 text-[8px]" : "mt-1 text-[9px]"
+          "flex flex-col gap-0.5 font-bold text-slate-600 normal-case italic w-full",
+          compact ? "mt-0.5 text-[8.5px]" : "mt-1 text-[9.5px]"
         )}>
           <span>Le Directoire</span>
-          <span>………………</span>
+          <span className="tracking-widest text-[8px] text-slate-400 font-normal">………………</span>
           <span>Le Président</span>
-          <span>………………</span>
+          <span className="tracking-widest text-[8px] text-slate-400 font-normal">………………</span>
           <span>Secrétariat Général</span>
-          <span>………………</span>
+          <span className="tracking-widest text-[8px] text-slate-400 font-normal">………………</span>
           {showService && (
             <div className="flex flex-col gap-0.5 mt-2 not-italic items-center">
               <span className="font-bold text-slate-800 uppercase tracking-tight text-[9px]">{service}</span>
@@ -85,10 +89,10 @@ export function InstitutionalHeader({
 
       {/* Center Column: Title (Optional) */}
       {(title || children) && (
-        <div className="absolute left-1/2 -translate-x-1/2 text-center max-w-[35%] mt-10">
+        <div className="absolute left-1/2 -translate-x-1/2 text-center max-w-[30%] mt-8">
           {children ? children : (
             <>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tighter uppercase leading-tight italic">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tighter uppercase leading-tight italic">
                 {title}
               </h1>
               {period && (
@@ -105,29 +109,29 @@ export function InstitutionalHeader({
 
       {/* Right Column: Republic Details */}
       <div className={cn(
-        "flex flex-col items-center gap-1 text-center",
-        compact ? "w-[28%]" : "w-[30%]"
+        "flex flex-col items-center gap-1 text-center shrink-0",
+        compact ? "w-[36%] max-w-[40%]" : "w-[36%] max-w-[40%]"
       )}>
         <span className={cn(
-          "font-black text-slate-900 uppercase tracking-wider",
+          "font-black text-slate-900 uppercase tracking-normal leading-tight",
           compact ? "text-xs" : "text-sm"
         )}>
           République de Côte d'Ivoire
         </span>
         
         {settings?.secondaryLogoUrl && (
-          <div className={compact ? "my-1" : "my-2"}>
+          <div className={compact ? "my-1.5" : "my-2"}>
             <img 
               src={settings.secondaryLogoUrl} 
               alt="Armoiries RCI" 
-              className={compact ? "h-11 w-auto object-contain" : "h-14 w-auto object-contain"}
+              className={compact ? "h-14 sm:h-16 max-h-16 w-auto object-contain" : "h-18 sm:h-22 max-h-22 w-auto object-contain"}
             />
           </div>
         )}
         
         <span className={cn(
-          "italic font-bold text-slate-500",
-          compact ? "text-[8px]" : "text-[10px]"
+          "italic font-bold text-slate-600 tracking-tight",
+          compact ? "text-[8.5px]" : "text-[10px]"
         )}>
           Union – Discipline – Travail
         </span>

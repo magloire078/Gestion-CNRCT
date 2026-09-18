@@ -85,6 +85,31 @@ export const getOfficialRegion = (input: string): string => {
 };
 
 /**
+ * Returns a priority rank for a region so that District d'Abidjan and District de Yamoussoukro
+ * always rank first before other regions.
+ */
+export const getRegionPriorityRank = (regionName?: string | null): number => {
+    if (!regionName) return 999;
+    const norm = normalizeString(regionName);
+    if (norm.includes("abidjan")) return 1;
+    if (norm.includes("yamoussoukro")) return 2;
+    return 10;
+};
+
+/**
+ * Comparator to sort regions placing Abidjan (1st) and Yamoussoukro (2nd) first,
+ * followed by all other regions alphabetically.
+ */
+export const compareRegionsWithDistrictsFirst = (regionA?: string | null, regionB?: string | null): number => {
+    const rankA = getRegionPriorityRank(regionA);
+    const rankB = getRegionPriorityRank(regionB);
+    if (rankA !== rankB) {
+        return rankA - rankB;
+    }
+    return (regionA || "").localeCompare(regionB || "", "fr", { sensitivity: "base" });
+};
+
+/**
  * Deduce the official Region name from a department name.
  */
 export const getRegionFromDepartment = (department: string): string => {

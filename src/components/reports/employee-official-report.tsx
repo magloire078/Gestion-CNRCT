@@ -11,7 +11,7 @@ import { InstitutionalHeader } from "./institutional-header";
 import { InstitutionalFooter } from "./institutional-footer";
 import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
 import { findComiteRegionalMember, getMemberChiefStatuses } from "@/lib/comites-regionaux-2026";
-import { getOfficialRegion, getOfficialDepartment } from "@/lib/normalization-utils";
+import { getOfficialRegion, getOfficialDepartment, compareRegionsWithDistrictsFirst } from "@/lib/normalization-utils";
 
 interface EmployeeOfficialReportProps {
     employees: Employe[];
@@ -77,6 +77,37 @@ export function EmployeeOfficialReport({
         return (allColumns as any)[key] || (chiefColumns as any)[key] || key;
     };
 
+    // Sort employees placing District d'Abidjan and District de Yamoussoukro first, then alphabetical
+    const sortedEmployees = useMemo(() => {
+        return [...employees].sort((a, b) => {
+            const nameA = `${a.lastName || ''} ${a.firstName || ''}`.trim() || a.name || '';
+            const nameB = `${b.lastName || ''} ${b.firstName || ''}`.trim() || b.name || '';
+            
+            const comiteA = findComiteRegionalMember(nameA, a.Region, (a as any).Departement);
+            const comiteB = findComiteRegionalMember(nameB, b.Region, (b as any).Departement);
+
+            // Official decree order if available (Abidjan = 1-2, Yamoussoukro = 3-6, Agneby-Tiassa = 7+, etc.)
+            if (comiteA?.num && comiteB?.num) {
+                return comiteA.num - comiteB.num;
+            }
+
+            const rawRegA = (a as any).Region || (a as any).region || comiteA?.region || '';
+            const rawRegB = (b as any).Region || (b as any).region || comiteB?.region || '';
+            const regA = getOfficialRegion(rawRegA);
+            const regB = getOfficialRegion(rawRegB);
+
+            const regComp = compareRegionsWithDistrictsFirst(regA, regB);
+            if (regComp !== 0) return regComp;
+
+            const deptA = (a as any).Departement || (a as any).departement || comiteA?.department || '';
+            const deptB = (b as any).Departement || (b as any).departement || comiteB?.department || '';
+            const deptComp = (deptA || '').localeCompare(deptB || '', 'fr', { sensitivity: 'base' });
+            if (deptComp !== 0) return deptComp;
+
+            return nameA.localeCompare(nameB, 'fr', { sensitivity: 'base' });
+        });
+    }, [employees]);
+
     // Customary Chief breakdown stats
     const chiefStats = useMemo(() => {
         let canton = 0;
@@ -85,7 +116,7 @@ export function EmployeeOfficialReport({
         let multi = 0;
         let roi = 0;
 
-        employees.forEach(emp => {
+        sortedEmployees.forEach(emp => {
             const st = getMemberChiefStatuses(emp);
             if (st.includes("Chef de Canton")) canton++;
             if (st.includes("Chef de Tribu")) tribu++;
@@ -95,7 +126,7 @@ export function EmployeeOfficialReport({
         });
 
         return { canton, tribu, village, multi, roi, hasChiefs: (canton + tribu + village + roi + multi) > 0 };
-    }, [employees]);
+    }, [sortedEmployees]);
 
     const getCellContent = (emp: Employe, key: ColumnKeys, idx: number) => {
         const fullName = `${emp.lastName || ''} ${emp.firstName || ''}`.trim() || emp.name || '';
@@ -326,28 +357,30 @@ export function EmployeeOfficialReport({
                     {/* Header text above table */}
                     <div className="mb-2 text-[10px] font-black text-slate-800 uppercase tracking-wider text-left border-b border-slate-200 pb-1 flex justify-between items-center">
                         <span>LISTE PERSONNEL {unitLabel} DU {todayStr}</span>
-                        <span className="text-[9px] text-slate-400 font-bold">{employees.length} MEMBRES ENREGISTRÉS</span>
+                        <span className="text-[9px] text-slate-400 font-bold">{sortedEmployees.length} MEMBRES ENREGISTRÉS</span>
                     </div>
 
                     {/* Data Table */}
                     <div className="w-full overflow-visible mt-1 shadow-sm rounded-lg overflow-hidden border border-slate-300">
-                        <table className="w-full border-collapse text-[8px] leading-tight bg-white">
-                            <thead>
+                        <table className="w-full border-collapse text-[8.5px] leading-normal bg-white">
+                            <thead className="bg-slate-900 text-white">
                                 <tr className="bg-slate-900 text-white uppercase font-black text-center [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
                                     {columnsToDisplay.map((key) => (
                                         <th key={key} className={cn(
-                                            "border-r border-slate-700 last:border-r-0 py-2 px-1 align-middle break-words text-[8px] tracking-wider",
-                                            key === 'index' && "w-[28px] text-center",
-                                            key === 'matricule' && "w-[50px] text-center",
-                                            key === 'name' && "w-[155px] text-left pl-2.5",
-                                            key === 'sexe' && "w-[36px] text-center",
-                                            (key === 'contact' || key === 'email') && "w-[105px] text-center",
-                                            key === 'status' && "w-[44px] text-center",
-                                            (key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart') && "w-[65px] text-center",
-                                            key === 'Lieu_Naissance' && "w-[90px] text-left pl-1.5",
-                                            key === 'poste' && "w-[115px] text-left pl-1.5",
-                                            key === 'statutChef' && "w-[125px] text-center",
-                                            (key === 'department' || key === 'Departement' || key === 'subPrefecture' || key === 'Region' || key === 'Village') && "w-[95px] text-left pl-1.5"
+                                            "border-r border-slate-700 last:border-r-0 py-2.5 px-2 align-middle break-words text-[8.5px] font-black tracking-wider bg-slate-900 text-white [print-color-adjust:exact] [-webkit-print-color-adjust:exact]",
+                                            key === 'index' && "w-[32px] text-center",
+                                            key === 'matricule' && "w-[52px] text-center",
+                                            key === 'name' && "w-[24%] min-w-[170px] text-left pl-2.5",
+                                            key === 'sexe' && "w-[5%] min-w-[42px] text-center",
+                                            (key === 'contact' || key === 'email') && "w-[15%] min-w-[105px] text-center",
+                                            key === 'status' && "w-[6%] min-w-[48px] text-center",
+                                            (key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart') && "w-[9%] min-w-[70px] text-center",
+                                            key === 'Lieu_Naissance' && "w-[11%] min-w-[85px] text-left pl-2",
+                                            key === 'poste' && "w-[13%] min-w-[100px] text-left pl-2",
+                                            key === 'statutChef' && "w-[17%] min-w-[125px] text-center",
+                                            key === 'Region' && "w-[13%] min-w-[100px] text-left pl-2",
+                                            key === 'Departement' && "w-[12%] min-w-[90px] text-left pl-2",
+                                            (key === 'department' || key === 'subPrefecture' || key === 'Village') && "w-[11%] min-w-[85px] text-left pl-2"
                                         )}>
                                             {getColumnLabel(key)}
                                         </th>
@@ -355,18 +388,18 @@ export function EmployeeOfficialReport({
                                 </tr>
                             </thead>
                             <tbody>
-                                {employees.map((emp, idx) => (
-                                    <tr key={emp.id} className="border-b border-slate-200 even:bg-slate-50/60 hover:bg-slate-100/50 transition-colors break-inside-avoid">
+                                {sortedEmployees.map((emp, idx) => (
+                                    <tr key={emp.id || idx} className="border-b border-slate-200 even:bg-slate-50/70 hover:bg-slate-100/60 transition-colors break-inside-avoid">
                                         {columnsToDisplay.map((key) => (
                                             <td key={key} className={cn(
-                                                "border-r border-slate-200 last:border-r-0 py-1.5 px-1.5 align-middle",
+                                                "border-r border-slate-200 last:border-r-0 py-1.5 px-2 align-middle",
                                                 (key === 'index' || key === 'sexe' || key === 'status' || key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart' || key === 'statutChef' || key === 'CNPS') && "text-center",
-                                                key === 'index' && "font-bold text-slate-500 text-[8px]",
+                                                key === 'index' && "font-bold text-slate-500 text-[8.5px]",
                                                 key === 'name' && "font-black uppercase text-slate-900 text-[8.5px] pl-2",
                                                 key === 'matricule' && "font-mono font-bold text-slate-600 text-center text-[8px]",
                                                 (key === 'contact' || key === 'email') && "text-center whitespace-nowrap",
-                                                key === 'poste' && "text-[8px] pl-1.5",
-                                                (key === 'department' || key === 'Departement' || key === 'Region' || key === 'Village' || key === 'subPrefecture') && "font-semibold text-slate-800 text-[8px] pl-1.5"
+                                                key === 'poste' && "text-[8.5px] pl-2",
+                                                (key === 'department' || key === 'Departement' || key === 'Region' || key === 'Village' || key === 'subPrefecture') && "font-semibold text-slate-800 text-[8.5px] pl-2"
                                             )}>
                                                 {getCellContent(emp, key, idx)}
                                             </td>
@@ -398,6 +431,23 @@ export function EmployeeOfficialReport({
                         }
                         table {
                             page-break-inside: auto;
+                            width: 100% !important;
+                        }
+                        thead {
+                            display: table-header-group !important;
+                        }
+                        thead tr {
+                            background-color: #0f172a !important;
+                            color: #ffffff !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        thead th {
+                            background-color: #0f172a !important;
+                            color: #ffffff !important;
+                            font-weight: 900 !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
                         }
                         tr {
                             page-break-inside: avoid;

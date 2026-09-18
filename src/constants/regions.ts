@@ -1,5 +1,6 @@
 export const IVORIAN_REGIONS = [
     "Abidjan",
+    "Yamoussoukro",
     "Agnéby-Tiassa",
     "Bafing",
     "Bagoué",
@@ -30,8 +31,7 @@ export const IVORIAN_REGIONS = [
     "Sud-Comoé",
     "Tchologo",
     "Tonkpi",
-    "Worodougou",
-    "Yamoussoukro"
+    "Worodougou"
 ] as const;
 
 export type IvorianRegion = typeof IVORIAN_REGIONS[number];

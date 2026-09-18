@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, startTransition } from "react";
+import React, { useState, useMemo, useEffect, startTransition } from "react";
 import {
   PlusCircle, Search, Eye, Pencil, Trash2,
   MoreHorizontal, FileText, Calendar,
@@ -88,6 +88,249 @@ const statusBadgeStyles: Record<Status, { bg: string; dot: string; icon: React.R
   },
 };
 
+const formatDateRange = (start: string, end: string) => {
+  try {
+    const startDate = parseISO(start);
+    const endDate = parseISO(end);
+    const startFormat = format(startDate, 'dd MMM', { locale: fr });
+    const endFormat = format(endDate, 'dd MMM yyyy', { locale: fr });
+    return `${startFormat} - ${endFormat}`;
+  } catch {
+    return `${start} - ${end}`;
+  }
+};
+
+const getDuration = (start: string, end: string) => {
+  try {
+    const startDate = parseISO(start);
+    const endDate = parseISO(end);
+    const diff = differenceInCalendarDays(endDate, startDate) + 1;
+    return diff > 0 ? diff : 1;
+  } catch {
+    return 1;
+  }
+};
+
+interface MissionTableRowProps {
+  mission: Mission;
+  canManageAllMissions: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  user: any;
+  onNavigate: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (mission: Mission) => void;
+  onPrintCollective: (mission: Mission) => void;
+  onPrintGrouped: (mission: Mission) => void;
+  onPrintGroup: (mission: Mission) => void;
+  onPrintIndividual: (mission: Mission, participant: MissionParticipant) => void;
+}
+
+const MissionTableRow = React.memo(function MissionTableRow({
+  mission,
+  canManageAllMissions,
+  canUpdate,
+  canDelete,
+  user,
+  onNavigate,
+  onEdit,
+  onDelete,
+  onPrintCollective,
+  onPrintGrouped,
+  onPrintGroup,
+  onPrintIndividual
+}: MissionTableRowProps) {
+  const statusConfig = statusBadgeStyles[mission.status as Status] || statusBadgeStyles['Planifiée'];
+  const duration = getDuration(mission.startDate, mission.endDate);
+
+  const userParticipant = (mission.participants || []).find(p => 
+    (user?.employeeId && p.employeeId === user.employeeId) ||
+    (user?.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
+  );
+
+  return (
+    <TableRow
+      onClick={canManageAllMissions ? () => onNavigate(mission.id) : undefined}
+      className={cn(
+        "border-b border-slate-100 transition-colors group",
+        canManageAllMissions ? "cursor-pointer hover:bg-slate-50/70" : "hover:bg-slate-50/40"
+      )}
+    >
+      {/* N° Dossier */}
+      <TableCell className="pl-6 font-bold text-xs text-slate-900">
+        <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-800 px-2.5 py-1 rounded-md text-[11px] font-black tracking-wider uppercase border border-slate-200/60">
+          {mission.numeroMission || "N/A"}
+        </span>
+      </TableCell>
+
+      {/* Titre */}
+      <TableCell className="max-w-[320px]">
+        <div className="space-y-0.5">
+          <span className={cn(
+            "font-bold text-slate-900 text-xs line-clamp-1 uppercase transition-colors",
+            canManageAllMissions && "group-hover:text-indigo-600"
+          )}>
+            {mission.title}
+          </span>
+          {mission.dateSaisie && (
+            <span className="text-[10px] text-slate-600 font-medium block">
+              Saisie le {format(parseISO(mission.dateSaisie), "dd MMM yyyy", { locale: fr })}
+            </span>
+          )}
+        </div>
+      </TableCell>
+
+      {/* Destination */}
+      <TableCell>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+          <MapPin className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+          <span className="truncate max-w-[140px] uppercase font-bold text-[11px]">
+            {mission.lieuMission || "Territoire National"}
+          </span>
+        </span>
+      </TableCell>
+
+      {/* Équipage */}
+      <TableCell>
+        <div className="flex items-center justify-center -space-x-1.5">
+          {(mission.participants || []).slice(0, 3).map((p, idx) => (
+            <div
+              key={`${p.employeeId}-${idx}`}
+              className={cn(
+                "h-7 w-7 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-black bg-gradient-to-br shadow-sm",
+                getAvatarGradient(p.employeeName)
+              )}
+              title={p.employeeName}
+            >
+              {p.employeeName.charAt(0)}
+            </div>
+          ))}
+          {(mission.participants || []).length > 3 && (
+            <div className="h-7 w-7 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center text-[9px] font-black text-white shadow-sm">
+              +{(mission.participants || []).length - 3}
+            </div>
+          )}
+        </div>
+      </TableCell>
+
+      {/* Calendrier */}
+      <TableCell>
+        <div className="space-y-0.5">
+          <div className="text-xs font-semibold text-slate-700">
+            {formatDateRange(mission.startDate, mission.endDate)}
+          </div>
+          <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md inline-block">
+            {duration} {duration > 1 ? 'jours' : 'jour'}
+          </span>
+        </div>
+      </TableCell>
+
+      {/* Statut */}
+      <TableCell>
+        <span className={cn(
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider",
+          statusConfig.bg
+        )}>
+          <span className={cn("h-1.5 w-1.5 rounded-full", statusConfig.dot)} />
+          {mission.status}
+        </span>
+      </TableCell>
+
+      {/* Actions */}
+      <TableCell className="text-right pr-6" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-end gap-1">
+          <Button 
+            size="icon" 
+            variant="ghost" 
+            title={canManageAllMissions ? "Imprimer l'Ordre de Mission Collectif" : "Imprimer mon Ordre de Mission"}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!canManageAllMissions && userParticipant) {
+                onPrintIndividual(mission, userParticipant);
+              } else {
+                onPrintCollective(mission);
+              }
+            }} 
+            className={cn(
+              "h-8 w-8 rounded-lg transition-colors",
+              canManageAllMissions ? "hover:bg-purple-50 text-slate-400 hover:text-purple-600" : "hover:bg-indigo-50 text-slate-400 hover:text-indigo-600"
+            )}
+          >
+            <Printer className="h-4 w-4" />
+          </Button>
+
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+              <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-800">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl border-slate-200 shadow-xl bg-white">
+              {canManageAllMissions ? (
+                <>
+                  <DropdownMenuItem onSelect={() => onNavigate(mission.id)} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
+                    <Eye className="mr-2 h-3.5 w-3.5 text-blue-600" /> Voir le dossier
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400">
+                    Impressions & Documents
+                  </DropdownMenuLabel>
+
+                  <DropdownMenuItem 
+                    onSelect={() => onPrintCollective(mission)} 
+                    className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-purple-600"
+                  >
+                    <Printer className="mr-2 h-3.5 w-3.5 text-purple-600" /> Ordre Collectif
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
+                    onSelect={() => onPrintGrouped(mission)} 
+                    className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-emerald-600"
+                  >
+                    <Printer className="mr-2 h-3.5 w-3.5 text-emerald-600" /> Ordres Individuels
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
+                    onSelect={() => onPrintGroup(mission)} 
+                    className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-blue-600"
+                  >
+                    <FileText className="mr-2 h-3.5 w-3.5 text-blue-600" /> Demande d'Ordre
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                userParticipant && (
+                  <DropdownMenuItem 
+                    onSelect={() => onPrintIndividual(mission, userParticipant)} 
+                    className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-indigo-600"
+                  >
+                    <Printer className="mr-2 h-3.5 w-3.5 text-indigo-600" /> Imprimer mon Ordre
+                  </DropdownMenuItem>
+                )
+              )}
+
+              {canUpdate && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => onEdit(mission.id)} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
+                    <Pencil className="mr-2 h-3.5 w-3.5 text-slate-600" /> Modifier
+                  </DropdownMenuItem>
+                </>
+              )}
+              {canDelete && (
+                <DropdownMenuItem onSelect={() => onDelete(mission)} className="rounded-lg text-xs font-bold py-2 text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                  <Trash2 className="mr-2 h-3.5 w-3.5" /> Supprimer
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+});
+
 export default function MissionsPage() {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -112,28 +355,6 @@ export default function MissionsPage() {
   const [showIndividualPrint, setShowIndividualPrint] = useState(false);
   const [selectedIndividualParticipant, setSelectedIndividualParticipant] = useState<MissionParticipant | null>(null);
 
-  const formatDateRange = (start: string, end: string) => {
-    try {
-      const startDate = parseISO(start);
-      const endDate = parseISO(end);
-      const startFormat = format(startDate, 'dd MMM', { locale: fr });
-      const endFormat = format(endDate, 'dd MMM yyyy', { locale: fr });
-      return `${startFormat} - ${endFormat}`;
-    } catch {
-      return `${start} - ${end}`;
-    }
-  };
-
-  const getDuration = (start: string, end: string) => {
-    try {
-      const startDate = parseISO(start);
-      const endDate = parseISO(end);
-      const diff = differenceInCalendarDays(endDate, startDate) + 1;
-      return diff > 0 ? diff : 1;
-    } catch {
-      return 1;
-    }
-  };
 
   const canCreate = can('missions', 'create') || hasPermission('missions:create') || hasPermission('page:missions:create') || hasPermission('page:missions:add') || hasPermission('page:admin:view');
   const canUpdate = can('missions', 'update') || hasPermission('missions:update') || hasPermission('page:missions:update') || hasPermission('page:missions:edit') || hasPermission('page:admin:view');
@@ -508,226 +729,36 @@ export default function MissionsPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedMissions.map((mission) => {
-                    const statusConfig = statusBadgeStyles[mission.status as Status] || statusBadgeStyles['Planifiée'];
-                    const duration = getDuration(mission.startDate, mission.endDate);
-
-                    return (
-                      <TableRow
-                        key={mission.id}
-                        onClick={canManageAllMissions ? () => startTransition(() => router.push(`/missions/${mission.id}`)) : undefined}
-                        className={cn(
-                          "border-b border-slate-100 transition-colors group",
-                          canManageAllMissions ? "cursor-pointer hover:bg-slate-50/70" : "hover:bg-slate-50/40"
-                        )}
-                      >
-                        {/* N° Dossier */}
-                        <TableCell className="pl-6 font-bold text-xs text-slate-900">
-                          <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-800 px-2.5 py-1 rounded-md text-[11px] font-black tracking-wider uppercase border border-slate-200/60">
-                            {mission.numeroMission || "N/A"}
-                          </span>
-                        </TableCell>
-
-                        {/* Titre */}
-                        <TableCell className="max-w-[320px]">
-                          <div className="space-y-0.5">
-                            <span className={cn(
-                              "font-bold text-slate-900 text-xs line-clamp-1 uppercase transition-colors",
-                              canManageAllMissions && "group-hover:text-indigo-600"
-                            )}>
-                              {mission.title}
-                            </span>
-                            {mission.dateSaisie && (
-                              <span className="text-[10px] text-slate-600 font-medium block">
-                                Saisie le {format(parseISO(mission.dateSaisie), "dd MMM yyyy", { locale: fr })}
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-
-                        {/* Destination */}
-                        <TableCell>
-                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700">
-                            <MapPin className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                            <span className="truncate max-w-[140px] uppercase font-bold text-[11px]">
-                              {mission.lieuMission || "Territoire National"}
-                            </span>
-                          </span>
-                        </TableCell>
-
-                        {/* Équipage */}
-                        <TableCell>
-                          <div className="flex items-center justify-center -space-x-1.5">
-                            {(mission.participants || []).slice(0, 3).map((p, idx) => (
-                              <div
-                                key={`${p.employeeId}-${idx}`}
-                                className={cn(
-                                  "h-7 w-7 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-black bg-gradient-to-br shadow-sm",
-                                  getAvatarGradient(p.employeeName)
-                                )}
-                                title={p.employeeName}
-                              >
-                                {p.employeeName.charAt(0)}
-                              </div>
-                            ))}
-                            {(mission.participants || []).length > 3 && (
-                              <div className="h-7 w-7 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center text-[9px] font-black text-white shadow-sm">
-                                +{(mission.participants || []).length - 3}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-
-                        {/* Calendrier */}
-                        <TableCell>
-                          <div className="space-y-0.5">
-                            <div className="text-xs font-semibold text-slate-700">
-                              {formatDateRange(mission.startDate, mission.endDate)}
-                            </div>
-                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md inline-block">
-                              {duration} {duration > 1 ? 'jours' : 'jour'}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        {/* Statut */}
-                        <TableCell>
-                          <span className={cn(
-                            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider",
-                            statusConfig.bg
-                          )}>
-                            <span className={cn("h-1.5 w-1.5 rounded-full", statusConfig.dot)} />
-                            {mission.status}
-                          </span>
-                        </TableCell>
-
-                        {/* Actions */}
-                        <TableCell className="text-right pr-6" onClick={(e) => e.stopPropagation()}>
-                          {(() => {
-                            const userParticipant = (mission.participants || []).find(p => 
-                              (user?.employeeId && p.employeeId === user.employeeId) ||
-                              (user?.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
-                            );
-
-                            return (
-                              <div className="flex items-center justify-end gap-1">
-                                <Button 
-                                  size="icon" 
-                                  variant="ghost" 
-                                  title={canManageAllMissions ? "Imprimer l'Ordre de Mission Collectif" : "Imprimer mon Ordre de Mission"}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    startTransition(() => {
-                                      setPrintTargetMission(mission);
-                                      if (!canManageAllMissions && userParticipant) {
-                                        setSelectedIndividualParticipant(userParticipant);
-                                        setShowIndividualPrint(true);
-                                      } else {
-                                        setShowCollectivePrint(true);
-                                      }
-                                    });
-                                  }} 
-                                  className={cn(
-                                    "h-8 w-8 rounded-lg transition-colors",
-                                    canManageAllMissions ? "hover:bg-purple-50 text-slate-400 hover:text-purple-600" : "hover:bg-indigo-50 text-slate-400 hover:text-indigo-600"
-                                  )}
-                                >
-                                  <Printer className="h-4 w-4" />
-                                </Button>
-
-                                <DropdownMenu modal={false}>
-                                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-800">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl border-slate-200 shadow-xl bg-white">
-                                    {canManageAllMissions ? (
-                                      <>
-                                        <DropdownMenuItem onSelect={() => startTransition(() => router.push(`/missions/${mission.id}`))} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
-                                          <Eye className="mr-2 h-3.5 w-3.5 text-blue-600" /> Voir le dossier
-                                        </DropdownMenuItem>
-
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuLabel className="px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400">
-                                          Impressions & Documents
-                                        </DropdownMenuLabel>
-
-                                        <DropdownMenuItem 
-                                          onSelect={() => {
-                                            startTransition(() => {
-                                              setPrintTargetMission(mission);
-                                              setShowCollectivePrint(true);
-                                            });
-                                          }} 
-                                          className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-purple-600"
-                                        >
-                                          <Printer className="mr-2 h-3.5 w-3.5 text-purple-600" /> Ordre Collectif
-                                        </DropdownMenuItem>
-
-                                        <DropdownMenuItem 
-                                          onSelect={() => {
-                                            startTransition(() => {
-                                              setPrintTargetMission(mission);
-                                              setShowGroupedIndividualPrint(true);
-                                            });
-                                          }} 
-                                          className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-emerald-600"
-                                        >
-                                          <Printer className="mr-2 h-3.5 w-3.5 text-emerald-600" /> Ordres Individuels
-                                        </DropdownMenuItem>
-
-                                        <DropdownMenuItem 
-                                          onSelect={() => {
-                                            startTransition(() => {
-                                              setPrintTargetMission(mission);
-                                              setShowGroupPrint(true);
-                                            });
-                                          }} 
-                                          className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-blue-600"
-                                        >
-                                          <FileText className="mr-2 h-3.5 w-3.5 text-blue-600" /> Demande d'Ordre
-                                        </DropdownMenuItem>
-                                      </>
-                                    ) : (
-                                      userParticipant && (
-                                        <DropdownMenuItem 
-                                          onSelect={() => {
-                                            startTransition(() => {
-                                              setPrintTargetMission(mission);
-                                              setSelectedIndividualParticipant(userParticipant);
-                                              setShowIndividualPrint(true);
-                                            });
-                                          }} 
-                                          className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-indigo-600"
-                                        >
-                                          <Printer className="mr-2 h-3.5 w-3.5 text-indigo-600" /> Imprimer mon Ordre
-                                        </DropdownMenuItem>
-                                      )
-                                    )}
-
-                                    {canUpdate && (
-                                      <>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onSelect={() => startTransition(() => router.push(`/missions/${mission.id}/edit`))} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
-                                          <Pencil className="mr-2 h-3.5 w-3.5 text-slate-600" /> Modifier
-                                        </DropdownMenuItem>
-                                      </>
-                                    )}
-                                    {canDelete && (
-                                      <DropdownMenuItem onSelect={() => startTransition(() => setDeleteTarget(mission))} className="rounded-lg text-xs font-bold py-2 text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
-                                        <Trash2 className="mr-2 h-3.5 w-3.5" /> Supprimer
-                                      </DropdownMenuItem>
-                                    )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            );
-                          })()}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                  paginatedMissions.map((mission) => (
+                    <MissionTableRow
+                      key={mission.id}
+                      mission={mission}
+                      canManageAllMissions={canManageAllMissions}
+                      canUpdate={canUpdate}
+                      canDelete={canDelete}
+                      user={user}
+                      onNavigate={(id) => startTransition(() => router.push(`/missions/${id}`))}
+                      onEdit={(id) => startTransition(() => router.push(`/missions/${id}/edit`))}
+                      onDelete={(m) => startTransition(() => setDeleteTarget(m))}
+                      onPrintCollective={(m) => startTransition(() => {
+                        setPrintTargetMission(m);
+                        setShowCollectivePrint(true);
+                      })}
+                      onPrintGrouped={(m) => startTransition(() => {
+                        setPrintTargetMission(m);
+                        setShowGroupedIndividualPrint(true);
+                      })}
+                      onPrintGroup={(m) => startTransition(() => {
+                        setPrintTargetMission(m);
+                        setShowGroupPrint(true);
+                      })}
+                      onPrintIndividual={(m, p) => startTransition(() => {
+                        setPrintTargetMission(m);
+                        setSelectedIndividualParticipant(p);
+                        setShowIndividualPrint(true);
+                      })}
+                    />
+                  ))
                 )}
               </TableBody>
             </Table>

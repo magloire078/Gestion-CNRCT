@@ -354,7 +354,7 @@ export default function MissionsPage() {
 
           {/* Planifiées */}
           <div 
-            onClick={() => setSelectedStatus(selectedStatus === "Planifiée" ? "all" : "Planifiée")}
+            onClick={() => startTransition(() => setSelectedStatus(selectedStatus === "Planifiée" ? "all" : "Planifiée"))}
             className={cn(
               "rounded-2xl bg-white p-4 lg:p-5 border shadow-sm transition-all duration-200 cursor-pointer group",
               selectedStatus === "Planifiée" ? "border-blue-500 ring-2 ring-blue-500/10 shadow-md" : "border-slate-200/70 hover:border-slate-300"
@@ -378,7 +378,7 @@ export default function MissionsPage() {
 
           {/* Terminées */}
           <div 
-            onClick={() => setSelectedStatus(selectedStatus === "Terminée" ? "all" : "Terminée")}
+            onClick={() => startTransition(() => setSelectedStatus(selectedStatus === "Terminée" ? "all" : "Terminée"))}
             className={cn(
               "rounded-2xl bg-white p-4 lg:p-5 border shadow-sm transition-all duration-200 cursor-pointer group",
               selectedStatus === "Terminée" ? "border-emerald-500 ring-2 ring-emerald-500/10 shadow-md" : "border-slate-200/70 hover:border-slate-300"
@@ -415,7 +415,7 @@ export default function MissionsPage() {
               ].map(filter => (
                 <button
                   key={filter.id}
-                  onClick={() => setSelectedStatus(filter.id)}
+                  onClick={() => startTransition(() => setSelectedStatus(filter.id))}
                   className={cn(
                     "px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5",
                     selectedStatus === filter.id
@@ -515,7 +515,7 @@ export default function MissionsPage() {
                     return (
                       <TableRow
                         key={mission.id}
-                        onClick={canManageAllMissions ? () => router.push(`/missions/${mission.id}`) : undefined}
+                        onClick={canManageAllMissions ? () => startTransition(() => router.push(`/missions/${mission.id}`)) : undefined}
                         className={cn(
                           "border-b border-slate-100 transition-colors group",
                           canManageAllMissions ? "cursor-pointer hover:bg-slate-50/70" : "hover:bg-slate-50/40"
@@ -615,14 +615,17 @@ export default function MissionsPage() {
                                   size="icon" 
                                   variant="ghost" 
                                   title={canManageAllMissions ? "Imprimer l'Ordre de Mission Collectif" : "Imprimer mon Ordre de Mission"}
-                                  onClick={() => {
-                                    setPrintTargetMission(mission);
-                                    if (!canManageAllMissions && userParticipant) {
-                                      setSelectedIndividualParticipant(userParticipant);
-                                      setShowIndividualPrint(true);
-                                    } else {
-                                      setShowCollectivePrint(true);
-                                    }
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    startTransition(() => {
+                                      setPrintTargetMission(mission);
+                                      if (!canManageAllMissions && userParticipant) {
+                                        setSelectedIndividualParticipant(userParticipant);
+                                        setShowIndividualPrint(true);
+                                      } else {
+                                        setShowCollectivePrint(true);
+                                      }
+                                    });
                                   }} 
                                   className={cn(
                                     "h-8 w-8 rounded-lg transition-colors",
@@ -632,8 +635,8 @@ export default function MissionsPage() {
                                   <Printer className="h-4 w-4" />
                                 </Button>
 
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
+                                <DropdownMenu modal={false}>
+                                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                                     <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-800">
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>
@@ -641,7 +644,7 @@ export default function MissionsPage() {
                                   <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl border-slate-200 shadow-xl bg-white">
                                     {canManageAllMissions ? (
                                       <>
-                                        <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}`)} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
+                                        <DropdownMenuItem onSelect={() => startTransition(() => router.push(`/missions/${mission.id}`))} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
                                           <Eye className="mr-2 h-3.5 w-3.5 text-blue-600" /> Voir le dossier
                                         </DropdownMenuItem>
 
@@ -652,8 +655,10 @@ export default function MissionsPage() {
 
                                         <DropdownMenuItem 
                                           onSelect={() => {
-                                            setPrintTargetMission(mission);
-                                            setShowCollectivePrint(true);
+                                            startTransition(() => {
+                                              setPrintTargetMission(mission);
+                                              setShowCollectivePrint(true);
+                                            });
                                           }} 
                                           className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-purple-600"
                                         >
@@ -662,8 +667,10 @@ export default function MissionsPage() {
 
                                         <DropdownMenuItem 
                                           onSelect={() => {
-                                            setPrintTargetMission(mission);
-                                            setShowGroupedIndividualPrint(true);
+                                            startTransition(() => {
+                                              setPrintTargetMission(mission);
+                                              setShowGroupedIndividualPrint(true);
+                                            });
                                           }} 
                                           className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-emerald-600"
                                         >
@@ -672,8 +679,10 @@ export default function MissionsPage() {
 
                                         <DropdownMenuItem 
                                           onSelect={() => {
-                                            setPrintTargetMission(mission);
-                                            setShowGroupPrint(true);
+                                            startTransition(() => {
+                                              setPrintTargetMission(mission);
+                                              setShowGroupPrint(true);
+                                            });
                                           }} 
                                           className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-blue-600"
                                         >
@@ -684,9 +693,11 @@ export default function MissionsPage() {
                                       userParticipant && (
                                         <DropdownMenuItem 
                                           onSelect={() => {
-                                            setPrintTargetMission(mission);
-                                            setSelectedIndividualParticipant(userParticipant);
-                                            setShowIndividualPrint(true);
+                                            startTransition(() => {
+                                              setPrintTargetMission(mission);
+                                              setSelectedIndividualParticipant(userParticipant);
+                                              setShowIndividualPrint(true);
+                                            });
                                           }} 
                                           className="rounded-lg text-xs font-bold py-2 cursor-pointer text-slate-700 hover:text-indigo-600"
                                         >
@@ -698,13 +709,13 @@ export default function MissionsPage() {
                                     {canUpdate && (
                                       <>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}/edit`)} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
+                                        <DropdownMenuItem onSelect={() => startTransition(() => router.push(`/missions/${mission.id}/edit`))} className="rounded-lg text-xs font-bold py-2 cursor-pointer">
                                           <Pencil className="mr-2 h-3.5 w-3.5 text-slate-600" /> Modifier
                                         </DropdownMenuItem>
                                       </>
                                     )}
                                     {canDelete && (
-                                      <DropdownMenuItem onSelect={() => setDeleteTarget(mission)} className="rounded-lg text-xs font-bold py-2 text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                                      <DropdownMenuItem onSelect={() => startTransition(() => setDeleteTarget(mission))} className="rounded-lg text-xs font-bold py-2 text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
                                         <Trash2 className="mr-2 h-3.5 w-3.5" /> Supprimer
                                       </DropdownMenuItem>
                                     )}
@@ -743,7 +754,7 @@ export default function MissionsPage() {
                 return (
                   <div
                     key={mission.id}
-                    onClick={canManageAllMissions ? () => router.push(`/missions/${mission.id}`) : undefined}
+                    onClick={canManageAllMissions ? () => startTransition(() => router.push(`/missions/${mission.id}`)) : undefined}
                     className={cn(
                       "p-4 rounded-xl bg-white border border-slate-200/80 shadow-sm transition-all space-y-3",
                       canManageAllMissions && "cursor-pointer active:scale-98"
@@ -784,8 +795,10 @@ export default function MissionsPage() {
                               variant="ghost"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setPrintTargetMission(mission);
-                                setShowCollectivePrint(true);
+                                startTransition(() => {
+                                  setPrintTargetMission(mission);
+                                  setShowCollectivePrint(true);
+                                });
                               }}
                               className="h-7 px-2 text-[10px] font-bold text-purple-600 hover:bg-purple-50"
                             >
@@ -802,9 +815,11 @@ export default function MissionsPage() {
                               variant="ghost"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setPrintTargetMission(mission);
-                                setSelectedIndividualParticipant(userParticipant);
-                                setShowIndividualPrint(true);
+                                startTransition(() => {
+                                  setPrintTargetMission(mission);
+                                  setSelectedIndividualParticipant(userParticipant);
+                                  setShowIndividualPrint(true);
+                                });
                               }}
                               className="h-7 px-2 text-[10px] font-bold text-indigo-600 hover:bg-indigo-50"
                             >

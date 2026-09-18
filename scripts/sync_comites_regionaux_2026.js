@@ -67,8 +67,10 @@ async function runSync() {
             const normReverseFull = normalize(`${target.firstName} ${target.lastName}`);
             const normDept = normalize(target.department);
             const normRegion = normalize(target.region);
-            const cleanVillage = cleanVillageName(target.role);
+            const cleanVillage = cleanVillageName(target.locality || target.role);
             const isReconduit = (target.profile || '').toLowerCase().includes('reconduit');
+            const profile = target.profile || (isReconduit ? 'Reconduit' : 'Nouveau');
+            const sexe = target.sexe || 'Homme';
 
             // --- RECHERCHE CHEF ---
             let matchedChief = allChiefs.find(c => {
@@ -86,7 +88,7 @@ async function runSync() {
                 matchedChief = allChiefs.find(c => {
                     const cDept = normalize(c.department || c.Departement);
                     const cLast = normalize(c.lastName);
-                    const cVillage = normalize(c.village || c.Village);
+                    const cVillage = normalize(c.village || c.Village || c.locality || c.Localite);
                     return cDept === normDept && (cLast === normLast || (cleanVillage && cVillage === normalize(cleanVillage)));
                 });
             }
@@ -101,11 +103,16 @@ async function runSync() {
                     region: target.region,
                     department: target.department,
                     village: cleanVillage || matchedChief.village || '',
+                    locality: target.locality || cleanVillage || matchedChief.locality || '',
+                    qualite: target.qualite || matchedChief.qualite || '',
                     contact: target.contact || matchedChief.contact || '',
                     title: target.role || matchedChief.title || '',
                     cnrctAffiliation: 'Comité Régional',
                     statut: 'Vivant',
+                    profile: profile,
                     estRenouvele: isReconduit,
+                    sexe: sexe,
+                    genre: sexe,
                     mandatDebut: '2026-06-01'
                 };
 
@@ -124,6 +131,8 @@ async function runSync() {
                     lastName: target.lastName,
                     firstName: target.firstName,
                     title: target.role,
+                    qualite: target.qualite,
+                    locality: target.locality || cleanVillage,
                     role: target.role.toLowerCase().includes('canton') ? 'Chef de canton' : (target.role.toLowerCase().includes('roi') ? 'Roi' : (target.role.toLowerCase().includes('tribu') ? 'Chef de tribu' : 'Chef de Village')),
                     region: target.region,
                     department: target.department,
@@ -133,7 +142,10 @@ async function runSync() {
                     source: 'Import Comité Régional Actif 2026',
                     statut: 'Vivant',
                     cnrctAffiliation: 'Comité Régional',
+                    profile: profile,
                     estRenouvele: isReconduit,
+                    sexe: sexe,
+                    genre: sexe,
                     mandatDebut: '2026-06-01',
                     createdAt: admin.firestore.FieldValue.serverTimestamp()
                 };
@@ -160,7 +172,12 @@ async function runSync() {
                     Region: target.region,
                     Departement: target.department,
                     Village: cleanVillage || matchedEmp.Village || '',
+                    locality: target.locality || cleanVillage,
+                    qualite: target.qualite || matchedEmp.qualite || '',
                     mobile: target.contact || matchedEmp.mobile || '',
+                    sexe: sexe,
+                    genre: sexe,
+                    profile: profile,
                     chiefId: chiefId,
                     groupe_2: 'Rois & Chefs'
                 });
@@ -178,7 +195,12 @@ async function runSync() {
                     Region: target.region,
                     Departement: target.department,
                     Village: cleanVillage,
+                    locality: target.locality || cleanVillage,
+                    qualite: target.qualite,
                     mobile: target.contact,
+                    sexe: sexe,
+                    genre: sexe,
+                    profile: profile,
                     groupe_2: 'Rois & Chefs',
                     chiefId: chiefId,
                     photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(target.lastName + ' ' + target.firstName)}&background=006039&color=fff&size=100`,

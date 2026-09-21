@@ -150,6 +150,16 @@ export function EmployeeOfficialReport({
                     </span>
                 );
             }
+            case 'situationMatrimoniale': {
+                const val = emp.situationMatrimoniale?.trim() || (emp as any).situation_famille || (emp as any).Situation_Matrimoniale;
+                if (!val || val === '---') return <span className="text-slate-300 font-bold text-[8px]">-</span>;
+                return <span className="font-bold text-[8px] text-slate-800">{val}</span>;
+            }
+            case 'enfants': {
+                const val = emp.enfants ?? (emp as any).nombre_enfants;
+                if (val === undefined || val === null || val === '') return <span className="text-slate-300 font-bold text-[8px]">-</span>;
+                return <span className="font-black text-[8px] text-slate-800 tabular-nums">{val}</span>;
+            }
             case 'statutChef': {
                 const statuses = getMemberChiefStatuses(emp);
                 if (statuses.length === 0) return <span className="text-slate-300 font-bold text-[8px]">-</span>;

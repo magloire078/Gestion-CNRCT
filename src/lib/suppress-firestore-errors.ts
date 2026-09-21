@@ -22,7 +22,9 @@ if (typeof window !== 'undefined') {
             m.includes('dialogcontent requires a dialogtitle') ||
             m.includes('missing `description` or `aria-describedby`') ||
             m.includes('missing or insufficient permissions') ||
-            m.includes('permission-denied')
+            m.includes('permission-denied') ||
+            m.includes('document already exists') ||
+            m.includes('already-exists')
         );
     };
 

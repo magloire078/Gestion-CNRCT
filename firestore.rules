@@ -360,6 +360,12 @@ service cloud.firestore {
       allow create, update, delete: if can('news', 'update');
     }
 
+    match /audit_logs/{id} {
+      allow read: if isSuperAdmin() || can('admin', 'read');
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
     match /departments/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }
     match /directions/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }
     match /services/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }

@@ -188,30 +188,29 @@ export function PressConflictSynthesisReport({ isOpen, onClose, conflicts, perio
 
   const chartsContent = (
     <div className="grid-content space-y-6">
-      {/* Date Filter */}
-      <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 print:hidden">
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-sm font-medium text-slate-600 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+      <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4 print:hidden">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm font-medium text-slate-600 bg-slate-50 px-3 sm:px-4 py-2 rounded-xl border border-slate-200">
               <div className="flex items-center gap-2">
-                  <Label htmlFor="pressStartDate" className="text-xs uppercase tracking-widest font-black">Du</Label>
+                  <Label htmlFor="pressStartDate" className="text-xs uppercase tracking-widest font-black shrink-0">Du</Label>
                   <Input 
                       id="pressStartDate" 
                       type="date" 
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="h-8 text-xs font-bold"
+                      className="h-8 w-[135px] sm:w-[150px] text-xs font-bold bg-white"
                   />
               </div>
               <div className="flex items-center gap-2">
-                  <Label htmlFor="pressEndDate" className="text-xs uppercase tracking-widest font-black">Au</Label>
+                  <Label htmlFor="pressEndDate" className="text-xs uppercase tracking-widest font-black shrink-0">Au</Label>
                   <Input 
                       id="pressEndDate" 
                       type="date" 
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="h-8 text-xs font-bold"
+                      className="h-8 w-[135px] sm:w-[150px] text-xs font-bold bg-white"
                   />
               </div>
-              <span className="ml-2 font-black text-slate-800 bg-white px-2 py-1 rounded shadow-sm border border-slate-200">Total : {localConflicts.length}</span>
+              <span className="font-black text-slate-800 bg-white px-2.5 py-1 rounded-lg shadow-sm border border-slate-200 text-xs shrink-0">Total : {localConflicts.length}</span>
           </div>
       </div>
       {/* Narrative Summary UI */}

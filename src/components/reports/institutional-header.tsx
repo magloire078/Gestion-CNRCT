@@ -10,6 +10,7 @@ interface InstitutionalHeaderProps {
   period?: string;
   service?: string;
   direction?: string;
+  secretariatLabel?: string;
   showService?: boolean;
   settings?: OrganizationSettings | null;
   children?: React.ReactNode;
@@ -22,6 +23,7 @@ export function InstitutionalHeader({
   period, 
   service = "Direction des Finances et du Patrimoine",
   direction = "DFP",
+  secretariatLabel = "Secrétariat Général",
   showService = true,
   settings: initialSettings,
   children,
@@ -76,12 +78,16 @@ export function InstitutionalHeader({
           <span className="tracking-widest text-[8px] text-slate-400 font-normal">………………</span>
           <span>Le Président</span>
           <span className="tracking-widest text-[8px] text-slate-400 font-normal">………………</span>
-          <span>Secrétariat Général</span>
-          <span className="tracking-widest text-[8px] text-slate-400 font-normal">………………</span>
-          {showService && (
+          {secretariatLabel && (
+            <>
+              <span>{secretariatLabel}</span>
+              <span className="tracking-widest text-[8px] text-slate-400 font-normal">………………</span>
+            </>
+          )}
+          {showService && service && (
             <div className="flex flex-col gap-0.5 mt-2 not-italic items-center">
               <span className="font-bold text-slate-800 uppercase tracking-tight text-[9px]">{service}</span>
-              <span className="font-black text-slate-900 uppercase tracking-[0.2em] text-[10px]">{direction}</span>
+              {direction && <span className="font-black text-slate-900 uppercase tracking-[0.2em] text-[10px]">{direction}</span>}
             </div>
           )}
         </div>

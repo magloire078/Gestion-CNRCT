@@ -160,7 +160,7 @@
   tbody tr {
     @apply bg-muted/20;
     border-left: 0;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.15s ease;
   }
 
   tbody tr:nth-child(even) {
@@ -169,9 +169,6 @@
 
   tbody tr:hover {
     background: hsl(var(--primary) / 0.08) !important;
-    border-left-color: hsl(var(--primary));
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px hsl(var(--primary) / 0.15);
   }
 
   /* Disable zebra-striping for specific tables */

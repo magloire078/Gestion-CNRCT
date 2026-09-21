@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, startTransition } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -131,6 +131,19 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     fetchMetadata();
   }, [toast]);
 
+  const officialRegion = useMemo(() => getOfficialRegion(formData.Region || ""), [formData.Region]);
+  const officialDepartment = useMemo(() => getOfficialDepartment(formData.Region || "", formData.Departement || ""), [formData.Region, formData.Departement]);
+
+  const availableDepartments = useMemo(() => {
+    if (!officialRegion) return [];
+    return Object.keys(divisions[officialRegion] || {}).sort();
+  }, [officialRegion]);
+
+  const availableSubPrefectures = useMemo(() => {
+    if (!officialRegion || !officialDepartment) return [];
+    return Object.keys(divisions[officialRegion]?.[officialDepartment] || {}).sort();
+  }, [officialRegion, officialDepartment]);
+
   const isGardeOrGendarme = useMemo(() => {
     const deptName = departmentList.find(d => d.id === formData.departmentId)?.name;
     return deptName === "Garde Républicaine" || deptName === "Gendarmes";
@@ -151,67 +164,61 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     return [];
   }, [formData.departmentId, formData.directionId, serviceList]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    startTransition(() => {
-      setFormData(prev => {
-        const newData = { ...prev, [id]: value };
-        
-        // Auto calculate Date_Depart if department is Garde Républicaine and dateEmbauche changes
-        if (id === 'dateEmbauche') {
-          const isGarde = departmentList.find(d => d.id === prev.departmentId)?.name === "Garde Républicaine";
-          if (isGarde && value) {
-            try {
-              const start = new Date(value);
-              if (!isNaN(start.getTime())) {
-                start.setMonth(start.getMonth() + 6);
-                newData.Date_Depart = start.toISOString().split('T')[0];
-              }
-            } catch (e) {
-              console.error("Invalid dateEmbauche for Garde:", e);
+    setFormData(prev => {
+      const newData = { ...prev, [id]: value };
+      
+      // Auto calculate Date_Depart if department is Garde Républicaine and dateEmbauche changes
+      if (id === 'dateEmbauche') {
+        const isGarde = departmentList.find(d => d.id === prev.departmentId)?.name === "Garde Républicaine";
+        if (isGarde && value) {
+          try {
+            const start = new Date(value);
+            if (!isNaN(start.getTime())) {
+              start.setMonth(start.getMonth() + 6);
+              newData.Date_Depart = start.toISOString().split('T')[0];
             }
+          } catch (e) {
+            console.error("Invalid dateEmbauche for Garde:", e);
           }
         }
+      }
+      
+      return newData;
+    });
+  }, [departmentList]);
+
+  const handleSelectChange = useCallback((id: keyof Employe, value: any) => {
+    setFormData(prev => {
+      const newData = { ...prev, [id]: value };
+      if (id === 'departmentId') {
+        newData.directionId = undefined;
+        newData.serviceId = undefined;
         
-        return newData;
-      });
-    });
-  };
-
-  const handleSelectChange = (id: keyof Employe, value: any) => {
-    startTransition(() => {
-      setFormData(prev => {
-        const newData = { ...prev, [id]: value };
-        if (id === 'departmentId') {
-          newData.directionId = undefined;
-          newData.serviceId = undefined;
-          
-          // Auto calculate Date_Depart if changing to Garde Républicaine and dateEmbauche exists
-          const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
-          if (isGarde && prev.dateEmbauche) {
-            try {
-              const start = new Date(prev.dateEmbauche);
-              if (!isNaN(start.getTime())) {
-                start.setMonth(start.getMonth() + 6);
-                newData.Date_Depart = start.toISOString().split('T')[0];
-              }
-            } catch (e) {
-              console.error("Invalid dateEmbauche for Garde:", e);
+        // Auto calculate Date_Depart if changing to Garde Républicaine and dateEmbauche exists
+        const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
+        if (isGarde && prev.dateEmbauche) {
+          try {
+            const start = new Date(prev.dateEmbauche);
+            if (!isNaN(start.getTime())) {
+              start.setMonth(start.getMonth() + 6);
+              newData.Date_Depart = start.toISOString().split('T')[0];
             }
+          } catch (e) {
+            console.error("Invalid dateEmbauche for Garde:", e);
           }
-        } else if (id === 'directionId') {
-          newData.serviceId = undefined;
         }
-        return newData;
-      });
+      } else if (id === 'directionId') {
+        newData.serviceId = undefined;
+      }
+      return newData;
     });
-  };
+  }, [departmentList]);
 
-  const handleValueChange = (id: string, value: string | number) => {
-    startTransition(() => {
-      setFormData(prev => ({ ...prev, [id]: value }));
-    });
-  };
+  const handleValueChange = useCallback((id: string, value: string | number) => {
+    setFormData(prev => ({ ...prev, [id]: value }));
+  }, []);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -428,7 +435,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Select value={formData.Departement || ''} onValueChange={(val) => { handleSelectChange('Departement', val); handleSelectChange('subPrefecture', ''); handleSelectChange('Village', ''); }} disabled={!formData.Region}>
                         <SelectTrigger id="Departement" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
                         <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
-                          {Object.keys(divisions[getOfficialRegion(formData.Region || "")] || {}).sort().map(d => (
+                          {availableDepartments.map(d => (
                             <SelectItem key={d} value={d} className="font-bold py-3 uppercase text-[9px] tracking-widest">{d}</SelectItem>
                           ))}
                         </SelectContent>
@@ -439,7 +446,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Select value={formData.subPrefecture || ''} onValueChange={(val) => { handleSelectChange('subPrefecture', val); handleSelectChange('Village', ''); }} disabled={!formData.Departement}>
                         <SelectTrigger id="subPrefecture" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
                         <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
-                          {Object.keys(divisions[getOfficialRegion(formData.Region || "")]?.[getOfficialDepartment(formData.Region || "", formData.Departement || "")] || {}).sort().map(sp => (
+                          {availableSubPrefectures.map(sp => (
                             <SelectItem key={sp} value={sp} className="font-bold py-3 uppercase text-[9px] tracking-widest">{sp}</SelectItem>
                           ))}
                         </SelectContent>

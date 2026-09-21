@@ -67,10 +67,10 @@ export function ConflictsOfficialReport({
         >
             {/* --- PAGE DE GARDE --- */}
             <InstitutionalCover 
-                title="RAPPORT NATIONAL DE MÉDIATION ET DES LITIGES COMMUNAUTAIRES"
+                title="RAPPORT PERIODIQUE DES LITIGES COMMUNAUTAIRES ENREGISTRÉS AUPRÈS DE LA CNRCT"
                 subtitle={periodLabel ? `Période : ${periodLabel}` : (subtitle || "Périmètre National")}
-                direction="DFP"
-                service="Direction des Finances et du Patrimoine"
+                secretariatLabel="Secrétariat Général"
+                showService={false}
                 stats={[
                     { label: "Total Dossiers", value: stats.total, icon: FileText },
                     { label: "Taux Résolution", value: `${stats.resolutionRate}%`, icon: CheckCircle2 },
@@ -83,11 +83,14 @@ export function ConflictsOfficialReport({
             />
 
             {/* --- PAGES DÉTAILLÉES (PAYSAGE) --- */}
-            <div className="min-h-screen p-12 print:p-5 bg-white">
+            <div className="p-6 print:p-4 bg-white print:min-h-0">
                     <InstitutionalHeader 
                         title="État Récapitulatif des Litiges"
-                        period={`Situation arrêtée au ${todayStr}`}
+                        period={periodLabel ? `${periodLabel} — Situation arrêtée au ${todayStr}` : `Situation arrêtée au ${todayStr}`}
+                        secretariatLabel="Secrétariat Général"
+                        showService={false}
                         settings={organizationSettings}
+                        compact={true}
                     />
 
                     <div className="space-y-6">

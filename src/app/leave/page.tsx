@@ -449,7 +449,7 @@ export default function LeavePage() {
                 </div>
 
                 <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
-                  <Select value={typeFilter} onValueChange={(v) => startTransition(() => setTypeFilter(v))}>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
                     <SelectTrigger className="h-10 w-full sm:w-[190px] bg-white border-slate-200/80 rounded-xl font-bold text-xs uppercase tracking-wider">
                       <SelectValue placeholder="Tous les types" />
                     </SelectTrigger>
@@ -461,7 +461,7 @@ export default function LeavePage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={statusFilter} onValueChange={(v) => startTransition(() => setStatusFilter(v))}>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="h-10 w-full sm:w-[170px] bg-white border-slate-200/80 rounded-xl font-bold text-xs uppercase tracking-wider">
                       <SelectValue placeholder="Tous les statuts" />
                     </SelectTrigger>

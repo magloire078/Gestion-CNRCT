@@ -156,7 +156,7 @@ export default function DisaPage() {
                                     <Label htmlFor="year" className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">Année d'imposition</Label>
                                     <div className="flex flex-col sm:flex-row gap-4 items-center">
                                         <div className="relative flex-1 w-full">
-                                            <Select name="year" value={year} onValueChange={(val) => startTransition(() => setYear(val))}>
+                                            <Select name="year" value={year} onValueChange={setYear}>
                                                 <SelectTrigger id="year" className="h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-lg font-black text-slate-700 px-6">
                                                     <SelectValue placeholder="Choisir l'année" />
                                                 </SelectTrigger>

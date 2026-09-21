@@ -1,13 +1,32 @@
-import React, { useState, useEffect } from "react";
-import { ArrowUp, ArrowDown, GripVertical, Monitor, Layout, Maximize2, Minimize2, Printer, Download, Settings, ListChecks, ArrowUpCircle, ArrowDownCircle, Info } from "lucide-react";
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { 
+  ArrowUp, 
+  ArrowDown, 
+  GripVertical, 
+  Maximize2, 
+  Minimize2, 
+  Printer, 
+  Download, 
+  ListChecks, 
+  ArrowUpCircle, 
+  ArrowDownCircle, 
+  Check 
+} from "lucide-react";
 import type { ColumnKeys } from "@/lib/constants/employee";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter 
+} from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 
 interface PrintDialogProps {
   isOpen: boolean;
@@ -21,6 +40,10 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
   const [selectedColumns, setSelectedColumns] = useState<Partial<Record<ColumnKeys, boolean>>>({});
   const [columnOrder, setColumnOrder] = useState<ColumnKeys[]>([]);
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('landscape');
+  const [focusedIndex, setFocusedIndex] = useState<number>(0);
+  
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const STORAGE_KEY = 'cnrct_print_preferences';
 
@@ -44,13 +67,11 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
           initialOrientation = parsed.orientation;
         }
         if (parsed.columnOrder && Array.isArray(parsed.columnOrder)) {
-          // Keep saved keys that still exist, then append any new keys
           const validSavedKeys = parsed.columnOrder.filter((k: any) => keys.includes(k));
           const newKeys = keys.filter(k => !validSavedKeys.includes(k as any));
           initialOrder = [...validSavedKeys, ...newKeys];
         }
         if (parsed.selectedColumns) {
-          // Merge saved selections, keeping default true for new keys
           initialSelected = { ...initialSelected, ...parsed.selectedColumns };
         }
       }
@@ -61,6 +82,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
     setColumnOrder(initialOrder);
     setSelectedColumns(initialSelected);
     setOrientation(initialOrientation);
+    setFocusedIndex(0);
   }, [isOpen, allColumns]);
 
   const handleCheckboxChange = (key: ColumnKeys) => {
@@ -73,6 +95,10 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
     if (targetIndex >= 0 && targetIndex < newOrder.length) {
       [newOrder[index], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[index]];
       setColumnOrder(newOrder);
+      setFocusedIndex(targetIndex);
+      setTimeout(() => {
+        rowRefs.current[targetIndex]?.focus();
+      }, 50);
     }
   };
 
@@ -125,21 +151,86 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
     }
   };
 
+  // Keyboard navigation inside list
+  const handleKeyDownList = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const next = Math.min(columnOrder.length - 1, focusedIndex + 1);
+      setFocusedIndex(next);
+      rowRefs.current[next]?.focus();
+      rowRefs.current[next]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const prev = Math.max(0, focusedIndex - 1);
+      setFocusedIndex(prev);
+      rowRefs.current[prev]?.focus();
+      rowRefs.current[prev]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (e.key === "PageDown") {
+      e.preventDefault();
+      const next = Math.min(columnOrder.length - 1, focusedIndex + 5);
+      setFocusedIndex(next);
+      rowRefs.current[next]?.focus();
+      rowRefs.current[next]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (e.key === "PageUp") {
+      e.preventDefault();
+      const prev = Math.max(0, focusedIndex - 5);
+      setFocusedIndex(prev);
+      rowRefs.current[prev]?.focus();
+      rowRefs.current[prev]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setFocusedIndex(0);
+      rowRefs.current[0]?.focus();
+      rowRefs.current[0]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (e.key === "End") {
+      e.preventDefault();
+      const last = columnOrder.length - 1;
+      setFocusedIndex(last);
+      rowRefs.current[last]?.focus();
+      rowRefs.current[last]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  };
+
+  const handleRowKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, key: ColumnKeys, index: number) => {
+    if (e.key === " " || e.key === "Enter") {
+      // Toggle selection if pressing Space or Enter on the row
+      if (e.target === e.currentTarget || (e.target as HTMLElement).tagName !== "BUTTON") {
+        e.preventDefault();
+        handleCheckboxChange(key);
+      }
+    } else if ((e.ctrlKey || e.altKey) && e.key === "ArrowUp") {
+      e.preventDefault();
+      moveColumn(index, "up");
+    } else if ((e.ctrlKey || e.altKey) && e.key === "ArrowDown") {
+      e.preventDefault();
+      moveColumn(index, "down");
+    }
+  };
+
   const areAllSelected = columnOrder.length > 0 && columnOrder.every(key => selectedColumns[key]);
+  const selectedCount = columnOrder.filter(k => selectedColumns[k]).length;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl w-[95vw] h-[85vh] sm:h-[80vh] flex flex-col overflow-hidden p-0 border-none bg-white shadow-3xl rounded-xl sm:rounded-xl">
+      <DialogContent 
+        className="sm:max-w-2xl w-[95vw] max-h-[90vh] h-[85vh] sm:h-[80vh] flex flex-col overflow-hidden p-0 border-none bg-white shadow-3xl rounded-2xl"
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            onClose();
+          }
+        }}
+      >
         <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white pointer-events-none" />
         
-        <DialogHeader className="p-5 sm:p-6 pb-2 relative z-10 shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200">
-                <Printer className="h-6 w-6 text-white" />
+        {/* Modal Header */}
+        <DialogHeader className="p-5 sm:p-6 pb-3 relative z-10 shrink-0 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="h-11 w-11 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/10 shrink-0">
+                <Printer className="h-5 w-5 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">
+                <DialogTitle className="text-xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">
                   Rapport Institutionnel
                 </DialogTitle>
                 <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
@@ -148,7 +239,8 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
               </div>
             </div>
             
-            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+            {/* Orientation Switcher */}
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0 self-end sm:self-center">
                 <Button 
                     variant={orientation === 'portrait' ? 'secondary' : 'ghost'}
                     size="sm"
@@ -158,7 +250,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
                         orientation === 'portrait' ? "bg-white shadow-sm text-slate-900" : "text-slate-400"
                     )}
                 >
-                    <Minimize2 className="h-3 w-3 mr-2" /> Portrait
+                    <Minimize2 className="h-3 w-3 mr-1.5" /> Portrait
                 </Button>
                 <Button 
                     variant={orientation === 'landscape' ? 'secondary' : 'ghost'}
@@ -169,91 +261,130 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
                         orientation === 'landscape' ? "bg-white shadow-sm text-slate-900" : "text-slate-400"
                     )}
                 >
-                    <Maximize2 className="h-3 w-3 mr-2" /> Paysage
+                    <Maximize2 className="h-3 w-3 mr-1.5" /> Paysage
                 </Button>
             </div>
           </div>
         </DialogHeader>
         
-        <div className="px-6 sm:px-5 flex-1 flex flex-col min-h-0 relative z-10">
-          <div className="flex items-center justify-between p-3 bg-slate-900/5 rounded-xl border border-slate-900/10 mb-3 shrink-0">
-            <div className="flex items-center space-x-4">
+        {/* Body Content */}
+        <div className="px-5 sm:px-6 py-3 flex-1 flex flex-col min-h-0 relative z-10 overflow-hidden">
+          {/* Select All Banner */}
+          <div className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100/70 transition-colors rounded-xl border border-slate-200/80 mb-3 shrink-0">
+            <div className="flex items-center space-x-3">
               <Checkbox
                 id="select-all"
                 checked={areAllSelected}
                 onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
-                className="h-6 w-6 rounded-lg border-slate-300 data-[state=checked]:bg-slate-900"
+                className="h-5 w-5 rounded-md border-slate-300 data-[state=checked]:bg-slate-900"
               />
-              <Label htmlFor="select-all" className="text-[11px] font-black uppercase tracking-widest text-slate-900 cursor-pointer">
-                Toutes les colonnes ({columnOrder.filter(k => selectedColumns[k]).length} / {columnOrder.length})
+              <Label htmlFor="select-all" className="text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer select-none">
+                Toutes les colonnes ({selectedCount} / {columnOrder.length})
               </Label>
             </div>
-            <div className="flex items-center gap-2">
-              <ListChecks className="h-4 w-4 text-slate-400" />
-              <span className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em]">Ordre Personnalisé</span>
+            <div className="flex items-center gap-1.5 text-slate-400">
+              <ListChecks className="h-4 w-4" />
+              <span className="text-[9px] font-black uppercase tracking-widest hidden sm:inline">
+                Navigation Clavier Active (↑ / ↓ / Espace)
+              </span>
             </div>
           </div>
 
-          <ScrollArea className="flex-1 -mx-8 px-5">
-            <div className="space-y-2 pb-6">
-              {columnOrder.map((key, index) => (
+          {/* Scrollable Column List with Keyboard Navigation */}
+          <div 
+            ref={scrollContainerRef}
+            tabIndex={0}
+            onKeyDown={handleKeyDownList}
+            className="flex-1 overflow-y-auto space-y-2 pr-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 rounded-xl"
+            role="listbox"
+            aria-label="Sélection des colonnes"
+          >
+            {columnOrder.map((key, index) => {
+              const isSelected = selectedColumns[key] ?? false;
+              const isFocused = focusedIndex === index;
+
+              return (
                 <div 
-                  key={key} 
+                  key={key}
+                  ref={(el) => { rowRefs.current[index] = el; }}
+                  tabIndex={0}
+                  role="option"
+                  aria-selected={isSelected}
+                  onFocus={() => setFocusedIndex(index)}
+                  onClick={() => handleCheckboxChange(key)}
+                  onKeyDown={(e) => handleRowKeyDown(e, key, index)}
                   className={cn(
-                    "group flex items-center justify-between p-2.5 px-4 rounded-xl border transition-all duration-300",
-                    selectedColumns[key] 
-                      ? "border-slate-900/10 bg-white shadow-sm" 
-                      : "border-transparent bg-slate-50/50 opacity-60"
+                    "group flex items-center justify-between p-3 px-4 rounded-xl border cursor-pointer select-none transition-all duration-150 focus:outline-none",
+                    isSelected 
+                      ? "border-slate-300 bg-white shadow-sm" 
+                      : "border-slate-100 bg-slate-50/60 opacity-60 hover:opacity-90",
+                    isFocused && "ring-2 ring-slate-900 border-slate-900 bg-slate-50/90 shadow-md"
                   )}
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3.5">
                     <Checkbox
                       id={`col-${key}`}
-                      checked={selectedColumns[key]}
+                      checked={isSelected}
                       onCheckedChange={() => handleCheckboxChange(key)}
-                      className="h-5 w-5 rounded-lg border-slate-200 data-[state=checked]:bg-slate-900"
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-5 w-5 rounded-md border-slate-300 data-[state=checked]:bg-slate-900"
                     />
                     <Label 
                       htmlFor={`col-${key}`} 
+                      onClick={(e) => e.stopPropagation()}
                       className={cn(
-                        "text-xs font-bold uppercase tracking-tight cursor-pointer",
-                        selectedColumns[key] ? "text-slate-900" : "text-slate-400"
+                        "text-xs font-black uppercase tracking-tight cursor-pointer",
+                        isSelected ? "text-slate-900" : "text-slate-400"
                       )}
                     >
                       {allColumns[key]}
                     </Label>
                   </div>
 
-                  <div className="flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Ordering Controls */}
+                  <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                     <Button
+                      type="button"
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 rounded-lg hover:bg-slate-100"
+                      className="h-7 w-7 rounded-lg hover:bg-slate-200 text-slate-600 disabled:opacity-30"
                       disabled={index === 0}
-                      onClick={() => moveColumn(index, 'up')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        moveColumn(index, 'up');
+                      }}
+                      title="Monter (Ctrl+↑)"
+                      aria-label="Monter"
                     >
-                      <ArrowUpCircle className="h-4 w-4 text-slate-600" />
+                      <ArrowUpCircle className="h-4 w-4" />
                     </Button>
                     <Button
+                      type="button"
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 rounded-lg hover:bg-slate-100"
+                      className="h-7 w-7 rounded-lg hover:bg-slate-200 text-slate-600 disabled:opacity-30"
                       disabled={index === columnOrder.length - 1}
-                      onClick={() => moveColumn(index, 'down')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        moveColumn(index, 'down');
+                      }}
+                      title="Descendre (Ctrl+↓)"
+                      aria-label="Descendre"
                     >
-                      <ArrowDownCircle className="h-4 w-4 text-slate-600" />
+                      <ArrowDownCircle className="h-4 w-4" />
                     </Button>
-                    <div className="ml-2 text-slate-200">
+                    <div className="ml-1 text-slate-300 hidden sm:block">
                       <GripVertical className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
+              );
+            })}
+          </div>
         </div>
 
-        <DialogFooter className="p-4 sm:p-5 bg-white border-t border-slate-100 relative z-30 flex flex-row items-center gap-2 sm:gap-3 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+        {/* Modal Footer */}
+        <DialogFooter className="p-4 sm:p-5 bg-white border-t border-slate-100 relative z-30 flex flex-row items-center justify-between gap-3 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
           <Button 
             type="button" 
             variant="ghost" 
@@ -262,11 +393,11 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
           >
             Fermer
           </Button>
-          <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3">
+          <div className="flex items-center justify-end gap-2 sm:gap-3">
             <Button 
               type="button" 
               onClick={handleExportPdfClick} 
-              disabled={!Object.values(selectedColumns).some(Boolean)}
+              disabled={selectedCount === 0}
               className="h-11 px-4 sm:px-5 rounded-xl bg-emerald-700 text-white font-black uppercase tracking-wider text-[10px] sm:text-[11px] hover:bg-emerald-800 shadow-lg shadow-emerald-900/10 group transition-all"
             >
               <Download className="mr-1.5 sm:mr-2 h-4 w-4 text-white group-hover:scale-110 transition-transform" />
@@ -275,7 +406,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, onExportPdf, allColumns 
             <Button 
               type="button" 
               onClick={handlePrintClick} 
-              disabled={!Object.values(selectedColumns).some(Boolean)}
+              disabled={selectedCount === 0}
               className="h-11 px-4 sm:px-5 rounded-xl bg-slate-900 text-white font-black uppercase tracking-wider text-[10px] sm:text-[11px] hover:bg-black shadow-xl shadow-slate-900/20 group transition-all"
             >
               <Printer className="mr-1.5 sm:mr-2 h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" />

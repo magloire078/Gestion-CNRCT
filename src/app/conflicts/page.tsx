@@ -66,6 +66,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConflictsOfficialReport } from "@/components/reports/conflicts-official-report";
 import { ConflictSynthesisReport } from "@/components/conflicts/conflict-synthesis-report";
 import { PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
+import { PrintConflictsDialog, ConflictPrintConfig } from "@/components/conflicts/print-conflicts-dialog";
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -124,6 +125,8 @@ export default function ConflictsPage() {
 
     // Printing States
     const [isPrintingList, setIsPrintingList] = useState(false);
+    const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+    const [printConfig, setPrintConfig] = useState<ConflictPrintConfig | null>(null);
     const [printingConflict, setPrintingConflict] = useState<Conflict | null>(null);
 
     // Details State
@@ -250,6 +253,12 @@ export default function ConflictsPage() {
     };
 
     const handlePrint = () => {
+        setPrintConfig(null);
+        setIsPrintingList(true);
+    };
+
+    const handleConfirmPrint = (config: ConflictPrintConfig) => {
+        setPrintConfig(config);
         setIsPrintingList(true);
     };
 
@@ -368,12 +377,15 @@ export default function ConflictsPage() {
                 
                 {isPrintingList && (
                     <ConflictsOfficialReport 
-                        conflicts={filteredConflicts} 
+                        conflicts={printConfig ? printConfig.conflicts : filteredConflicts} 
                         organizationSettings={settings}
                         isPrinting={isPrintingList}
-                        onAfterPrint={() => setIsPrintingList(false)}
-                        stats={conflictStats}
-                        periodLabel={selectedPeriod !== "Tous" ? selectedPeriod : undefined}
+                        onAfterPrint={() => {
+                            setIsPrintingList(false);
+                            setPrintConfig(null);
+                        }}
+                        stats={printConfig ? printConfig.stats : conflictStats}
+                        periodLabel={printConfig ? printConfig.periodLabel : (selectedPeriod !== "Tous" ? selectedPeriod : undefined)}
                     />
                 )}
                 
@@ -385,6 +397,16 @@ export default function ConflictsPage() {
                         />
                     </div>
                 )}
+                
+                <PrintConflictsDialog 
+                    isOpen={isPrintDialogOpen}
+                    onClose={() => setIsPrintDialogOpen(false)}
+                    conflicts={conflicts || []}
+                    availableTypes={allConflictTypes}
+                    initialPeriod={selectedPeriod}
+                    initialRegion={selectedRegion}
+                    onConfirmPrint={handleConfirmPrint}
+                />
                 
                 <ConflictSynthesisReport 
                     isOpen={isSynthesisOpen}
@@ -500,16 +522,28 @@ export default function ConflictsPage() {
                                             <Printer className="mr-2 h-4 w-4" /> Rapports
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-56 rounded-lg">
-                                        <DropdownMenuItem onClick={handlePrint} className="cursor-pointer">
-                                            <List className="mr-2 h-4 w-4" /> Imprimer la liste
+                                    <DropdownMenuContent align="end" className="w-64 rounded-xl p-1.5 shadow-xl border-slate-200">
+                                        <DropdownMenuItem 
+                                            onClick={() => setIsPrintDialogOpen(true)} 
+                                            className="cursor-pointer font-bold text-xs py-2.5 rounded-lg text-slate-800 hover:bg-rose-50 hover:text-rose-700"
+                                        >
+                                            <Printer className="mr-2 h-4 w-4 text-rose-600" /> Imprimer l'Historique (Période)
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setIsSynthesisOpen(true)} className="cursor-pointer text-primary">
-                                            <BarChart3 className="mr-2 h-4 w-4" /> Rapport de Synthèse
+                                        <DropdownMenuItem 
+                                            onClick={handlePrint} 
+                                            className="cursor-pointer font-medium text-xs py-2 rounded-lg text-slate-600"
+                                        >
+                                            <List className="mr-2 h-4 w-4 text-slate-400" /> Imprimer la vue actuelle ({filteredConflicts.length})
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                            onClick={() => setIsSynthesisOpen(true)} 
+                                            className="cursor-pointer font-medium text-xs py-2 rounded-lg text-primary hover:bg-primary/5"
+                                        >
+                                            <BarChart3 className="mr-2 h-4 w-4 text-primary" /> Rapport de Synthèse
                                         </DropdownMenuItem>
                                         <Link href="/conflicts/analytics">
-                                            <DropdownMenuItem className="cursor-pointer">
-                                                <TrendingUp className="mr-2 h-4 w-4" /> Statistiques Détaillées
+                                            <DropdownMenuItem className="cursor-pointer font-medium text-xs py-2 rounded-lg text-slate-600">
+                                                <TrendingUp className="mr-2 h-4 w-4 text-slate-400" /> Statistiques Détaillées
                                             </DropdownMenuItem>
                                         </Link>
                                     </DropdownMenuContent>

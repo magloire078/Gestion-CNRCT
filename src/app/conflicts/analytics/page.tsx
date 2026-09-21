@@ -309,7 +309,7 @@ export default function ConflictAnalyticsPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 flex-1">
-                        <Select value={selectedRegion} onValueChange={(v) => startTransition(() => setSelectedRegion(v))}>
+                        <Select value={selectedRegion} onValueChange={setSelectedRegion}>
                             <SelectTrigger className="w-full md:w-[220px] h-11 rounded-xl border-slate-200 bg-white font-bold text-xs uppercase tracking-tight">
                                 <SelectValue placeholder="Région" />
                             </SelectTrigger>
@@ -321,7 +321,7 @@ export default function ConflictAnalyticsPage() {
                             </SelectContent>
                         </Select>
 
-                        <Select value={selectedYear} onValueChange={(v) => startTransition(() => setSelectedYear(v))}>
+                        <Select value={selectedYear} onValueChange={setSelectedYear}>
                             <SelectTrigger className="w-full md:w-[160px] h-11 rounded-xl border-slate-200 bg-white font-bold text-xs uppercase tracking-tight">
                                 <SelectValue placeholder="Année" />
                             </SelectTrigger>
@@ -333,7 +333,7 @@ export default function ConflictAnalyticsPage() {
                             </SelectContent>
                         </Select>
 
-                        <Select value={selectedType} onValueChange={(v) => startTransition(() => setSelectedType(v))}>
+                        <Select value={selectedType} onValueChange={setSelectedType}>
                             <SelectTrigger className="w-full md:w-[220px] h-11 rounded-xl border-slate-200 bg-white font-bold text-xs uppercase tracking-tight">
                                 <SelectValue placeholder="Type de conflit" />
                             </SelectTrigger>
@@ -351,11 +351,9 @@ export default function ConflictAnalyticsPage() {
                                 size="sm" 
                                 className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg h-11 px-4"
                                 onClick={() => {
-                                    startTransition(() => {
-                                        setSelectedRegion("Tous");
-                                        setSelectedYear("Tous");
-                                        setSelectedType("Tous");
-                                    });
+                                    setSelectedRegion("Tous");
+                                    setSelectedYear("Tous");
+                                    setSelectedType("Tous");
                                 }}
                             >
                                 Réinitialiser

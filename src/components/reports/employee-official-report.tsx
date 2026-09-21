@@ -154,23 +154,28 @@ export function EmployeeOfficialReport({
                 const statuses = getMemberChiefStatuses(emp);
                 if (statuses.length === 0) return <span className="text-slate-300 font-bold text-[8px]">-</span>;
                 return (
-                    <div className="flex flex-wrap gap-1 justify-center items-center">
-                        {statuses.map(s => (
-                            <span 
-                                key={s} 
-                                className={cn(
-                                    "px-1.5 py-0.5 rounded border text-[7.5px] font-black uppercase tracking-tight whitespace-nowrap",
-                                    s === "Chef de Canton" && "bg-amber-50 border-amber-200 text-amber-900",
-                                    s === "Chef de Tribu" && "bg-blue-50 border-blue-200 text-blue-900",
-                                    s === "Chef de Village" && "bg-emerald-50 border-emerald-200 text-emerald-900",
-                                    s === "Roi" && "bg-purple-50 border-purple-200 text-purple-900",
-                                    s === "Chef de Province" && "bg-indigo-50 border-indigo-200 text-indigo-900",
-                                    s === "Chef Central" && "bg-slate-100 border-slate-300 text-slate-900"
-                                )}
-                            >
-                                {s}
-                            </span>
-                        ))}
+                    <div className="flex flex-col gap-0.5 justify-center items-center py-0.5">
+                        {statuses.map(s => {
+                            const isRoi = s.toLowerCase().includes("roi") || s.toLowerCase().includes("province");
+                            const isCanton = s.toLowerCase().includes("canton");
+                            const isTribu = s.toLowerCase().includes("tribu");
+                            const isVillage = s.toLowerCase().includes("village");
+                            return (
+                                <span 
+                                    key={s} 
+                                    className={cn(
+                                        "text-[8px] font-bold tracking-tight uppercase leading-tight whitespace-nowrap",
+                                        isRoi ? "text-purple-950 font-black" :
+                                        isCanton ? "text-amber-950 font-black" :
+                                        isTribu ? "text-blue-950 font-bold" :
+                                        isVillage ? "text-emerald-950 font-bold" :
+                                        "text-slate-900 font-bold"
+                                    )}
+                                >
+                                    {s}
+                                </span>
+                            );
+                        })}
                     </div>
                 );
             }
@@ -220,8 +225,8 @@ export function EmployeeOfficialReport({
             }
             case 'status': return (
                 <span className={cn(
-                    "font-black uppercase text-[7.5px] px-1.5 py-0.5 rounded",
-                    emp.status === 'Actif' ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-700 border border-slate-200"
+                    "font-bold uppercase text-[7.5px] px-1 py-0.5 rounded",
+                    emp.status === 'Actif' ? "text-emerald-800 font-black" : "text-slate-600 font-bold"
                 )}>
                     {emp.status}
                 </span>
@@ -361,27 +366,36 @@ export function EmployeeOfficialReport({
                     </div>
 
                     {/* Data Table */}
-                    <div className="w-full overflow-visible mt-1 shadow-sm rounded-lg overflow-hidden border border-slate-300">
-                        <table className="w-full border-collapse text-[8.5px] leading-normal bg-white">
-                            <thead className="bg-slate-900 text-white">
-                                <tr className="bg-slate-900 text-white uppercase font-black text-center [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
+                    <div className="w-full overflow-visible mt-1 rounded border-2 border-slate-900 overflow-hidden">
+                        <table className="w-full table-fixed border-collapse text-[8.5px] leading-tight bg-white">
+                            <thead className="bg-slate-100 text-slate-900 border-b-2 border-slate-900 print:bg-slate-100 print:text-slate-900">
+                                <tr className="bg-slate-100 text-slate-900 uppercase font-black text-center" style={{ backgroundColor: '#f1f5f9', color: '#0f172a' }}>
                                     {columnsToDisplay.map((key) => (
-                                        <th key={key} className={cn(
-                                            "border-r border-slate-700 last:border-r-0 py-2.5 px-2 align-middle break-words text-[8.5px] font-black tracking-wider bg-slate-900 text-white [print-color-adjust:exact] [-webkit-print-color-adjust:exact]",
-                                            key === 'index' && "w-[32px] text-center",
-                                            key === 'matricule' && "w-[52px] text-center",
-                                            key === 'name' && "w-[24%] min-w-[170px] text-left pl-2.5",
-                                            key === 'sexe' && "w-[5%] min-w-[42px] text-center",
-                                            (key === 'contact' || key === 'email') && "w-[15%] min-w-[105px] text-center",
-                                            key === 'status' && "w-[6%] min-w-[48px] text-center",
-                                            (key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart') && "w-[9%] min-w-[70px] text-center",
-                                            key === 'Lieu_Naissance' && "w-[11%] min-w-[85px] text-left pl-2",
-                                            key === 'poste' && "w-[13%] min-w-[100px] text-left pl-2",
-                                            key === 'statutChef' && "w-[17%] min-w-[125px] text-center",
-                                            key === 'Region' && "w-[13%] min-w-[100px] text-left pl-2",
-                                            key === 'Departement' && "w-[12%] min-w-[90px] text-left pl-2",
-                                            (key === 'department' || key === 'subPrefecture' || key === 'Village') && "w-[11%] min-w-[85px] text-left pl-2"
-                                        )}>
+                                        <th 
+                                            key={key} 
+                                            style={{
+                                                backgroundColor: '#f1f5f9',
+                                                color: '#0f172a',
+                                                WebkitPrintColorAdjust: 'exact',
+                                                printColorAdjust: 'exact'
+                                            }}
+                                            className={cn(
+                                                "border-r border-slate-400 last:border-r-0 py-2.5 px-1.5 align-middle break-words text-[8.5px] font-black tracking-wider text-slate-900 uppercase bg-slate-100",
+                                                key === 'index' && "w-[30px] max-w-[30px] text-center",
+                                                key === 'matricule' && "w-[52px] text-center",
+                                                key === 'name' && "w-[24%] text-left pl-2",
+                                                key === 'sexe' && "w-[44px] text-center",
+                                                (key === 'contact' || key === 'email') && "w-[15%] text-center",
+                                                key === 'status' && "w-[48px] text-center",
+                                                (key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart') && "w-[65px] text-center",
+                                                key === 'Lieu_Naissance' && "w-[11%] text-left pl-2",
+                                                key === 'poste' && "w-[13%] text-left pl-2",
+                                                key === 'statutChef' && "w-[16%] text-center",
+                                                key === 'Region' && "w-[14%] text-left pl-2",
+                                                key === 'Departement' && "w-[13%] text-left pl-2",
+                                                (key === 'department' || key === 'subPrefecture' || key === 'Village') && "w-[11%] text-left pl-2"
+                                            )}
+                                        >
                                             {getColumnLabel(key)}
                                         </th>
                                     ))}
@@ -389,14 +403,14 @@ export function EmployeeOfficialReport({
                             </thead>
                             <tbody>
                                 {sortedEmployees.map((emp, idx) => (
-                                    <tr key={emp.id || idx} className="border-b border-slate-200 even:bg-slate-50/70 hover:bg-slate-100/60 transition-colors break-inside-avoid">
+                                    <tr key={emp.id || idx} className="border-b border-slate-300 even:bg-slate-50/60 hover:bg-slate-100/60 transition-colors break-inside-avoid">
                                         {columnsToDisplay.map((key) => (
                                             <td key={key} className={cn(
-                                                "border-r border-slate-200 last:border-r-0 py-1.5 px-2 align-middle",
+                                                "border-r border-slate-300 last:border-r-0 py-1 px-1.5 align-middle break-words",
                                                 (key === 'index' || key === 'sexe' || key === 'status' || key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart' || key === 'statutChef' || key === 'CNPS') && "text-center",
-                                                key === 'index' && "font-bold text-slate-500 text-[8.5px]",
+                                                key === 'index' && "font-bold text-slate-700 text-[8.5px] p-0 text-center",
                                                 key === 'name' && "font-black uppercase text-slate-900 text-[8.5px] pl-2",
-                                                key === 'matricule' && "font-mono font-bold text-slate-600 text-center text-[8px]",
+                                                key === 'matricule' && "font-mono font-bold text-slate-700 text-center text-[8px]",
                                                 (key === 'contact' || key === 'email') && "text-center whitespace-nowrap",
                                                 key === 'poste' && "text-[8.5px] pl-2",
                                                 (key === 'department' || key === 'Departement' || key === 'Region' || key === 'Village' || key === 'subPrefecture') && "font-semibold text-slate-800 text-[8.5px] pl-2"
@@ -432,20 +446,24 @@ export function EmployeeOfficialReport({
                         table {
                             page-break-inside: auto;
                             width: 100% !important;
+                            table-layout: fixed !important;
                         }
                         thead {
                             display: table-header-group !important;
                         }
                         thead tr {
-                            background-color: #0f172a !important;
-                            color: #ffffff !important;
+                            background-color: #f1f5f9 !important;
+                            color: #0f172a !important;
+                            border-top: 2px solid #0f172a !important;
+                            border-bottom: 2px solid #0f172a !important;
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
                         }
                         thead th {
-                            background-color: #0f172a !important;
-                            color: #ffffff !important;
+                            background-color: #f1f5f9 !important;
+                            color: #0f172a !important;
                             font-weight: 900 !important;
+                            border-right: 1px solid #94a3b8 !important;
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
                         }

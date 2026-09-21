@@ -19,6 +19,8 @@ export function PrintConflictsList({ conflicts, organizationSettings, subtitle }
                 <InstitutionalHeader 
                     title="ÉTAT RÉCAPITULATIF DES CONFLITS ET PLAINTES"
                     period={subtitle || "Toutes Régions / Tous Types"}
+                    settings={organizationSettings}
+                    showService={false}
                 />
 
                 <div className="mt-4">
@@ -95,6 +97,8 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
                 <InstitutionalHeader 
                     title={`FICHE DE SUIVI DE CONFLIT`}
                     period={`RÉFÉRENCE : #${conflict.id.substring(0, 8).toUpperCase()}`}
+                    settings={organizationSettings}
+                    showService={false}
                 />
 
                 <div className="mt-4 space-y-4 text-sm">

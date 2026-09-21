@@ -64,7 +64,6 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConflictsOfficialReport } from "@/components/reports/conflicts-official-report";
-import { ConflictSynthesisReport } from "@/components/conflicts/conflict-synthesis-report";
 import { PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
 import { PrintConflictsDialog, ConflictPrintConfig } from "@/components/conflicts/print-conflicts-dialog";
 import { cn } from "@/lib/utils";
@@ -74,6 +73,11 @@ import { getEmployee } from "@/services/employee-service";
 import { ConflictStatsCards } from "@/components/conflicts/conflict-stats-cards";
 import { ConflictDetailSheet } from "@/components/conflicts/conflict-detail-sheet";
 import { getOfficialRegion } from "@/lib/normalization-utils";
+
+const ConflictSynthesisReport = dynamic(
+    () => import('@/components/conflicts/conflict-synthesis-report').then(m => m.ConflictSynthesisReport),
+    { ssr: false }
+);
 
 const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
     ssr: false,
@@ -524,19 +528,19 @@ export default function ConflictsPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-64 rounded-xl p-1.5 shadow-xl border-slate-200">
                                         <DropdownMenuItem 
-                                            onClick={() => setIsPrintDialogOpen(true)} 
+                                            onSelect={() => setTimeout(() => setIsPrintDialogOpen(true), 50)} 
                                             className="cursor-pointer font-bold text-xs py-2.5 rounded-lg text-slate-800 hover:bg-rose-50 hover:text-rose-700"
                                         >
                                             <Printer className="mr-2 h-4 w-4 text-rose-600" /> Imprimer l'Historique (Période)
                                         </DropdownMenuItem>
                                         <DropdownMenuItem 
-                                            onClick={handlePrint} 
+                                            onSelect={() => setTimeout(() => handlePrint(), 50)} 
                                             className="cursor-pointer font-medium text-xs py-2 rounded-lg text-slate-600"
                                         >
                                             <List className="mr-2 h-4 w-4 text-slate-400" /> Imprimer la vue actuelle ({filteredConflicts.length})
                                         </DropdownMenuItem>
                                         <DropdownMenuItem 
-                                            onClick={() => setIsSynthesisOpen(true)} 
+                                            onSelect={() => setTimeout(() => setIsSynthesisOpen(true), 50)} 
                                             className="cursor-pointer font-medium text-xs py-2 rounded-lg text-primary hover:bg-primary/5"
                                         >
                                             <BarChart3 className="mr-2 h-4 w-4 text-primary" /> Rapport de Synthèse

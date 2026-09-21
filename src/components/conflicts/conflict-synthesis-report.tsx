@@ -36,6 +36,19 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function ConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabel }: ConflictSynthesisReportProps) {
+    if (!isOpen) return null;
+
+    return (
+        <ConflictSynthesisReportContent 
+            isOpen={isOpen}
+            onClose={onClose}
+            conflicts={conflicts}
+            periodLabel={periodLabel}
+        />
+    );
+}
+
+function ConflictSynthesisReportContent({ isOpen, onClose, conflicts, periodLabel }: ConflictSynthesisReportProps) {
     const [isPrinting, setIsPrinting] = useState(false);
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");

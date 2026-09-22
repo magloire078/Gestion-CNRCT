@@ -68,15 +68,33 @@ import {
     deletePressConflict, 
     seedInitialPressConflicts 
 } from "@/services/press-conflict-service";
-import { AddPressConflictSheet } from "@/components/press-conflicts/add-press-conflict-sheet";
-import { EditPressConflictSheet } from "@/components/press-conflicts/edit-press-conflict-sheet";
-import { PressConflictDetailSheet } from "@/components/press-conflicts/press-conflict-detail-sheet";
-import { PressConflictPrintReport } from "@/components/press-conflicts/press-conflict-print-report";
-import { PressConflictSynthesisReport } from "@/components/press-conflicts/press-conflict-synthesis-report";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 
+const AddPressConflictSheet = dynamic(
+    () => import("@/components/press-conflicts/add-press-conflict-sheet").then(mod => mod.AddPressConflictSheet),
+    { ssr: false }
+);
+const EditPressConflictSheet = dynamic(
+    () => import("@/components/press-conflicts/edit-press-conflict-sheet").then(mod => mod.EditPressConflictSheet),
+    { ssr: false }
+);
+const PressConflictDetailSheet = dynamic(
+    () => import("@/components/press-conflicts/press-conflict-detail-sheet").then(mod => mod.PressConflictDetailSheet),
+    { ssr: false }
+);
+const PressConflictPrintReport = dynamic(
+    () => import("@/components/press-conflicts/press-conflict-print-report").then(mod => mod.PressConflictPrintReport),
+    { ssr: false }
+);
+const PressConflictSynthesisReport = dynamic(
+    () => import("@/components/press-conflicts/press-conflict-synthesis-report").then(mod => mod.PressConflictSynthesisReport),
+    { ssr: false }
+);
+
 export default function PressConflictsPage() {
+    const [isPending, startTransition] = useTransition();
     const [conflicts, setConflicts] = useState<PressConflict[] | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedRegion, setSelectedRegion] = useState<string>("Tous");
@@ -317,7 +335,7 @@ export default function PressConflictsPage() {
                             
                             <div className="flex flex-col lg:flex-row flex-wrap items-center gap-4 w-full xl:w-auto justify-start xl:justify-end">
                                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start xl:justify-end">
-                                    <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                                    <Select value={selectedRegion} onValueChange={(val) => startTransition(() => setSelectedRegion(val))}>
                                         <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white border-slate-200">
                                             <SelectValue placeholder="Région" />
                                         </SelectTrigger>
@@ -331,7 +349,7 @@ export default function PressConflictsPage() {
                                         </SelectContent>
                                     </Select>
 
-                                    <Select value={selectedType} onValueChange={setSelectedType}>
+                                    <Select value={selectedType} onValueChange={(val) => startTransition(() => setSelectedType(val))}>
                                         <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white border-slate-200">
                                             <SelectValue placeholder="Type" />
                                         </SelectTrigger>
@@ -343,7 +361,7 @@ export default function PressConflictsPage() {
                                         </SelectContent>
                                     </Select>
 
-                                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                                    <Select value={selectedStatus} onValueChange={(val) => startTransition(() => setSelectedStatus(val))}>
                                         <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white border-slate-200">
                                             <SelectValue placeholder="Statut" />
                                         </SelectTrigger>

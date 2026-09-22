@@ -42,6 +42,8 @@ const STATUS_COLORS: Record<string, string> = {
 import { InstitutionalReportWrapper } from "../reports/institutional-report-wrapper";
 
 export function PressConflictSynthesisReport({ isOpen, onClose, conflicts, periodLabel }: PressConflictSynthesisReportProps) {
+  if (!isOpen) return null;
+
   const [isPrinting, setIsPrinting] = useState(false);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");

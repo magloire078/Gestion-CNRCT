@@ -430,67 +430,74 @@ export default function AdminPage() {
                     <TabsTrigger 
                       key={value}
                       value={value} 
-                      disabled={isPending}
-                      className="gap-2 px-4 py-2 rounded-md data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-md active:scale-95 transition-all text-xs font-bold uppercase tracking-wider disabled:opacity-50 whitespace-nowrap"
+                      className="gap-2 px-4 py-2 rounded-md data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-md active:scale-95 transition-all text-xs font-bold uppercase tracking-wider whitespace-nowrap cursor-pointer"
                     >
-                      <Icon className={cn("h-4 w-4", isPending && activeTab !== value && "animate-pulse")} />
+                      <Icon className="h-4 w-4" />
                       {label}
                     </TabsTrigger>
                   ))}
                 </TabsList>
               </div>
 
-              <TabsContent value="overview" className="outline-none focus-visible:ring-0">
-                <OverviewTab 
-                  users={safeUsers} 
-                  roles={safeRoles} 
-                  departments={safeDepartments} 
-                  loading={loading} 
-                />
-              </TabsContent>
+              {activeTab === "overview" && (
+                <TabsContent value="overview" className="outline-none focus-visible:ring-0">
+                  <OverviewTab 
+                    users={safeUsers} 
+                    roles={safeRoles} 
+                    departments={safeDepartments} 
+                    loading={loading} 
+                  />
+                </TabsContent>
+              )}
 
-              <TabsContent value="users" className="outline-none focus-visible:ring-0">
-                <UsersTab 
-                  users={safeUsers} 
-                  loading={loading}
-                  employeeMap={employeeMap}
-                  onAddUserAction={handleOpenAddUser}
-                  onLinkUserAction={handleLinkUserAction}
-                  onEditRoleAction={handleEditRoleAction}
-                  onEditPermissionsAction={handleEditPermissionsAction}
-                  onDeleteUserAction={handleDeleteUserAction}
-                />
-              </TabsContent>
+              {activeTab === "users" && (
+                <TabsContent value="users" className="outline-none focus-visible:ring-0">
+                  <UsersTab 
+                    users={safeUsers} 
+                    loading={loading}
+                    employeeMap={employeeMap}
+                    onAddUserAction={handleOpenAddUser}
+                    onLinkUserAction={handleLinkUserAction}
+                    onEditRoleAction={handleEditRoleAction}
+                    onEditPermissionsAction={handleEditPermissionsAction}
+                    onDeleteUserAction={handleDeleteUserAction}
+                  />
+                </TabsContent>
+              )}
 
-              <TabsContent value="security" className="outline-none focus-visible:ring-0">
-                <SecurityTab 
-                  roles={safeRoles}
-                  users={safeUsers}
-                  loading={loading}
-                  currentUser={user}
-                  onAddRoleAction={handleOpenAddRole}
-                  onDeleteRoleAction={handleDeleteRoleAction}
-                  mappedRolesForMatrix={mappedRolesForMatrix}
-                />
-              </TabsContent>
+              {activeTab === "security" && (
+                <TabsContent value="security" className="outline-none focus-visible:ring-0">
+                  <SecurityTab 
+                    roles={safeRoles}
+                    users={safeUsers}
+                    loading={loading}
+                    currentUser={user}
+                    onAddRoleAction={handleOpenAddRole}
+                    onDeleteRoleAction={handleDeleteRoleAction}
+                    mappedRolesForMatrix={mappedRolesForMatrix}
+                  />
+                </TabsContent>
+              )}
 
-              <TabsContent value="org" className="outline-none focus-visible:ring-0">
-                <OrgTab 
-                  departments={safeDepartments}
-                  directions={safeDirections}
-                  services={safeServices}
-                  loading={loading}
-                  onAddDeptAction={handleAddDept}
-                  onEditDeptAction={handleEditDept}
-                  onDeleteDeptAction={handleDeleteDept}
-                  onAddDirAction={handleAddDir}
-                  onEditDirAction={handleEditDir}
-                  onDeleteDirAction={handleDeleteDir}
-                  onAddSvcAction={handleAddSvc}
-                  onEditSvcAction={handleEditSvc}
-                  onDeleteSvcAction={handleDeleteSvc}
-                />
-              </TabsContent>
+              {activeTab === "org" && (
+                <TabsContent value="org" className="outline-none focus-visible:ring-0">
+                  <OrgTab 
+                    departments={safeDepartments}
+                    directions={safeDirections}
+                    services={safeServices}
+                    loading={loading}
+                    onAddDeptAction={handleAddDept}
+                    onEditDeptAction={handleEditDept}
+                    onDeleteDeptAction={handleDeleteDept}
+                    onAddDirAction={handleAddDir}
+                    onEditDirAction={handleEditDir}
+                    onDeleteDirAction={handleDeleteDir}
+                    onAddSvcAction={handleAddSvc}
+                    onEditSvcAction={handleEditSvc}
+                    onDeleteSvcAction={handleDeleteSvc}
+                  />
+                </TabsContent>
+              )}
             </Tabs>
           </PermissionLock>
 

@@ -116,34 +116,50 @@ export async function deletePressConflict(id: string): Promise<void> {
 }
 
 /**
- * Seed initial press conflicts if collection is empty or upon user request
+ * Seed or sync initial press conflicts with the 84-record corpus
  */
 export async function seedInitialPressConflicts(force: boolean = false): Promise<number> {
     const snapshot = await getDocs(pressConflictsCollection);
-    if (!force && !snapshot.empty) {
-        return 0; // Already has data
-    }
-
-    // Use batches (limit 500 per batch)
-    const batch = writeBatch(db);
+    const existingDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as PressConflict));
     
-    // If force is true, delete existing docs first
+    // Batch writes (limit 500 per batch)
+    const batch = writeBatch(db);
+    const now = new Date().toISOString();
+
     if (force && !snapshot.empty) {
         snapshot.docs.forEach((docSnap) => {
             batch.delete(docSnap.ref);
         });
-    }
-
-    const now = new Date().toISOString();
-    INITIAL_PRESS_CONFLICTS.forEach((item, index) => {
-        const newDocRef = doc(pressConflictsCollection);
-        batch.set(newDocRef, {
-            ...item,
-            orderNumber: item.orderNumber || (index + 1),
-            createdAt: now,
-            updatedAt: now
+        INITIAL_PRESS_CONFLICTS.forEach((item, index) => {
+            const newDocRef = doc(pressConflictsCollection);
+            batch.set(newDocRef, {
+                ...item,
+                orderNumber: item.orderNumber || (index + 1),
+                createdAt: now,
+                updatedAt: now
+            });
         });
-    });
+    } else {
+        // Smart sync: update existing items by orderNumber, add new ones
+        INITIAL_PRESS_CONFLICTS.forEach((item, index) => {
+            const existing = existingDocs.find(e => e.orderNumber === item.orderNumber);
+            if (existing) {
+                const docRef = doc(pressConflictsCollection, existing.id);
+                batch.set(docRef, {
+                    ...item,
+                    updatedAt: now
+                }, { merge: true });
+            } else {
+                const newDocRef = doc(pressConflictsCollection);
+                batch.set(newDocRef, {
+                    ...item,
+                    orderNumber: item.orderNumber || (index + 1),
+                    createdAt: now,
+                    updatedAt: now
+                });
+            }
+        });
+    }
 
     await batch.commit();
     return INITIAL_PRESS_CONFLICTS.length;

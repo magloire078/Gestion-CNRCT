@@ -406,16 +406,16 @@ export default function PressConflictsPage() {
                             </div>
 
                             <div className="flex items-center gap-3 w-full sm:w-auto">
-                                {conflicts.length === 0 && (
+                                {conflicts.length < 84 && (
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleSeedData(false)}
                                         disabled={isSeeding}
-                                        className="h-9 font-bold bg-white text-primary border-primary/20 w-full sm:w-auto"
+                                        className="h-9 font-bold bg-white text-primary border-primary/20 w-full sm:w-auto shadow-sm"
                                     >
                                         {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
-                                        Init Données
+                                        {conflicts.length === 0 ? "Initialiser la base (84 fiches)" : "Actualiser le corpus (84 fiches)"}
                                     </Button>
                                 )}
                                 
@@ -437,6 +437,9 @@ export default function PressConflictsPage() {
                                                 <Globe className="mr-2 h-4 w-4" /> Cartographie
                                             </DropdownMenuItem>
                                         </Link>
+                                        <DropdownMenuItem onClick={() => handleSeedData(false)} disabled={isSeeding} className="cursor-pointer text-blue-600 font-medium">
+                                            <Database className="mr-2 h-4 w-4" /> Synchroniser la base (84)
+                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                                 

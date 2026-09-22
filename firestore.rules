@@ -229,6 +229,13 @@ service cloud.firestore {
       allow delete: if can('conflicts', 'delete');
     }
 
+    match /press-conflicts/{id} {
+      allow read: if can('conflicts', 'read') || isSignedIn();
+      allow create: if can('conflicts', 'create') || isSuperAdmin() || isSignedIn();
+      allow update: if can('conflicts', 'update') || isSuperAdmin();
+      allow delete: if can('conflicts', 'delete') || isSuperAdmin();
+    }
+
     match /assets/{assetId} {
       allow read: if can('it-assets', 'read');
       allow create: if can('it-assets', 'create');

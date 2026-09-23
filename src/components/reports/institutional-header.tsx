@@ -21,10 +21,10 @@ interface InstitutionalHeaderProps {
 export function InstitutionalHeader({ 
   title, 
   period, 
-  service = "Direction des Finances et du Patrimoine",
-  direction = "DFP",
+  service = "",
+  direction = "",
   secretariatLabel = "Secrétariat Général",
-  showService = true,
+  showService = false,
   settings: initialSettings,
   children,
   showDivider = true,

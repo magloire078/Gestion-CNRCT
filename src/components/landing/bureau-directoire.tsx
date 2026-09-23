@@ -48,12 +48,15 @@ export function BureauDirectoire({ loading, members, allDirectors = [], pastDire
     !m.poste?.toLowerCase().includes('vice-president')
   );
 
-  const cabinetAndSecretariat = members.filter(m => {
+  const cabinetAndSecretariat = (allDirectors.length > 0 ? allDirectors : members).filter(m => {
     if (!isEmpActive(m)) return false;
-    const p = m.poste?.toLowerCase() || '';
-    return (p.includes('secrétaire général') ||
+    const p = (m.poste || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return (
+      p.includes('secretaire general') ||
       p.includes('directrice de cabinet') ||
-      p.includes('directeur de cabinet')) &&
+      p.includes('directeur de cabinet') ||
+      p.includes('chef de cabinet')
+    ) &&
       !p.includes('chauffeur') &&
       !p.includes('assistant') &&
       !p.includes('sous-direct');
@@ -65,11 +68,13 @@ export function BureauDirectoire({ loading, members, allDirectors = [], pastDire
 
   const otherDirectors = (allDirectors.length > 0 ? allDirectors : members).filter(m => {
     if (!isEmpActive(m)) return false;
-    const p = m.poste?.toLowerCase() || '';
-    return (p.includes('directeur') || p.includes('directrice') || p.includes('cabinet')) &&
-      !p.includes('secrétaire général') &&
+    const p = (m.poste || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return (p.includes('directeur') || p.includes('directrice')) &&
+      !p.includes('secretaire general') &&
       !p.includes('directrice de cabinet') &&
       !p.includes('directeur de cabinet') &&
+      !p.includes('chef de cabinet') &&
+      !p.includes('cabinet') &&
       !p.includes('chauffeur') &&
       !p.includes('assistant') &&
       !p.includes('sous-direct');

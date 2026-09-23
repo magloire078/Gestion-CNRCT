@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback, startTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,13 +33,14 @@ import {
   ShieldCheck, 
   Building2, 
   MapPin, 
-  Sparkles, 
+  ChevronLeft,
   Calendar, 
   CreditCard,
   Phone,
   Mail,
   Award,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -106,7 +108,7 @@ interface EditEmployeeFormProps {
 export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const { hasPermission, user } = useAuth();
+  const { hasPermission } = useAuth();
   
   const [activeTab, setActiveTab] = useState("identity");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,8 +121,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const [inactiveEmployees, setInactiveEmployees] = useState<Employe[]>([]);
   const [loadingMetadata, setLoadingMetadata] = useState(true);
 
-  // Manual override toggle to force show traditional authority section if needed
-  const [forceShowChiefSection, setForceShowChiefSection] = useState(false);
+  // Initialize traditional mode based on strict detection
+  const initialTraditional = useMemo(() => {
+    return isTraditionalAuthorityOrMember(employee, employee.department) || (Array.isArray(employee.statutChef) && employee.statutChef.length > 0);
+  }, [employee]);
+
+  const [isTraditionalMode, setIsTraditionalMode] = useState<boolean>(initialTraditional);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -136,13 +142,13 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
     const initialStatuts = (employee.statutChef && employee.statutChef.length > 0)
       ? employee.statutChef
-      : getMemberChiefStatuses(employee);
+      : (initialTraditional ? getMemberChiefStatuses(employee) : []);
 
     return {
       ...employee,
       Region: reg,
       Departement: dept,
-      sexe: employee.sexe || 'Homme',
+      sexe: employee.sexe || 'H',
       statutChef: initialStatuts,
       civilite: employee.civilite || 'M.',
       situationMatrimoniale: employee.situationMatrimoniale || 'Célibataire',
@@ -177,15 +183,33 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     fetchMetadata();
   }, [toast]);
 
-  // Determine current department name
+  // Current department name
   const currentDeptName = useMemo(() => {
     return departmentList.find(d => d.id === formData.departmentId)?.name || '';
   }, [formData.departmentId, departmentList]);
 
-  // Check if traditional chief / directoire / comités régionaux / assemblée des rois
-  const isTraditionalAuthority = useMemo(() => {
-    return forceShowChiefSection || isTraditionalAuthorityOrMember(formData, currentDeptName);
-  }, [formData, currentDeptName, forceShowChiefSection]);
+  // Handle traditional mode toggle
+  const handleToggleTraditional = (checked: boolean) => {
+    setIsTraditionalMode(checked);
+    if (!checked) {
+      setFormData(prev => ({
+        ...prev,
+        statutChef: []
+      }));
+      if (activeTab === 'chefferie') {
+        setActiveTab('identity');
+      }
+      toast({
+        title: "Mode Standard Activé",
+        description: "Les informations coutumières sont désormais désactivées pour cet agent.",
+      });
+    } else {
+      toast({
+        title: "Mode Profil Coutumier Activé",
+        description: "L'onglet Chefferie & Territoire est maintenant disponible.",
+      });
+    }
+  };
 
   const officialRegion = useMemo(() => getOfficialRegion(formData.Region || ""), [formData.Region]);
   const officialDepartment = useMemo(() => getOfficialDepartment(formData.Region || "", formData.Departement || ""), [formData.Region, formData.Departement]);
@@ -297,16 +321,15 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         dataToSave.skills = (dataToSave.skills as string).split(',').map(s => s.trim()).filter(Boolean);
       }
       
-      // If employee is not a traditional chief/authority, clean up or preserve chief specific fields
-      if (!isTraditionalAuthority) {
-        // We preserve or leave clean so it doesn't pollute standard employees
+      // If employee is not in traditional mode, clear chief fields
+      if (!isTraditionalMode) {
         dataToSave.statutChef = [];
       }
 
       await updateEmployee(employee.id, dataToSave, photoFile);
       toast({
-        title: "Fiche mise à jour",
-        description: "Les informations de l'employé ont été enregistrées avec succès.",
+        title: "Modifications enregistrées",
+        description: "Le dossier de l'employé a été mis à jour avec succès.",
       });
       router.push(`/employees/${employee.id}`);
       router.refresh();
@@ -328,51 +351,76 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">Chargement de la structure et du dossier...</p>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">Chargement de la structure et du dossier...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20">
-      {/* Top Action Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-blue-200">
-              {formData.matricule}
-            </span>
-            <span className="text-xs font-semibold text-slate-400">• Dossier individuel</span>
+    <div className="max-w-6xl mx-auto space-y-6 pb-24">
+      {/* Top Banner with Unified Styling */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 text-white p-6 md:p-8 shadow-xl border border-slate-800">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(59,130,246,0.15),transparent_70%)] pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <Link 
+              href={`/employees/${employee.id}`} 
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" /> Retour à la fiche agent
+            </Link>
+            
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-blue-600 text-white px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest">
+                  {formData.matricule}
+                </span>
+                <span className="text-xs font-semibold text-slate-400">• Dossier Individuel</span>
+                {isTraditionalMode && (
+                  <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-black uppercase tracking-wider">
+                    <Crown className="h-3 w-3 mr-1 text-amber-400" /> Profil Coutumier
+                  </Badge>
+                )}
+              </div>
+              <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white leading-tight">
+                Mise à jour : {formData.lastName} <span className="text-slate-300 font-bold normal-case">{formData.firstName}</span>
+              </h1>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {formData.poste || "Poste non défini"} {currentDeptName ? `• ${currentDeptName}` : ''}
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">
-            Modification de la Fiche : {formData.lastName} {formData.firstName}
-          </h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => router.back()} 
-            disabled={isSubmitting} 
-            className="h-10 rounded-xl border-slate-200 font-bold text-xs uppercase tracking-wider text-slate-600 hover:bg-slate-50"
-          >
-            <X className="mr-1.5 h-4 w-4" /> Annuler
-          </Button>
-          <Button 
-            onClick={() => handleSubmit()} 
-            disabled={isSubmitting} 
-            className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider shadow-md"
-          >
-            {isSubmitting ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>
-            ) : (
-              <><Save className="mr-2 h-4 w-4 text-emerald-400" /> Enregistrer les modifications</>
-            )}
-          </Button>
+
+          {/* Quick Action Buttons in Top Bar */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Button 
+              type="button"
+              variant="outline" 
+              onClick={() => router.back()} 
+              disabled={isSubmitting} 
+              className="h-10 px-4 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold text-xs uppercase tracking-wider"
+            >
+              <X className="mr-1.5 h-4 w-4" /> Annuler
+            </Button>
+            <Button 
+              type="button"
+              onClick={() => handleSubmit()} 
+              disabled={isSubmitting} 
+              className="h-10 px-5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs uppercase tracking-wider shadow-md"
+            >
+              {isSubmitting ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>
+              ) : (
+                <><Save className="mr-2 h-4 w-4 text-emerald-600" /> Enregistrer</>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Sidebar: Photo, Matricule, Status */}
+        {/* Left Sidebar: Photo, Matricule, Administrative Status & Chief Toggle */}
         <div className="lg:col-span-1 space-y-6">
           <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden sticky top-6">
             <CardHeader className="bg-slate-900 text-white p-5">
@@ -403,12 +451,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     <Upload className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="text-center space-y-1">
+                <div className="text-center space-y-1 w-full">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Matricule Officiel</p>
                   <DebouncedInput 
                     value={formData.matricule || ''} 
                     onChange={(val) => handleValueChange('matricule', val as string)} 
-                    className="h-9 text-center font-mono font-black text-sm uppercase rounded-lg border-slate-200" 
+                    className="h-9 text-center font-mono font-black text-sm uppercase rounded-lg border-slate-200 bg-slate-50/50" 
                   />
                 </div>
                 <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} title="Sélectionner une photo" />
@@ -453,21 +501,34 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   </Select>
                 </div>
 
-                {/* Traditional Authority Badge / Toggle */}
-                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                {/* Profil Coutumier Toggle Switch - Fully functional */}
+                <div className={cn(
+                  "p-4 rounded-xl border transition-all space-y-2.5",
+                  isTraditionalMode 
+                    ? "bg-amber-50/70 border-amber-200" 
+                    : "bg-slate-50 border-slate-200"
+                )}>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                      <Crown className="h-3.5 w-3.5 text-amber-500" /> Profil Coutumier
-                    </span>
+                    <label 
+                      htmlFor="chief-switch" 
+                      className={cn(
+                        "text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer select-none",
+                        isTraditionalMode ? "text-amber-900" : "text-slate-700"
+                      )}
+                    >
+                      <Crown className={cn("h-4 w-4", isTraditionalMode ? "text-amber-600" : "text-slate-400")} />
+                      Profil Coutumier
+                    </label>
                     <Switch 
-                      checked={isTraditionalAuthority}
-                      onCheckedChange={(checked) => setForceShowChiefSection(checked)}
                       id="chief-switch"
+                      checked={isTraditionalMode}
+                      onCheckedChange={handleToggleTraditional}
+                      className="data-[state=checked]:bg-amber-500"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-500 leading-tight">
-                    {isTraditionalAuthority 
-                      ? "Options territoriales & titres de chefferie activés pour ce profil."
+                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                    {isTraditionalMode 
+                      ? "Options territoriales & titres de chefferie activés (Directoire, Comités Régionaux, Assemblée)."
                       : "Agent standard (les champs territoriaux et coutumiers sont masqués)."}
                   </p>
                 </div>
@@ -479,25 +540,25 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         {/* Main Tabs Area */}
         <div className="lg:col-span-3 space-y-6">
           <Tabs value={activeTab} onValueChange={(v) => startTransition(() => setActiveTab(v))} className="w-full space-y-6">
-            <TabsList className="bg-slate-100/80 p-1 rounded-xl border border-slate-200 flex flex-wrap h-auto gap-1">
+            <TabsList className="bg-slate-100 p-1 rounded-2xl border border-slate-200 flex flex-wrap h-auto gap-1">
               <TabsTrigger 
                 value="identity" 
-                className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
                 <UserCircle2 className="mr-1.5 h-4 w-4 text-blue-600" /> Identité & État Civil
               </TabsTrigger>
               <TabsTrigger 
                 value="career" 
-                className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
                 <Briefcase className="mr-1.5 h-4 w-4 text-amber-600" /> Carrière & Poste
               </TabsTrigger>
 
               {/* Conditional Chefferie & Territoire Tab */}
-              {isTraditionalAuthority && (
+              {isTraditionalMode && (
                 <TabsTrigger 
                   value="chefferie" 
-                  className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm bg-amber-50 text-amber-900"
+                  className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm bg-amber-50 text-amber-900 animate-in fade-in duration-300"
                 >
                   <Crown className="mr-1.5 h-4 w-4" /> Chefferie & Territoire
                 </TabsTrigger>
@@ -506,7 +567,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
               {canManagePayroll && (
                 <TabsTrigger 
                   value="finance" 
-                  className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                  className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
                 >
                   <Wallet className="mr-1.5 h-4 w-4 text-emerald-600" /> Rémunération
                 </TabsTrigger>
@@ -514,7 +575,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
               <TabsTrigger 
                 value="social" 
-                className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
                 <ShieldCheck className="mr-1.5 h-4 w-4 text-indigo-600" /> Social & CNPS
               </TabsTrigger>
@@ -843,7 +904,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
             </TabsContent>
 
             {/* TAB 3: CHEFFERIE & TERRITOIRE (CONDITIONNEL AUX CHEFS / DIRECTOIRE / COMITÉS RÉGIONAUX / ASSEMBLÉE) */}
-            {isTraditionalAuthority && (
+            {isTraditionalMode && (
               <TabsContent value="chefferie" className="space-y-6 focus-visible:outline-none">
                 <Card className="border border-amber-200 bg-white rounded-2xl shadow-sm overflow-hidden">
                   <CardHeader className="p-5 pb-3 border-b border-amber-100 bg-amber-50/50 flex flex-row items-center justify-between">
@@ -1368,22 +1429,24 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       </form>
 
       {/* Sticky Bottom Actions Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 p-3.5 shadow-xl">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 hidden sm:flex">
             <AlertCircle className="h-4 w-4 text-blue-600" />
-            <span>Assurez-vous de vérifier les informations avant d'enregistrer.</span>
+            <span>Toutes les modifications sont enregistrées directement dans la base de données.</span>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
             <Button 
+              type="button"
               variant="outline" 
               onClick={() => router.back()} 
               disabled={isSubmitting}
-              className="h-11 rounded-xl border-slate-300 font-bold text-xs uppercase tracking-wider"
+              className="h-11 px-5 rounded-xl border-slate-300 font-bold text-xs uppercase tracking-wider hover:bg-slate-50"
             >
               Annuler
             </Button>
             <Button 
+              type="button"
               onClick={() => handleSubmit()} 
               disabled={isSubmitting}
               className="h-11 px-6 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-2"

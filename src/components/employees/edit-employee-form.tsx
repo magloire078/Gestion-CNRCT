@@ -323,9 +323,17 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         dataToSave.skills = (dataToSave.skills as string).split(',').map(s => s.trim()).filter(Boolean);
       }
       
-      // If employee is not in traditional mode, clear chief fields
+      // If employee is not in traditional mode, clear all customary and territorial fields
       if (!isTraditionalMode) {
         dataToSave.statutChef = [];
+        dataToSave.titresCoutumiers = [];
+        dataToSave.chiefId = undefined;
+        dataToSave.Region = '';
+        dataToSave.Departement = '';
+        dataToSave.subPrefecture = '';
+        dataToSave.Village = '';
+        dataToSave.mandatDebut = '';
+        dataToSave.mandatFin = '';
       }
 
       await updateEmployee(employee.id, dataToSave, photoFile);

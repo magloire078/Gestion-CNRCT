@@ -384,8 +384,8 @@ export default function EmployeeReportsPage() {
             stats={{
                 total: filteredEmployees.length,
                 active: filteredEmployees.filter(e => e.status === 'Actif' || e.bActif).length,
-                men: filteredEmployees.filter(e => e.sexe === 'Homme').length,
-                women: filteredEmployees.filter(e => e.sexe === 'Femme').length
+                men: filteredEmployees.filter(e => e.sexe === 'Homme' || e.sexe === 'H').length,
+                women: filteredEmployees.filter(e => e.sexe === 'Femme' || e.sexe === 'F').length
             }}
         />
         </PermissionGuard>

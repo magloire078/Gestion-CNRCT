@@ -53,6 +53,9 @@ import { Badge } from "@/components/ui/badge";
 import { Crown, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { Switch } from "@/components/ui/switch";
+import { isTraditionalAuthorityOrMember } from "@/lib/employee-utils";
+
 interface AddEmployeeSheetProps {
   isOpen: boolean;
   onCloseAction: () => void;
@@ -88,6 +91,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
   const [subPrefecture, setSubPrefecture] = useState("");
   const [village, setVillage] = useState("");
   const [statutChef, setStatutChef] = useState<string[]>([]);
+  const [forceTraditional, setForceTraditional] = useState(false);
   const [numDecision, setNumDecision] = useState("");
   const [cnps, setCnps] = useState(true);
   const [dateImmatriculation, setDateImmatriculation] = useState("");
@@ -165,6 +169,19 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
   }, [departmentId, directionId, serviceList]);
 
 
+  const currentDeptName = useMemo(() => {
+    return departmentList.find(d => d.id === departmentId)?.name || '';
+  }, [departmentId, departmentList]);
+
+  const isTraditionalAuthority = useMemo(() => {
+    return forceTraditional || isTraditionalAuthorityOrMember({
+      poste,
+      departmentId,
+      matricule,
+      statutChef
+    }, currentDeptName);
+  }, [forceTraditional, poste, departmentId, matricule, statutChef, currentDeptName]);
+
   const resetForm = () => {
     setMatricule("");
     setFirstName("");
@@ -192,6 +209,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     setDateImmatriculation("");
     setDateCessationCNPS("");
     setStatutChef([]);
+    setForceTraditional(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -326,13 +344,13 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="sexe" className="text-slate-700 font-medium">Genre</Label>
-                          <Select value={sexe} onValueChange={(value) => startTransition(() => setSexe(value as Employe['sexe']))}>
+                          <Select value={sexe === 'Homme' ? 'H' : sexe === 'Femme' ? 'F' : (sexe || '')} onValueChange={(value) => startTransition(() => setSexe(value as Employe['sexe']))}>
                             <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white">
                               <SelectValue placeholder="Choisir..." />
                             </SelectTrigger>
                             <SelectContent className="rounded-lg">
-                              <SelectItem value="Homme">Homme</SelectItem>
-                              <SelectItem value="Femme">Femme</SelectItem>
+                              <SelectItem value="H">Homme (H)</SelectItem>
+                              <SelectItem value="F">Femme (F)</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -421,115 +439,144 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       </div>
                     </div>
 
-                    {/* Section 3: Geolocation */}
-                    <div className="space-y-5 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <MapPin className="h-5 w-5 text-emerald-500" />
-                        <h3 className="text-base font-semibold text-slate-800">Localisation Géo-Administrative</h3>
-                      </div>
-                      <div className="grid grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                          <Label htmlFor="region" className="text-slate-700 font-medium">Région</Label>
-                          <Select value={region} onValueChange={(val) => { setRegion(val); setDepartement(""); setSubPrefecture(""); setVillage(""); }}>
-                            <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                            <SelectContent className="rounded-lg max-h-[300px]">
-                              {IVORIAN_REGIONS.map(r => (<SelectItem key={r} value={r}>{r}</SelectItem>))}
-                            </SelectContent>
-                          </Select>
+                    {/* Section 3: Geolocation & Customary Titles (Only for Traditional Authorities) */}
+                    {isTraditionalAuthority ? (
+                      <div className="space-y-6">
+                        {/* 3a: Geolocation */}
+                        <div className="space-y-5 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-5 w-5 text-emerald-500" />
+                              <h3 className="text-base font-semibold text-slate-800">Localisation Géo-Administrative</h3>
+                            </div>
+                            <Badge className="bg-amber-500 text-white font-bold text-[9px] uppercase tracking-wider">
+                              <Crown className="h-3 w-3 mr-1" /> Profil Coutumier
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-5">
+                            <div className="space-y-2">
+                              <Label htmlFor="region" className="text-slate-700 font-medium">Région</Label>
+                              <Select value={region} onValueChange={(val) => { setRegion(val); setDepartement(""); setSubPrefecture(""); setVillage(""); }}>
+                                <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                                <SelectContent className="rounded-lg max-h-[300px]">
+                                  {IVORIAN_REGIONS.map(r => (<SelectItem key={r} value={r}>{r}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="departement" className="text-slate-700 font-medium">Département</Label>
+                              <Select value={departement} onValueChange={(val) => { setDepartement(val); setSubPrefecture(""); setVillage(""); }} disabled={!region}>
+                                <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                                <SelectContent className="rounded-lg max-h-[300px]">
+                                  {Object.keys(divisions[getOfficialRegion(region)] || {}).sort().map(d => (
+                                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-5">
+                            <div className="space-y-2">
+                              <Label htmlFor="subPrefecture" className="text-slate-700 font-medium">Sous-Préfecture</Label>
+                              <Select value={subPrefecture} onValueChange={(val) => { setSubPrefecture(val); setVillage(""); }} disabled={!departement}>
+                                <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                                <SelectContent className="rounded-lg max-h-[300px]">
+                                  {Object.keys(divisions[getOfficialRegion(region)]?.[getOfficialDepartment(region, departement)] || {}).sort().map(sp => (
+                                    <SelectItem key={sp} value={sp}>{sp}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="village" className="text-slate-700 font-medium">Village / Quartier</Label>
+                              <VillageCombobox
+                                  value={village}
+                                  onValueChange={(val) => setVillage(val)}
+                                  region={region}
+                                  department={departement}
+                                  subPrefecture={subPrefecture}
+                                  disabled={!subPrefecture}
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="departement" className="text-slate-700 font-medium">Département</Label>
-                          <Select value={departement} onValueChange={(val) => { setDepartement(val); setSubPrefecture(""); setVillage(""); }} disabled={!region}>
-                            <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                            <SelectContent className="rounded-lg max-h-[300px]">
-                              {Object.keys(divisions[getOfficialRegion(region)] || {}).sort().map(d => (
-                                <SelectItem key={d} value={d}>{d}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                          <Label htmlFor="subPrefecture" className="text-slate-700 font-medium">Sous-Préfecture</Label>
-                          <Select value={subPrefecture} onValueChange={(val) => { setSubPrefecture(val); setVillage(""); }} disabled={!departement}>
-                            <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                            <SelectContent className="rounded-lg max-h-[300px]">
-                              {Object.keys(divisions[getOfficialRegion(region)]?.[getOfficialDepartment(region, departement)] || {}).sort().map(sp => (
-                                <SelectItem key={sp} value={sp}>{sp}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="village" className="text-slate-700 font-medium">Village / Quartier</Label>
-                          <VillageCombobox
-                              value={village}
-                              onValueChange={(val) => setVillage(val)}
-                              region={region}
-                              department={departement}
-                              subPrefecture={subPrefecture}
-                              disabled={!subPrefecture}
-                          />
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Section 3b: Statuts Coutumiers & Titres de Chef */}
-                    <div className="space-y-4 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <Crown className="h-5 w-5 text-amber-500" />
-                          <h3 className="text-base font-semibold text-slate-800">Statuts Coutumiers & Titres de Chef</h3>
+                        {/* 3b: Statuts Coutumiers & Titres de Chef */}
+                        <div className="space-y-4 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <Crown className="h-5 w-5 text-amber-500" />
+                              <h3 className="text-base font-semibold text-slate-800">Statuts Coutumiers & Titres de Chef</h3>
+                            </div>
+                            {statutChef.length > 1 && (
+                              <Badge className="bg-amber-500 text-white font-black text-[9px] uppercase tracking-widest px-2.5 py-1">
+                                <Layers className="h-3 w-3 mr-1" />
+                                {statutChef.length} Casquettes
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 leading-relaxed">
+                            Sélectionnez les titres coutumiers applicables (Chef de Canton, Chef de Tribu, Chef de Village, etc.) :
+                          </p>
+                          <div className="grid grid-cols-2 gap-2.5">
+                            {ALL_CHIEF_STATUSES.map(status => {
+                              const isSelected = Array.isArray(statutChef) && statutChef.includes(status);
+                              return (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setStatutChef(prev => {
+                                      const current = Array.isArray(prev) ? prev : [];
+                                      return isSelected ? current.filter(s => s !== status) : [...current, status];
+                                    });
+                                  }}
+                                  className={cn(
+                                    "flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all cursor-pointer select-none text-xs font-bold w-full",
+                                    isSelected 
+                                      ? "bg-slate-900 border-slate-900 text-white shadow-sm" 
+                                      : "bg-slate-50/50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                                  )}
+                                >
+                                  <div 
+                                    className={cn(
+                                      "h-4 w-4 shrink-0 rounded-sm border flex items-center justify-center transition-colors pointer-events-none",
+                                      isSelected 
+                                        ? "border-white bg-white text-slate-900" 
+                                        : "border-slate-300 bg-white text-transparent"
+                                    )}
+                                  >
+                                    <Check className={cn("h-3 w-3 stroke-[3]", isSelected ? "opacity-100" : "opacity-0")} />
+                                  </div>
+                                  <span className="uppercase text-[10px] tracking-tight">{status}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                        {statutChef.length > 1 && (
-                          <Badge className="bg-amber-500 text-white font-black text-[9px] uppercase tracking-widest px-2.5 py-1">
-                            <Layers className="h-3 w-3 mr-1" />
-                            {statutChef.length} Casquettes
-                          </Badge>
-                        )}
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        Sélectionnez les titres coutumiers applicables (Chef de Canton, Chef de Tribu, Chef de Village, etc.) :
-                      </p>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {ALL_CHIEF_STATUSES.map(status => {
-                          const isSelected = Array.isArray(statutChef) && statutChef.includes(status);
-                          return (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setStatutChef(prev => {
-                                  const current = Array.isArray(prev) ? prev : [];
-                                  return isSelected ? current.filter(s => s !== status) : [...current, status];
-                                });
-                              }}
-                              className={cn(
-                                "flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all cursor-pointer select-none text-xs font-bold w-full",
-                                isSelected 
-                                  ? "bg-slate-900 border-slate-900 text-white shadow-sm" 
-                                  : "bg-slate-50/50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                              )}
-                            >
-                              <div 
-                                className={cn(
-                                  "h-4 w-4 shrink-0 rounded-sm border flex items-center justify-center transition-colors pointer-events-none",
-                                  isSelected 
-                                    ? "border-white bg-white text-slate-900" 
-                                    : "border-slate-300 bg-white text-transparent"
-                                )}
-                              >
-                                <Check className={cn("h-3 w-3 stroke-[3]", isSelected ? "opacity-100" : "opacity-0")} />
-                              </div>
-                              <span className="uppercase text-[10px] tracking-tight">{status}</span>
-                            </button>
-                          );
-                        })}
+                    ) : (
+                      <div className="p-4 bg-white rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <Crown className="h-5 w-5 text-slate-400" />
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">Rattachement coutumier & territorial</p>
+                            <p className="text-[11px] text-slate-500">Masqué pour les agents administratifs ou techniques standards.</p>
+                          </div>
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setForceTraditional(true)} 
+                          className="text-xs font-bold text-slate-600 h-8 rounded-lg"
+                        >
+                          Activer si Chef / Membre
+                        </Button>
                       </div>
-                    </div>
+                    )}
 
                     {/* Section 4: Administrative status */}
                     <div className="space-y-5 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">

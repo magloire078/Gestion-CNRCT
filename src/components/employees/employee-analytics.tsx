@@ -84,12 +84,14 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
 
     // 2. Gender Distribution (Active only)
     const genderData = useMemo(() => {
-        const counts: Record<string, number> = {};
+        const counts: Record<string, number> = { 'Hommes': 0, 'Femmes': 0 };
         activeEmployees.forEach(emp => {
-            const sexe = emp.sexe || 'Autre';
-            counts[sexe] = (counts[sexe] || 0) + 1;
+            const s = emp.sexe;
+            if (s === 'H' || s === 'Homme') counts['Hommes']++;
+            else if (s === 'F' || s === 'Femme') counts['Femmes']++;
+            else counts['Autre'] = (counts['Autre'] || 0) + 1;
         });
-        return Object.entries(counts).map(([name, value]) => ({ name, value }));
+        return Object.entries(counts).filter(([_, val]) => val > 0).map(([name, value]) => ({ name, value }));
     }, [activeEmployees]);
 
     // 3. Seniority Distribution (Active only)
@@ -165,7 +167,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Index Parité</CardTitle>
                         <div className="flex items-end gap-3 mt-4">
                             <span className="text-6xl font-black tracking-tighter leading-none text-slate-900">
-                                {Math.round((activeEmployees.filter(e => e.sexe === 'Femme').length / (activeEmployees.length || 1)) * 100)}%
+                                {Math.round((activeEmployees.filter(e => e.sexe === 'Femme' || e.sexe === 'F').length / (activeEmployees.length || 1)) * 100)}%
                             </span>
                             <div className="flex flex-col mb-1">
                                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none">Féminin</span>

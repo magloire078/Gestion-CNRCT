@@ -539,9 +539,11 @@ export default function EmployeesPage() {
     });
   };
 
-  const getAvatarBgClass = (sexe?: 'Homme' | 'Femme' | 'Autre') => {
+  const getAvatarBgClass = (sexe?: 'H' | 'F' | 'Homme' | 'Femme' | 'Autre' | string) => {
     switch (sexe) {
+      case 'H':
       case 'Homme': return 'bg-blue-200 dark:bg-blue-800';
+      case 'F':
       case 'Femme': return 'bg-pink-200 dark:bg-pink-800';
       default: return 'bg-muted';
     }
@@ -703,7 +705,7 @@ export default function EmployeesPage() {
                 { label: "Effectif Total", value: employees.length, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
                 { label: "Agents Actifs", value: employees.filter(e => e.status === 'Actif').length, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
                 { label: "Nouveaux / 30j", value: employees.filter(e => (e.status === 'Actif' || !e.status) && e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
-                { label: "Taux Féminin", value: `${Math.round((employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé').filter(e => e.sexe === 'Femme').length / (employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé').length || 1)) * 100) || 0}%`, sub: "Parité active (F/Total)", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
+                { label: "Taux Féminin", value: `${Math.round((employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé').filter(e => e.sexe === 'Femme' || e.sexe === 'F').length / (employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé').length || 1)) * 100) || 0}%`, sub: "Parité active (F/Total)", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
               ].map((stat, i) => (
                 <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
                   <CardContent className="p-6 relative">
@@ -1009,9 +1011,9 @@ export default function EmployeesPage() {
                                       {employee.sexe && (
                                         <span className={cn(
                                           "text-[9px] font-black uppercase px-1.5 py-0.2 rounded border shadow-2xs",
-                                          employee.sexe === 'Femme' ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-blue-50 text-blue-700 border-blue-200"
+                                          (employee.sexe === 'Femme' || employee.sexe === 'F') ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-blue-50 text-blue-700 border-blue-200"
                                         )}>
-                                          {employee.sexe === 'Femme' ? 'F' : 'H'}
+                                          {(employee.sexe === 'Femme' || employee.sexe === 'F') ? 'F' : 'H'}
                                         </span>
                                       )}
                                       {employee.calculatedGroup === 'garde-republicaine' && employee.Date_Depart && (
@@ -1263,8 +1265,8 @@ export default function EmployeesPage() {
             stats={{
                 total: filteredEmployees.length,
                 active: filteredEmployees.filter(e => e.status === 'Actif').length,
-                men: filteredEmployees.filter(e => e.sexe === 'Homme').length,
-                women: filteredEmployees.filter(e => e.sexe === 'Femme').length
+                men: filteredEmployees.filter(e => e.sexe === 'Homme' || e.sexe === 'H').length,
+                women: filteredEmployees.filter(e => e.sexe === 'Femme' || e.sexe === 'F').length
             }}
         />
       )}

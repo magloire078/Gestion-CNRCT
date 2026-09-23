@@ -72,7 +72,7 @@ export type Chief = {
     latitude?: number;
     longitude?: number;
     parentChiefId?: string | null;
-    sexe?: 'Homme' | 'Femme' | 'Autre';
+    sexe?: 'H' | 'F' | 'Homme' | 'Femme' | 'Autre';
     dateOfBirth?: string;
     regencyStartDate?: string;
     regencyEndDate?: string;

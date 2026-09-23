@@ -6,14 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -26,22 +18,44 @@ import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
 import { updateEmployee, getEmployeeDirectory } from "@/services/employee-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Loader2, Save, X, Trash2, UserCircle2, Briefcase, Check } from "lucide-react";
+import { 
+  Upload, 
+  Loader2, 
+  Save, 
+  X, 
+  UserCircle2, 
+  Briefcase, 
+  Check, 
+  Crown, 
+  Layers, 
+  Wallet, 
+  ShieldCheck, 
+  Building2, 
+  MapPin, 
+  Sparkles, 
+  Calendar, 
+  CreditCard,
+  Phone,
+  Mail,
+  Award,
+  AlertCircle
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { getOfficialRegion, getOfficialDepartment, getRegionFromDepartment } from "@/lib/normalization-utils";
 import { ALL_CHIEF_STATUSES, getMemberChiefStatuses, type ChiefStatusType } from "@/lib/comites-regionaux-2026";
+import { isTraditionalAuthorityOrMember } from "@/lib/employee-utils";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VillageCombobox } from "@/components/chiefs/village-combobox";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Layers } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/hooks/use-auth";
 
 const MILITARY_RANKS = [
   "Soldat de 2ème classe",
@@ -59,7 +73,30 @@ const MILITARY_RANKS = [
   "Aspirant",
   "Sous-Lieutenant",
   "Lieutenant",
-  "Capitaine"
+  "Capitaine",
+  "Commandant",
+  "Lieutenant-Colonel",
+  "Colonel"
+];
+
+const CIVILITIES = [
+  "M.",
+  "Mme",
+  "Mlle",
+  "Dr",
+  "Pr",
+  "Sa Majesté",
+  "Nanan",
+  "Honorable",
+  "Vénérable"
+];
+
+const MARITAL_STATUSES = [
+  "Célibataire",
+  "Marié(e)",
+  "Divorcé(e)",
+  "Veuf/Veuve",
+  "Union libre"
 ];
 
 interface EditEmployeeFormProps {
@@ -69,8 +106,24 @@ interface EditEmployeeFormProps {
 export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const { hasPermission, user } = useAuth();
+  
   const [activeTab, setActiveTab] = useState("identity");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState(employee.photoUrl || "");
+  
+  const [departmentList, setDepartmentList] = useState<Department[]>([]);
+  const [directionList, setDirectionList] = useState<Direction[]>([]);
+  const [serviceList, setServiceList] = useState<Service[]>([]);
+  const [inactiveEmployees, setInactiveEmployees] = useState<Employe[]>([]);
+  const [loadingMetadata, setLoadingMetadata] = useState(true);
+
+  // Manual override toggle to force show traditional authority section if needed
+  const [forceShowChiefSection, setForceShowChiefSection] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState<Partial<Employe>>(() => {
     const rawReg = employee.Region || (employee as any).region || '';
     const normReg = getOfficialRegion(rawReg);
@@ -91,18 +144,11 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       Departement: dept,
       sexe: employee.sexe || 'Homme',
       statutChef: initialStatuts,
+      civilite: employee.civilite || 'M.',
+      situationMatrimoniale: employee.situationMatrimoniale || 'Célibataire',
+      enfants: employee.enfants ?? 0,
     };
   });
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState(employee.photoUrl || `https://placehold.co/100x100.png`);
-  
-  const [departmentList, setDepartmentList] = useState<Department[]>([]);
-  const [directionList, setDirectionList] = useState<Direction[]>([]);
-  const [serviceList, setServiceList] = useState<Service[]>([]);
-  const [inactiveEmployees, setInactiveEmployees] = useState<Employe[]>([]);
-  const [loadingMetadata, setLoadingMetadata] = useState(true);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchMetadata() {
@@ -131,6 +177,16 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     fetchMetadata();
   }, [toast]);
 
+  // Determine current department name
+  const currentDeptName = useMemo(() => {
+    return departmentList.find(d => d.id === formData.departmentId)?.name || '';
+  }, [formData.departmentId, departmentList]);
+
+  // Check if traditional chief / directoire / comités régionaux / assemblée des rois
+  const isTraditionalAuthority = useMemo(() => {
+    return forceShowChiefSection || isTraditionalAuthorityOrMember(formData, currentDeptName);
+  }, [formData, currentDeptName, forceShowChiefSection]);
+
   const officialRegion = useMemo(() => getOfficialRegion(formData.Region || ""), [formData.Region]);
   const officialDepartment = useMemo(() => getOfficialDepartment(formData.Region || "", formData.Departement || ""), [formData.Region, formData.Departement]);
 
@@ -145,9 +201,8 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   }, [officialRegion, officialDepartment]);
 
   const isGardeOrGendarme = useMemo(() => {
-    const deptName = departmentList.find(d => d.id === formData.departmentId)?.name;
-    return deptName === "Garde Républicaine" || deptName === "Gendarmes";
-  }, [formData.departmentId, departmentList]);
+    return currentDeptName === "Garde Républicaine" || currentDeptName === "Gendarmes";
+  }, [currentDeptName]);
 
   const filteredDirections = useMemo(() => {
     if (!formData.departmentId) return [];
@@ -171,7 +226,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       
       // Auto calculate Date_Depart if department is Garde Républicaine and dateEmbauche changes
       if (id === 'dateEmbauche') {
-        const isGarde = departmentList.find(d => d.id === prev.departmentId)?.name === "Garde Républicaine";
+        const isGarde = currentDeptName === "Garde Républicaine";
         if (isGarde && value) {
           try {
             const start = new Date(value);
@@ -179,15 +234,14 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
               start.setMonth(start.getMonth() + 6);
               newData.Date_Depart = start.toISOString().split('T')[0];
             }
-          } catch (e) {
-            console.error("Invalid dateEmbauche for Garde:", e);
+          } catch (err) {
+            console.error("Invalid dateEmbauche:", err);
           }
         }
       }
-      
       return newData;
     });
-  }, [departmentList]);
+  }, [currentDeptName]);
 
   const handleSelectChange = useCallback((id: keyof Employe, value: any) => {
     setFormData(prev => {
@@ -196,7 +250,6 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         newData.directionId = undefined;
         newData.serviceId = undefined;
         
-        // Auto calculate Date_Depart if changing to Garde Républicaine and dateEmbauche exists
         const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
         if (isGarde && prev.dateEmbauche) {
           try {
@@ -205,8 +258,8 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
               start.setMonth(start.getMonth() + 6);
               newData.Date_Depart = start.toISOString().split('T')[0];
             }
-          } catch (e) {
-            console.error("Invalid dateEmbauche for Garde:", e);
+          } catch (err) {
+            console.error("Invalid dateEmbauche for Garde:", err);
           }
         }
       } else if (id === 'directionId') {
@@ -216,7 +269,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     });
   }, [departmentList]);
 
-  const handleValueChange = useCallback((id: string, value: string | number) => {
+  const handleValueChange = useCallback((id: string, value: string | number | boolean | string[]) => {
     setFormData(prev => ({ ...prev, [id]: value }));
   }, []);
 
@@ -232,9 +285,8 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     }
   };
 
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsSubmitting(true);
     try {
       const dataToSave = { ...formData };
@@ -245,10 +297,16 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         dataToSave.skills = (dataToSave.skills as string).split(',').map(s => s.trim()).filter(Boolean);
       }
       
+      // If employee is not a traditional chief/authority, clean up or preserve chief specific fields
+      if (!isTraditionalAuthority) {
+        // We preserve or leave clean so it doesn't pollute standard employees
+        dataToSave.statutChef = [];
+      }
+
       await updateEmployee(employee.id, dataToSave, photoFile);
       toast({
-        title: "Succès",
-        description: "Les informations de l'employé ont été mises à jour.",
+        title: "Fiche mise à jour",
+        description: "Les informations de l'employé ont été enregistrées avec succès.",
       });
       router.push(`/employees/${employee.id}`);
       router.refresh();
@@ -256,261 +314,673 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       console.error("Failed to update employee:", err);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: err?.message || "Impossible de mettre à jour l'employé.",
+        title: "Erreur d'enregistrement",
+        description: err?.message || "Impossible de mettre à jour la fiche de l'employé.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const canManagePayroll = hasPermission('payroll:update') || hasPermission('page:payroll:update') || hasPermission('payroll:create');
+
   if (loadingMetadata) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-muted-foreground animate-pulse">Chargement des données...</p>
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">Chargement de la structure et du dossier...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="max-w-6xl mx-auto space-y-6 pb-20">
+      {/* Top Action Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
         <div className="space-y-1">
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Modifier le profil</h1>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Édition du dossier : {employee.name}</p>
+          <div className="flex items-center gap-2">
+            <span className="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-blue-200">
+              {formData.matricule}
+            </span>
+            <span className="text-xs font-semibold text-slate-400">• Dossier individuel</span>
+          </div>
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">
+            Modification de la Fiche : {formData.lastName} {formData.firstName}
+          </h1>
         </div>
-        <div className="flex gap-3">
-           <Button variant="outline" onClick={() => router.back()} disabled={isSubmitting} className="h-10 rounded-lg border-slate-200 font-bold text-[10px] uppercase tracking-widest">
-            <X className="mr-2 h-3.5 w-3.5" /> Annuler
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => router.back()} 
+            disabled={isSubmitting} 
+            className="h-10 rounded-xl border-slate-200 font-bold text-xs uppercase tracking-wider text-slate-600 hover:bg-slate-50"
+          >
+            <X className="mr-1.5 h-4 w-4" /> Annuler
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting} className="h-10 rounded-lg bg-slate-900 font-bold text-[10px] uppercase tracking-widest">
-            {isSubmitting ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Save className="mr-2 h-3.5 w-3.5" />}
-            Enregistrer
+          <Button 
+            onClick={() => handleSubmit()} 
+            disabled={isSubmitting} 
+            className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider shadow-md"
+          >
+            {isSubmitting ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</>
+            ) : (
+              <><Save className="mr-2 h-4 w-4 text-emerald-400" /> Enregistrer les modifications</>
+            )}
           </Button>
         </div>
       </div>
 
-    <div className="space-y-5">
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-        {/* --- LEFT SIDEBAR: PROFILE & STATUS --- */}
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Sidebar: Photo, Matricule, Status */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden sticky top-8">
-            <CardHeader className="bg-slate-900 text-white p-6">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Profil & État</CardTitle>
+          <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden sticky top-6">
+            <CardHeader className="bg-slate-900 text-white p-5">
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-300 flex items-center justify-between">
+                <span>Profil de l'agent</span>
+                <Badge variant="outline" className="border-white/20 text-white text-[9px] font-bold">
+                  {formData.status}
+                </Badge>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <div className="flex flex-col items-center gap-6">
+            <CardContent className="p-5 space-y-5">
+              {/* Photo Upload Section */}
+              <div className="flex flex-col items-center gap-4">
                 <div className="relative group">
-                  <div className="absolute -inset-2 bg-blue-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-all duration-700" />
-                  <Avatar className="h-40 w-40 rounded-xl border-4 border-white shadow-2xl relative z-10">
+                  <Avatar className="h-36 w-36 rounded-2xl border-4 border-slate-100 shadow-lg object-cover">
                     <AvatarImage src={photoPreview} alt={employee.name} className="object-cover" />
-                    <AvatarFallback className="text-4xl font-black bg-slate-100 text-slate-400 uppercase">{employee.lastName?.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="text-3xl font-black bg-slate-100 text-slate-400 uppercase">
+                      {formData.lastName?.charAt(0) || "E"}
+                    </AvatarFallback>
                   </Avatar>
                   <Button 
                     type="button" 
                     size="icon" 
-                    className="absolute -bottom-1 -right-1 h-10 w-10 rounded-lg bg-slate-900 border-2 border-white shadow-2xl relative z-20 hover:scale-110 transition-transform" 
+                    className="absolute -bottom-2 -right-2 h-9 w-9 rounded-xl bg-slate-900 hover:bg-black text-white border-2 border-white shadow-lg transition-transform hover:scale-105" 
                     onClick={() => fileInputRef.current?.click()}
+                    title="Changer la photo"
                   >
-                    <Upload className="h-4 w-4 text-white" />
+                    <Upload className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="text-center">
-                   <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 leading-none">Matricule</p>
-                   <p className="text-xl font-black text-slate-900 tracking-widest">{formData.matricule}</p>
+                <div className="text-center space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Matricule Officiel</p>
+                  <DebouncedInput 
+                    value={formData.matricule || ''} 
+                    onChange={(val) => handleValueChange('matricule', val as string)} 
+                    className="h-9 text-center font-mono font-black text-sm uppercase rounded-lg border-slate-200" 
+                  />
                 </div>
-                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} title="Sélectionner une photo de profil" />
+                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} title="Sélectionner une photo" />
               </div>
 
-              <div className="space-y-6 pt-6 border-t border-slate-100">
-                <div className="space-y-3">
-                  <Label htmlFor="status" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Statut Administratif</Label>
+              {/* Administrative Status */}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="space-y-2">
+                  <Label htmlFor="status" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                    Statut Administratif
+                  </Label>
                   <Select value={formData.status} onValueChange={(v: Employe['status']) => handleSelectChange('status', v)}>
-                    <SelectTrigger id="status" className={cn("h-12 rounded-xl border-slate-200 font-black uppercase text-[10px] tracking-widest shadow-sm", formData.status === 'Actif' ? 'text-emerald-600 bg-emerald-50/30 border-emerald-100' : 'text-slate-600')}>
+                    <SelectTrigger id="status" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                      <SelectItem value="Actif" className="font-bold py-3 uppercase text-[9px] tracking-widest text-emerald-600">Actif</SelectItem>
-                      <SelectItem value="En congé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-blue-600">En congé</SelectItem>
-                      <SelectItem value="Licencié" className="font-bold py-3 uppercase text-[9px] tracking-widest text-rose-600">Licencié</SelectItem>
-                      <SelectItem value="Remplacé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-rose-600">Remplacé</SelectItem>
-                      <SelectItem value="Retraité" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-500">Retraité</SelectItem>
-                      <SelectItem value="Décédé" className="font-bold py-3 uppercase text-[9px] tracking-widest">Décédé</SelectItem>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="Actif" className="text-emerald-600 font-bold">Actif</SelectItem>
+                      <SelectItem value="En congé" className="text-blue-600 font-bold">En congé</SelectItem>
+                      <SelectItem value="Licencié" className="text-rose-600 font-bold">Licencié</SelectItem>
+                      <SelectItem value="Remplacé" className="text-amber-600 font-bold">Remplacé</SelectItem>
+                      <SelectItem value="Retraité" className="text-slate-600 font-bold">Retraité</SelectItem>
+                      <SelectItem value="Décédé" className="text-slate-900 font-bold">Décédé</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-3">
-                  <Label htmlFor="sexe" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Sexe / Genre</Label>
-                  <Select value={formData.sexe} onValueChange={(v) => handleSelectChange('sexe', v)}>
-                    <SelectTrigger id="sexe" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-slate-900 shadow-sm">
+
+                <div className="space-y-2">
+                  <Label htmlFor="sexe" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                    Sexe / Genre
+                  </Label>
+                  <Select 
+                    value={formData.sexe === 'Homme' ? 'H' : formData.sexe === 'Femme' ? 'F' : (formData.sexe || 'H')} 
+                    onValueChange={(v) => handleSelectChange('sexe', v)}
+                  >
+                    <SelectTrigger id="sexe" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                      <SelectItem value="Homme" className="font-bold py-3 uppercase text-[9px] tracking-widest">Homme</SelectItem>
-                      <SelectItem value="Femme" className="font-bold py-3 uppercase text-[9px] tracking-widest">Femme</SelectItem>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="H" className="font-bold">Homme (H)</SelectItem>
+                      <SelectItem value="F" className="font-bold">Femme (F)</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Traditional Authority Badge / Toggle */}
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <Crown className="h-3.5 w-3.5 text-amber-500" /> Profil Coutumier
+                    </span>
+                    <Switch 
+                      checked={isTraditionalAuthority}
+                      onCheckedChange={(checked) => setForceShowChiefSection(checked)}
+                      id="chief-switch"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 leading-tight">
+                    {isTraditionalAuthority 
+                      ? "Options territoriales & titres de chefferie activés pour ce profil."
+                      : "Agent standard (les champs territoriaux et coutumiers sont masqués)."}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* --- MAIN CONTENT: DETAILS TABS --- */}
-        <div className="lg:col-span-3">
-          <Tabs 
-            value={activeTab} 
-            onValueChange={(val) => {
-              startTransition(() => {
-                setActiveTab(val);
-              });
-            }} 
-            className="w-full space-y-6"
-          >
-            <TabsList className="flex bg-white/40 backdrop-blur-xl border border-white/20 p-1.5 rounded-2xl shadow-xl shadow-slate-200/40 w-fit h-auto gap-1">
-              <TabsTrigger value="identity" className="rounded-xl px-6 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                <UserCircle2 className="mr-2 h-4 w-4" /> Identity
+        {/* Main Tabs Area */}
+        <div className="lg:col-span-3 space-y-6">
+          <Tabs value={activeTab} onValueChange={(v) => startTransition(() => setActiveTab(v))} className="w-full space-y-6">
+            <TabsList className="bg-slate-100/80 p-1 rounded-xl border border-slate-200 flex flex-wrap h-auto gap-1">
+              <TabsTrigger 
+                value="identity" 
+                className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+              >
+                <UserCircle2 className="mr-1.5 h-4 w-4 text-blue-600" /> Identité & État Civil
               </TabsTrigger>
-              <TabsTrigger value="job" className="rounded-xl px-6 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                <Briefcase className="mr-2 h-4 w-4" /> Career
+              <TabsTrigger 
+                value="career" 
+                className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+              >
+                <Briefcase className="mr-1.5 h-4 w-4 text-amber-600" /> Carrière & Poste
               </TabsTrigger>
-              <TabsTrigger value="finance" className="rounded-xl px-6 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                <Save className="mr-2 h-4 w-4" /> Salary
+
+              {/* Conditional Chefferie & Territoire Tab */}
+              {isTraditionalAuthority && (
+                <TabsTrigger 
+                  value="chefferie" 
+                  className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm bg-amber-50 text-amber-900"
+                >
+                  <Crown className="mr-1.5 h-4 w-4" /> Chefferie & Territoire
+                </TabsTrigger>
+              )}
+
+              {canManagePayroll && (
+                <TabsTrigger 
+                  value="finance" 
+                  className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                >
+                  <Wallet className="mr-1.5 h-4 w-4 text-emerald-600" /> Rémunération
+                </TabsTrigger>
+              )}
+
+              <TabsTrigger 
+                value="social" 
+                className="rounded-lg px-4 py-2 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+              >
+                <ShieldCheck className="mr-1.5 h-4 w-4 text-indigo-600" /> Social & CNPS
               </TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="h-[600px] pr-4">
-              <TabsContent value="identity" className="space-y-6 m-0 focus-visible:outline-none">
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Données Individuelles</CardTitle></CardHeader>
-                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <Label htmlFor="lastName" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nom de famille</Label>
-                      <DebouncedInput id="lastName" value={formData.lastName || ''} onChange={(val) => handleValueChange('lastName', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold uppercase" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="firstName" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Prénom(s)</Label>
-                      <DebouncedInput id="firstName" value={formData.firstName || ''} onChange={(val) => handleValueChange('firstName', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="email" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Canal Email</Label>
-                      <DebouncedInput id="email" type="email" value={formData.email || ''} onChange={(val) => handleValueChange('email', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm italic" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="mobile" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Téléphone Mobile</Label>
-                      <DebouncedInput id="mobile" value={formData.mobile || ''} onChange={(val) => handleValueChange('mobile', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="Date_Naissance" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Date de naissance</Label>
-                      <Input id="Date_Naissance" type="date" value={formData.Date_Naissance || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="Lieu_Naissance" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Lieu de naissance</Label>
-                      <Input id="Lieu_Naissance" value={formData.Lieu_Naissance || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
-                    </div>
+            {/* TAB 1: IDENTITÉ & ÉTAT CIVIL */}
+            <TabsContent value="identity" className="space-y-6 focus-visible:outline-none">
+              <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm">
+                <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                  <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                    <UserCircle2 className="h-5 w-5 text-blue-600" />
+                    Informations Personnelles & État Civil
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500">
+                    Renseignez les données d'identité et de contact de l'employé.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="civilite" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Civilité / Titre
+                    </Label>
+                    <Select value={formData.civilite || 'M.'} onValueChange={(val) => handleSelectChange('civilite', val)}>
+                      <SelectTrigger id="civilite" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {CIVILITIES.map(c => (
+                          <SelectItem key={c} value={c} className="font-bold text-xs">{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                  </CardContent>
-                </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Nom de Famille
+                    </Label>
+                    <DebouncedInput 
+                      id="lastName" 
+                      value={formData.lastName || ''} 
+                      onChange={(val) => handleValueChange('lastName', val as string)} 
+                      className="h-11 rounded-xl border-slate-200 font-bold uppercase text-xs" 
+                    />
+                  </div>
 
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Origine & Résidence</CardTitle></CardHeader>
-                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <Label htmlFor="Region" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Région Administrative</Label>
-                      <Select 
-                        value={formData.Region || ''} 
-                        onValueChange={(v) => { handleSelectChange('Region', v); handleSelectChange('Departement', ''); handleSelectChange('subPrefecture', ''); handleSelectChange('Village', ''); }}
-                      >
-                        <SelectTrigger id="Region" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold">
-                          <SelectValue placeholder="Choisir une région..." />
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Prénom(s)
+                    </Label>
+                    <DebouncedInput 
+                      id="firstName" 
+                      value={formData.firstName || ''} 
+                      onChange={(val) => handleValueChange('firstName', val as string)} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="Date_Naissance" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Date de Naissance
+                    </Label>
+                    <Input 
+                      id="Date_Naissance" 
+                      type="date" 
+                      value={formData.Date_Naissance || ''} 
+                      onChange={handleInputChange} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="Lieu_Naissance" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Lieu de Naissance
+                    </Label>
+                    <DebouncedInput 
+                      id="Lieu_Naissance" 
+                      value={formData.Lieu_Naissance || ''} 
+                      onChange={(val) => handleValueChange('Lieu_Naissance', val as string)} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                      placeholder="Ex: Yamoussoukro, Abidjan, Bouaké..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="situationMatrimoniale" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Situation Matrimoniale
+                    </Label>
+                    <Select value={formData.situationMatrimoniale || 'Célibataire'} onValueChange={(val) => handleSelectChange('situationMatrimoniale', val)}>
+                      <SelectTrigger id="situationMatrimoniale" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {MARITAL_STATUSES.map(s => (
+                          <SelectItem key={s} value={s} className="font-bold text-xs">{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="enfants" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Nombre d'enfants à charge
+                    </Label>
+                    <Input 
+                      id="enfants" 
+                      type="number" 
+                      min="0"
+                      value={formData.enfants ?? 0} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, enfants: parseInt(e.target.value) || 0 }))} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="mobile" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Téléphone Mobile
+                    </Label>
+                    <DebouncedInput 
+                      id="mobile" 
+                      value={formData.mobile || ''} 
+                      onChange={(val) => handleValueChange('mobile', val as string)} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                      placeholder="+225 07..."
+                    />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Adresse Email
+                    </Label>
+                    <DebouncedInput 
+                      id="email" 
+                      type="email" 
+                      value={formData.email || ''} 
+                      onChange={(val) => handleValueChange('email', val as string)} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-xs italic" 
+                      placeholder="nom.prenom@cnrct.ci"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* TAB 2: CARRIÈRE & POSTE */}
+            <TabsContent value="career" className="space-y-6 focus-visible:outline-none">
+              <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm">
+                <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                  <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-amber-600" />
+                    Carrière & Affectation Administrative
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="poste" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Intitulé du Poste
+                    </Label>
+                    <DebouncedInput 
+                      id="poste" 
+                      value={formData.poste || ''} 
+                      onChange={(val) => handleValueChange('poste', val as string)} 
+                      className="h-11 rounded-xl border-slate-200 font-black uppercase text-blue-700 text-xs" 
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="grade" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Grade / Rang
+                    </Label>
+                    {isGardeOrGendarme ? (
+                      <Select value={formData.grade || ''} onValueChange={(val) => handleSelectChange('grade', val)}>
+                        <SelectTrigger id="grade" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                          <SelectValue placeholder="Sélectionner le grade militaire..." />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
-                          {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r} className="font-bold py-3 uppercase text-[9px] tracking-widest">{r}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="Departement" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Département de résidence</Label>
-                      <Select value={formData.Departement || ''} onValueChange={(val) => { handleSelectChange('Departement', val); handleSelectChange('subPrefecture', ''); handleSelectChange('Village', ''); }} disabled={!formData.Region}>
-                        <SelectTrigger id="Departement" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
-                          {availableDepartments.map(d => (
-                            <SelectItem key={d} value={d} className="font-bold py-3 uppercase text-[9px] tracking-widest">{d}</SelectItem>
+                        <SelectContent className="rounded-xl">
+                          {MILITARY_RANKS.map(r => (
+                            <SelectItem key={r} value={r} className="font-bold text-xs">{r}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                    ) : (
+                      <DebouncedInput 
+                        id="grade" 
+                        value={formData.grade || ''} 
+                        onChange={(val) => handleValueChange('grade', val as string)} 
+                        className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        placeholder="Ex: Cadre, Agent de maîtrise, etc."
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="categorie" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Catégorie Professionnelle
+                    </Label>
+                    <DebouncedInput 
+                      id="categorie" 
+                      value={formData.categorie || ''} 
+                      onChange={(val) => handleValueChange('categorie', val as string)} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                      placeholder="Ex: Hors Catégorie, Catégorie A..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="Num_Decision" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Référence Acte / Décision de Nomination
+                    </Label>
+                    <DebouncedInput 
+                      id="Num_Decision" 
+                      value={formData.Num_Decision || ''} 
+                      onChange={(val) => handleValueChange('Num_Decision', val as string)} 
+                      className="h-11 rounded-xl border-slate-200 font-mono font-bold text-xs" 
+                      placeholder="DEC-2024-..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="dateEmbauche" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Date d'engagement / Prise de Service
+                    </Label>
+                    <Input 
+                      id="dateEmbauche" 
+                      type="date" 
+                      value={formData.dateEmbauche || ''} 
+                      onChange={handleInputChange} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="Date_Depart" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Date de Départ / Fin de Mission (Prévue)
+                    </Label>
+                    <Input 
+                      id="Date_Depart" 
+                      type="date" 
+                      value={formData.Date_Depart || ''} 
+                      onChange={handleInputChange} 
+                      className="h-11 rounded-xl border-slate-200 font-bold text-rose-600 text-xs" 
+                    />
+                  </div>
+
+                  {/* Structural Placement */}
+                  <div className="space-y-2 md:col-span-2 pt-2 border-t border-slate-100">
+                    <Label htmlFor="departmentId" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Département Parent
+                    </Label>
+                    <Select value={formData.departmentId || ''} onValueChange={(v) => handleSelectChange('departmentId', v)}>
+                      <SelectTrigger id="departmentId" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                        <SelectValue placeholder="Sélectionner le département..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {departmentList.map(d => (
+                          <SelectItem key={d.id} value={d.id} className="font-bold text-xs">{d.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="directionId" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Direction
+                    </Label>
+                    <Select value={formData.directionId || ''} onValueChange={(v) => handleSelectChange('directionId', v)} disabled={filteredDirections.length === 0}>
+                      <SelectTrigger id="directionId" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                        <SelectValue placeholder="—" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {filteredDirections.map(d => (
+                          <SelectItem key={d.id} value={d.id} className="font-bold text-xs">{d.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="serviceId" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      Service / Unité
+                    </Label>
+                    <Select value={formData.serviceId || ''} onValueChange={(v) => handleSelectChange('serviceId', v)} disabled={filteredServices.length === 0}>
+                      <SelectTrigger id="serviceId" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                        <SelectValue placeholder="—" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {filteredServices.map(s => (
+                          <SelectItem key={s.id} value={s.id} className="font-bold text-xs">{s.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Replaced member */}
+                  <div className="space-y-2 md:col-span-2 pt-2 border-t border-slate-100">
+                    <Label htmlFor="remplaceId" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                      En remplacement de (Membre sortant ou inactif)
+                    </Label>
+                    <Select 
+                      value={formData.remplaceId || "none"} 
+                      onValueChange={(val) => {
+                        const id = val === "none" ? undefined : val;
+                        const replacedEmp = inactiveEmployees.find(e => e.id === id);
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          remplaceId: id,
+                          remplaceNom: replacedEmp ? `${replacedEmp.lastName || ''} ${replacedEmp.firstName || ''}`.trim() : undefined
+                        }));
+                      }}
+                    >
+                      <SelectTrigger id="remplaceId" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                        <SelectValue placeholder="Personne (Nouvelle nomination)" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="none" className="font-bold text-xs text-slate-400">Personne (Nouvelle nomination)</SelectItem>
+                        {inactiveEmployees.map(emp => (
+                          <SelectItem key={emp.id} value={emp.id} className="font-bold text-xs">
+                            {`${emp.lastName || ''} ${emp.firstName || ''} - ${emp.poste || 'Sans poste'} (${emp.status})`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* TAB 3: CHEFFERIE & TERRITOIRE (CONDITIONNEL AUX CHEFS / DIRECTOIRE / COMITÉS RÉGIONAUX / ASSEMBLÉE) */}
+            {isTraditionalAuthority && (
+              <TabsContent value="chefferie" className="space-y-6 focus-visible:outline-none">
+                <Card className="border border-amber-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <CardHeader className="p-5 pb-3 border-b border-amber-100 bg-amber-50/50 flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base font-black uppercase tracking-tight text-amber-900 flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-amber-600" />
+                        Rattachement Coutumier & Territorial
+                      </CardTitle>
+                      <CardDescription className="text-xs text-amber-700 mt-1">
+                        Ces informations sont configurées pour les membres du Directoire, des Comités Régionaux et de l'Assemblée des Rois et Chefs.
+                      </CardDescription>
                     </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="subPrefecture" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Sous-Préfecture</Label>
-                      <Select value={formData.subPrefecture || ''} onValueChange={(val) => { handleSelectChange('subPrefecture', val); handleSelectChange('Village', ''); }} disabled={!formData.Departement}>
-                        <SelectTrigger id="subPrefecture" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
-                          {availableSubPrefectures.map(sp => (
-                            <SelectItem key={sp} value={sp} className="font-bold py-3 uppercase text-[9px] tracking-widest">{sp}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="Village" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Village / Quartier</Label>
-                      <VillageCombobox
+                    {Array.isArray(formData.statutChef) && formData.statutChef.length > 1 && (
+                      <Badge className="bg-amber-500 text-white font-black text-[10px] uppercase tracking-wider px-2.5 py-1">
+                        <Layers className="h-3 w-3 mr-1" />
+                        {formData.statutChef.length} Casquettes
+                      </Badge>
+                    )}
+                  </CardHeader>
+                  <CardContent className="p-5 space-y-6">
+                    {/* Geographic territory */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <Label htmlFor="Region" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Région Administrative
+                        </Label>
+                        <Select 
+                          value={formData.Region || ''} 
+                          onValueChange={(v) => { 
+                            handleSelectChange('Region', v); 
+                            handleSelectChange('Departement', ''); 
+                            handleSelectChange('subPrefecture', ''); 
+                            handleSelectChange('Village', ''); 
+                          }}
+                        >
+                          <SelectTrigger id="Region" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                            <SelectValue placeholder="Sélectionner une région..." />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl max-h-[300px]">
+                            {IVORIAN_REGIONS.map(r => (
+                              <SelectItem key={r} value={r} className="font-bold text-xs uppercase">{r}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="Departement" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Département de Résidence / Chefferie
+                        </Label>
+                        <Select 
+                          value={formData.Departement || ''} 
+                          onValueChange={(val) => { 
+                            handleSelectChange('Departement', val); 
+                            handleSelectChange('subPrefecture', ''); 
+                            handleSelectChange('Village', ''); 
+                          }} 
+                          disabled={!formData.Region}
+                        >
+                          <SelectTrigger id="Departement" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                            <SelectValue placeholder="Sélectionner le département..." />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl max-h-[300px]">
+                            {availableDepartments.map(d => (
+                              <SelectItem key={d} value={d} className="font-bold text-xs uppercase">{d}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="subPrefecture" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Sous-Préfecture
+                        </Label>
+                        <Select 
+                          value={formData.subPrefecture || ''} 
+                          onValueChange={(val) => { 
+                            handleSelectChange('subPrefecture', val); 
+                            handleSelectChange('Village', ''); 
+                          }} 
+                          disabled={!formData.Departement}
+                        >
+                          <SelectTrigger id="subPrefecture" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
+                            <SelectValue placeholder="Sélectionner la sous-préfecture..." />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl max-h-[300px]">
+                            {availableSubPrefectures.map(sp => (
+                              <SelectItem key={sp} value={sp} className="font-bold text-xs uppercase">{sp}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="Village" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Village / Localité
+                        </Label>
+                        <VillageCombobox
                           value={formData.Village}
                           onValueChange={(val) => handleValueChange('Village', val)}
                           region={formData.Region}
                           department={formData.Departement}
                           subPrefecture={formData.subPrefecture}
                           disabled={!formData.subPrefecture}
-                      />
+                        />
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
 
-                {/* --- STATUTS COUTUMIERS & CASQUETTES DE CHEF --- */}
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50 flex flex-row items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Crown className="h-4 w-4 text-amber-500" />
-                      <CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Statuts Coutumiers & Titres de Chef</CardTitle>
-                    </div>
-                    {Array.isArray(formData.statutChef) && formData.statutChef.length > 1 && (
-                      <Badge className="bg-amber-500 text-white font-black text-[9px] uppercase tracking-widest px-2.5 py-1">
-                        <Layers className="h-3 w-3 mr-1" />
-                        Plusieurs Casquettes ({formData.statutChef.length})
-                      </Badge>
-                    )}
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-4">
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                      Sélectionnez les statuts et casquettes coutumières applicables à ce membre (possibilité de cumul de mandats/titres) :
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {ALL_CHIEF_STATUSES.map(status => {
-                        const isSelected = Array.isArray(formData.statutChef) && formData.statutChef.includes(status);
-                        return (
-                          <button
-                            key={status}
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const current = Array.isArray(formData.statutChef) ? [...formData.statutChef] : [];
-                              const next = isSelected ? current.filter(s => s !== status) : [...current, status];
-                              setFormData(prev => ({ ...prev, statutChef: next }));
-                            }}
-                            className={cn(
-                              "flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer select-none w-full",
-                              isSelected 
-                                ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10 scale-[1.01]" 
-                                : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                            )}
-                          >
+                    {/* Chief Statuses and Hats */}
+                    <div className="space-y-3 pt-4 border-t border-slate-100">
+                      <Label className="text-[10px] font-black uppercase tracking-wider text-slate-700 block">
+                        Statuts Coutumiers & Casquettes de Chef (Sélection Multiple)
+                      </Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {ALL_CHIEF_STATUSES.map(status => {
+                          const isSelected = Array.isArray(formData.statutChef) && formData.statutChef.includes(status);
+                          return (
+                            <button
+                              key={status}
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const current = Array.isArray(formData.statutChef) ? [...formData.statutChef] : [];
+                                const next = isSelected ? current.filter(s => s !== status) : [...current, status];
+                                setFormData(prev => ({ ...prev, statutChef: next }));
+                              }}
+                              className={cn(
+                                "flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all cursor-pointer",
+                                isSelected 
+                                  ? "bg-slate-900 border-slate-900 text-white shadow-sm" 
+                                  : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                              )}
+                            >
                               <div 
                                 className={cn(
-                                  "h-4 w-4 shrink-0 rounded-sm border flex items-center justify-center transition-colors pointer-events-none",
-                                  isSelected 
-                                    ? "border-white bg-white text-slate-900" 
-                                    : "border-slate-300 bg-white text-transparent"
+                                  "h-4 w-4 shrink-0 rounded border flex items-center justify-center pointer-events-none",
+                                  isSelected ? "border-white bg-white text-slate-900" : "border-slate-300 bg-white"
                                 )}
                               >
                                 <Check className={cn("h-3 w-3 stroke-[3]", isSelected ? "opacity-100" : "opacity-0")} />
@@ -519,222 +989,414 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                             </button>
                           );
                         })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="job" className="space-y-6 m-0 focus-visible:outline-none">
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Temporalité</CardTitle></CardHeader>
-                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <Label htmlFor="poste" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Intitulé du Poste</Label>
-                      <DebouncedInput id="poste" value={formData.poste || ''} onChange={(val) => handleValueChange('poste', val as string)} className="h-12 rounded-xl border-slate-200 bg-white font-black uppercase text-blue-600 shadow-sm" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="grade" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Grade / Rang</Label>
-                      {isGardeOrGendarme ? (
-                        <Select value={formData.grade || ''} onValueChange={(val) => handleSelectChange('grade', val)}>
-                          <SelectTrigger id="grade" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm text-slate-700 shadow-sm">
-                            <SelectValue placeholder="Sélectionner le grade..." />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                            {MILITARY_RANKS.map(r => <SelectItem key={r} value={r} className="font-bold py-3 uppercase text-[9px] tracking-widest">{r}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input id="grade" value={formData.grade || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-bold text-slate-700" placeholder="EX: Sergent, MDL-Chef, Capitaine..." />
-                      )}
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="dateEmbauche" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Date d'engagement</Label>
-                      <Input id="dateEmbauche" type="date" value={formData.dateEmbauche || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-bold" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="Date_Depart" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Date de départ (Prévue)</Label>
-                      <Input id="Date_Depart" type="date" value={formData.Date_Depart || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-bold text-rose-500" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="Num_Decision" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Référence Acte Administratif</Label>
-                      <Input id="Num_Decision" value={formData.Num_Decision || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-mono font-bold" placeholder="DEC-..." />
-                    </div>
-
-                    {departmentList.find(d => d.id === formData.departmentId)?.name === "Garde Républicaine" && (
-                      <div className="md:col-span-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-800 italic leading-relaxed">
-                        Note : Pour les militaires de la Garde Républicaine (personnel subalterne), la rotation s'effectue tous les 6 mois. La date de départ est pré-remplie automatiquement à 6 mois après la date d'engagement.
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Structure</CardTitle></CardHeader>
-                  <CardContent className="p-6 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="departmentId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Département Parent</Label>
-                      <Select value={formData.departmentId} onValueChange={(v) => handleSelectChange('departmentId', v)}>
-                        <SelectTrigger id="departmentId" className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                          {departmentList.map(d => <SelectItem key={d.id} value={d.id} className="font-bold py-3 uppercase text-[9px] tracking-widest">{d.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+
+                    {/* Mandates */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
                       <div className="space-y-2">
-                        <Label htmlFor="directionId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Direction</Label>
-                        <Select value={formData.directionId} onValueChange={(v) => handleSelectChange('directionId', v)} disabled={filteredDirections.length === 0}>
-                          <SelectTrigger id="directionId" className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="—" /></SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                            {filteredDirections.map(d => <SelectItem key={d.id} value={d.id} className="font-bold py-3 uppercase text-[8px] tracking-widest">{d.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="serviceId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Unité / Service</Label>
-                        <Select value={formData.serviceId} onValueChange={(v) => handleSelectChange('serviceId', v)} disabled={filteredServices.length === 0}>
-                          <SelectTrigger id="serviceId" className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="—" /></SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                            {filteredServices.map(s => <SelectItem key={s.id} value={s.id} className="font-bold py-3 uppercase text-[8px] tracking-widest">{s.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    {/* Add Remplace field */}
-                    <div className="space-y-3 pt-4 border-t border-slate-100">
-                      <Label htmlFor="remplaceId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">En remplacement de</Label>
-                      <Select 
-                        value={formData.remplaceId || "none"} 
-                        onValueChange={(val) => {
-                          const id = val === "none" ? undefined : val;
-                          const replacedEmp = inactiveEmployees.find(e => e.id === id);
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            remplaceId: id,
-                            remplaceNom: replacedEmp ? `${replacedEmp.lastName || ''} ${replacedEmp.firstName || ''}`.trim() : undefined
-                          }));
-                        }}
-                      >
-                        <SelectTrigger id="remplaceId" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold">
-                          <SelectValue placeholder="Personne (Nouvelle nomination)" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                          <SelectItem value="none" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-400">Personne (Nouvelle nomination)</SelectItem>
-                          {inactiveEmployees.map(emp => (
-                            <SelectItem key={emp.id} value={emp.id} className="font-bold py-3 uppercase text-[9px] tracking-widest">
-                              {`${emp.lastName || ''} ${emp.firstName || ''} - ${emp.poste || 'Sans poste'} (${emp.status})`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="finance" className="space-y-6 m-0 focus-visible:outline-none">
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Paiement</CardTitle></CardHeader>
-                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <Label htmlFor="banque" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Établissement Bancaire</Label>
-                      <Input id="banque" value={formData.banque || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-black italic tracking-widest" />
-                    </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="numeroCompte" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Numéro de Compte (RIP)</Label>
-                      <Input id="numeroCompte" value={formData.numeroCompte || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-mono font-black tracking-widest" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Social & Aptitudes</CardTitle></CardHeader>
-                  <CardContent className="p-6 space-y-6">
-                     <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col md:flex-row gap-6 items-start md:items-center">
-                        <div className="flex items-center space-x-4">
-                          <Checkbox 
-                            id="CNPS" 
-                            checked={!!formData.CNPS} 
-                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, CNPS: !!checked }))}
-                            className="h-8 w-8 rounded-xl border-blue-200 bg-white data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 shadow-xl transition-all"
-                          />
-                          <Label htmlFor="CNPS" className="text-[11px] font-black uppercase tracking-widest text-slate-700 cursor-pointer">Immatriculation CNPS Active</Label>
-                        </div>
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                           <div className="space-y-2">
-                             <Label htmlFor="Date_Immatriculation" className="text-[9px] font-black uppercase tracking-widest text-blue-600 ml-1">Date d'immatriculation</Label>
-                             <Input 
-                               id="Date_Immatriculation" 
-                               type="date" 
-                               value={formData.Date_Immatriculation || ''} 
-                               onChange={handleInputChange} 
-                               disabled={!formData.CNPS}
-                               className="h-12 rounded-2xl border-blue-200 bg-white/60 font-bold"
-                             />
-                           </div>
-                           <div className="space-y-2">
-                             <Label htmlFor="Date_Cessation_CNPS" className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Cessation (Optionnel)</Label>
-                             <Input 
-                               id="Date_Cessation_CNPS" 
-                               type="date" 
-                               value={formData.Date_Cessation_CNPS || ''} 
-                               onChange={handleInputChange} 
-                               disabled={!formData.CNPS}
-                               className="h-12 rounded-2xl border-slate-200 bg-white/60 font-bold"
-                             />
-                           </div>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <Label htmlFor="enfants" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nombre d'enfants à charge</Label>
-                        <Input id="enfants" type="number" value={formData.enfants || 0} onChange={(e) => setFormData(prev => ({ ...prev, enfants: parseInt(e.target.value) || 0 }))} className="h-12 rounded-xl border-slate-200 bg-white font-black" />
-                      </div>
-                      <div className="space-y-3">
-                        <Label htmlFor="skills" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Expertises Clefs (Séparées par ,)</Label>
-                        <Textarea 
-                          id="skills" 
-                          value={Array.isArray(formData.skills) ? formData.skills.join(', ') : (formData.skills || '')} 
+                        <Label htmlFor="mandatDebut" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Date Début de Mandat (Instance CNRCT)
+                        </Label>
+                        <Input 
+                          id="mandatDebut" 
+                          type="date" 
+                          value={formData.mandatDebut || ''} 
                           onChange={handleInputChange} 
-                          className="rounded-2xl border-slate-200 bg-white/60 min-h-[100px] p-6 text-sm font-medium focus-visible:ring-blue-500/50 shadow-inner" 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="mandatFin" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Date Fin de Mandat
+                        </Label>
+                        <Input 
+                          id="mandatFin" 
+                          type="date" 
+                          value={formData.mandatFin || ''} 
+                          onChange={handleInputChange} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
-            </ScrollArea>
+            )}
+
+            {/* TAB 4: RÉMUNÉRATION & COORDONNÉES BANCAIRES */}
+            {canManagePayroll && (
+              <TabsContent value="finance" className="space-y-6 focus-visible:outline-none">
+                <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm">
+                  <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                    <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                      <Wallet className="h-5 w-5 text-emerald-600" />
+                      Grille Salariale & Indemnités
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-500">
+                      Montants en Francs CFA (FCFA) composant la rémunération de l'agent.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-5 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <Label htmlFor="baseSalary" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Salaire de Base (FCFA)
+                        </Label>
+                        <Input 
+                          id="baseSalary" 
+                          type="number" 
+                          value={formData.baseSalary ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, baseSalary: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-black text-sm text-slate-900" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="primeAnciennete" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Prime d'Ancienneté (FCFA)
+                        </Label>
+                        <Input 
+                          id="primeAnciennete" 
+                          type="number" 
+                          value={formData.primeAnciennete ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, primeAnciennete: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="indemniteLogement" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Indemnité de Logement (FCFA)
+                        </Label>
+                        <Input 
+                          id="indemniteLogement" 
+                          type="number" 
+                          value={formData.indemniteLogement ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteLogement: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="indemniteTransportImposable" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Indemnité de Transport Imposable (FCFA)
+                        </Label>
+                        <Input 
+                          id="indemniteTransportImposable" 
+                          type="number" 
+                          value={formData.indemniteTransportImposable ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteTransportImposable: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="transportNonImposable" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Indemnité Transport Non-Imposable (FCFA)
+                        </Label>
+                        <Input 
+                          id="transportNonImposable" 
+                          type="number" 
+                          value={formData.transportNonImposable ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, transportNonImposable: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="indemniteResponsabilite" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Indemnité de Responsabilité (FCFA)
+                        </Label>
+                        <Input 
+                          id="indemniteResponsabilite" 
+                          type="number" 
+                          value={formData.indemniteResponsabilite ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteResponsabilite: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="indemniteSujetion" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Indemnité de Sujétion (FCFA)
+                        </Label>
+                        <Input 
+                          id="indemniteSujetion" 
+                          type="number" 
+                          value={formData.indemniteSujetion ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteSujetion: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="indemniteCommunication" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Indemnité de Communication (FCFA)
+                        </Label>
+                        <Input 
+                          id="indemniteCommunication" 
+                          type="number" 
+                          value={formData.indemniteCommunication ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteCommunication: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="indemniteRepresentation" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Indemnité de Représentation (FCFA)
+                        </Label>
+                        <Input 
+                          id="indemniteRepresentation" 
+                          type="number" 
+                          value={formData.indemniteRepresentation ?? 0} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteRepresentation: parseFloat(e.target.value) || 0 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="parts" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Nombre de Parts Fiscales
+                        </Label>
+                        <Input 
+                          id="parts" 
+                          type="number" 
+                          step="0.5"
+                          value={formData.parts ?? 1} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, parts: parseFloat(e.target.value) || 1 }))} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                        />
+                      </div>
+                    </div>
+
+                    {/* Banking details */}
+                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-blue-600" /> Coordonnées Bancaires
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-2">
+                          <Label htmlFor="banque" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                            Établissement Bancaire
+                          </Label>
+                          <DebouncedInput 
+                            id="banque" 
+                            value={formData.banque || ''} 
+                            onChange={(val) => handleValueChange('banque', val as string)} 
+                            className="h-11 rounded-xl border-slate-200 font-bold text-xs uppercase" 
+                            placeholder="Ex: Trésor Public, SGCI, NSIA, BOA..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="numeroCompte" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                            Numéro de Compte
+                          </Label>
+                          <DebouncedInput 
+                            id="numeroCompte" 
+                            value={formData.numeroCompte || ''} 
+                            onChange={(val) => handleValueChange('numeroCompte', val as string)} 
+                            className="h-11 rounded-xl border-slate-200 font-mono font-bold text-xs" 
+                            placeholder="CI..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="CB" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                            Code Banque (CB)
+                          </Label>
+                          <DebouncedInput 
+                            id="CB" 
+                            value={formData.CB || ''} 
+                            onChange={(val) => handleValueChange('CB', val as string)} 
+                            className="h-11 rounded-xl border-slate-200 font-mono font-bold text-xs" 
+                            placeholder="CI..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="CG" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                            Code Guichet (CG)
+                          </Label>
+                          <DebouncedInput 
+                            id="CG" 
+                            value={formData.CG || ''} 
+                            onChange={(val) => handleValueChange('CG', val as string)} 
+                            className="h-11 rounded-xl border-slate-200 font-mono font-bold text-xs" 
+                            placeholder="01..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="Cle_RIB" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                            Clé RIB
+                          </Label>
+                          <DebouncedInput 
+                            id="Cle_RIB" 
+                            value={formData.Cle_RIB || ''} 
+                            onChange={(val) => handleValueChange('Cle_RIB', val as string)} 
+                            className="h-11 rounded-xl border-slate-200 font-mono font-bold text-xs" 
+                            placeholder="45"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
+
+            {/* TAB 5: SOCIAL & CNPS */}
+            <TabsContent value="social" className="space-y-6 focus-visible:outline-none">
+              <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm">
+                <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                  <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-indigo-600" />
+                    Protection Sociale, CNPS & Compétences
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 space-y-6">
+                  {/* CNPS section */}
+                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox 
+                        id="CNPS" 
+                        checked={!!formData.CNPS} 
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, CNPS: !!checked }))}
+                        className="h-6 w-6 rounded-lg data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <Label htmlFor="CNPS" className="text-xs font-black uppercase tracking-wider text-slate-800 cursor-pointer">
+                        Immatriculation CNPS Active pour cet agent
+                      </Label>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="cnpsEmploye" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          N° CNPS Salarié
+                        </Label>
+                        <DebouncedInput 
+                          id="cnpsEmploye" 
+                          value={formData.cnpsEmploye || ''} 
+                          onChange={(val) => handleValueChange('cnpsEmploye', val as string)} 
+                          className="h-11 rounded-xl border-slate-200 font-mono font-bold text-xs" 
+                          placeholder="CNPS-..."
+                          disabled={!formData.CNPS}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="cnpsEmployeur" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          N° CNPS Employeur
+                        </Label>
+                        <DebouncedInput 
+                          id="cnpsEmployeur" 
+                          value={formData.cnpsEmployeur || ''} 
+                          onChange={(val) => handleValueChange('cnpsEmployeur', val as string)} 
+                          className="h-11 rounded-xl border-slate-200 font-mono font-bold text-xs" 
+                          placeholder="CNPS-EMP-..."
+                          disabled={!formData.CNPS}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="Date_Immatriculation" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Date d'Immatriculation
+                        </Label>
+                        <Input 
+                          id="Date_Immatriculation" 
+                          type="date" 
+                          value={formData.Date_Immatriculation || ''} 
+                          onChange={handleInputChange} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                          disabled={!formData.CNPS}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="Date_Cessation_CNPS" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                          Date de Cessation CNPS (Optionnel)
+                        </Label>
+                        <Input 
+                          id="Date_Cessation_CNPS" 
+                          type="date" 
+                          value={formData.Date_Cessation_CNPS || ''} 
+                          onChange={handleInputChange} 
+                          className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                          disabled={!formData.CNPS}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Congés & compétences */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="solde_conges" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                        Solde de Congés Payés (Jours)
+                      </Label>
+                      <Input 
+                        id="solde_conges" 
+                        type="number" 
+                        step="0.5"
+                        value={formData.solde_conges ?? 0} 
+                        onChange={(e) => setFormData(prev => ({ ...prev, solde_conges: parseFloat(e.target.value) || 0 }))} 
+                        className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="skills" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
+                        Compétences Clés & Domaines d'Expertise (Séparées par des virgules)
+                      </Label>
+                      <Textarea 
+                        id="skills" 
+                        value={Array.isArray(formData.skills) ? formData.skills.join(', ') : (formData.skills || '')} 
+                        onChange={handleInputChange} 
+                        className="rounded-xl border-slate-200 min-h-[90px] p-3 text-xs font-medium" 
+                        placeholder="Ex: Protocole coutumier, Médiation de conflits, Gestion RH, Sécurité rapprochée..."
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
       </form>
 
-      {/* --- STICKY ACTIONS FOOTER --- */}
-      <div className="sticky bottom-6 left-0 right-0 z-50 px-4 md:px-0">
-        <div className="max-w-5xl mx-auto bg-white/40 backdrop-blur-2xl border border-white/30 p-3 rounded-2xl shadow-3xl flex gap-3">
-           <Button 
-            variant="outline" 
-            onClick={() => router.back()} 
-            disabled={isSubmitting}
-            className="h-12 flex-1 rounded-xl border-slate-200 bg-white font-black uppercase tracking-widest text-[9px] hover:bg-slate-50 shadow-xl"
-          >
-            <X className="mr-2 h-4 w-4 text-slate-400" /> Annuler
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting}
-            className="h-12 flex-[2] rounded-xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-black shadow-2xl shadow-black/20 group transition-all"
-          >
-            {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-            )}
-            {isSubmitting ? "Enregistrement..." : "Sauvegarder le dossier"}
-          </Button>
+      {/* Sticky Bottom Actions Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-lg">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 hidden sm:flex">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <span>Assurez-vous de vérifier les informations avant d'enregistrer.</span>
+          </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => router.back()} 
+              disabled={isSubmitting}
+              className="h-11 rounded-xl border-slate-300 font-bold text-xs uppercase tracking-wider"
+            >
+              Annuler
+            </Button>
+            <Button 
+              onClick={() => handleSubmit()} 
+              disabled={isSubmitting}
+              className="h-11 px-6 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Enregistrement en cours...</>
+              ) : (
+                <><Save className="h-4 w-4 text-emerald-400" /> Sauvegarder la fiche</>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
-
     </div>
   );
 }

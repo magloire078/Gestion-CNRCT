@@ -25,7 +25,7 @@ export type Employe = {
     village?: string;
     situationMatrimoniale?: string; // 'Célibataire', 'Marié(e)', etc.
     enfants?: number;
-    sexe?: 'Homme' | 'Femme' | 'Autre';
+    sexe?: 'H' | 'F' | 'Homme' | 'Femme' | 'Autre';
 
     // Professional Info
     dateEmbauche?: string; // YYYY-MM-DD

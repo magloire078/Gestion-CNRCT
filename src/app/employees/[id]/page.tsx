@@ -44,36 +44,22 @@ import {
     CardDescription,
     CardHeader,
     CardTitle,
-    CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { differenceInYears, parseISO, lastDayOfMonth } from "date-fns";
+import { parseISO, lastDayOfMonth } from "date-fns";
 import {
     PlusCircle,
-    Receipt,
-    Rocket,
-    Sparkles,
-    Bell,
-    MessageSquare,
-    Newspaper,
-    ArrowRight,
     MapPin,
-    Search,
     Calendar,
-    Zap,
-    Heart,
     Award,
     Pencil,
     Trash2,
     Mail,
     Phone,
     Briefcase,
-    Building,
-    Home,
     ShieldCheck,
     History,
     FileText,
@@ -88,10 +74,15 @@ import {
     Users2,
     Wallet,
     CreditCard,
-    MoreVertical,
     Eye,
     EyeOff,
-    AlertTriangle
+    AlertTriangle,
+    Crown,
+    Layers,
+    Clock,
+    Sparkles,
+    Landmark,
+    Shield
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -103,6 +94,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { SecurityConfirmationDialog } from "@/components/common/security-confirmation-dialog";
+import { isTraditionalAuthorityOrMember, calculateTenure, calculatePayrollTotals } from "@/lib/employee-utils";
 import { cn } from "@/lib/utils";
 
 export default function EmployeeDetailPage() {
@@ -123,7 +115,7 @@ export default function EmployeeDetailPage() {
     const [historyEvents, setHistoryEvents] = useState<EmployeeEvent[]>([]);
     const [isHistorySheetOpen, setIsHistorySheetOpen] = useState(false);
     const [eventToEdit, setEventToEdit] = useState<EmployeeEvent | null>(null);
-    const [activeTab, setActiveTab] = useState("info");
+    const [activeTab, setActiveTab] = useState("identity");
     const [showSalary, setShowSalary] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
     const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
@@ -186,7 +178,6 @@ export default function EmployeeDetailPage() {
         try {
             const history = await getEmployeeHistory(employeeId);
             setHistoryEvents(history);
-            // Also refresh employee data in case salary changed
             const emp = await getEmployee(employeeId);
             if (emp) setEmployee(emp);
         } catch (error) {
@@ -236,7 +227,7 @@ export default function EmployeeDetailPage() {
     const handleNavigateToPayslip = () => {
         const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
         const lastDay = lastDayOfMonth(selectedDate);
-        const formattedDate = lastDay.toISOString().split('T')[0]; // YYYY-MM-DD
+        const formattedDate = lastDay.toISOString().split('T')[0];
 
         setIsDateDialogOpen(false);
         
@@ -255,6 +246,18 @@ export default function EmployeeDetailPage() {
     const directionName = units?.directions.find(d => d.id === employee?.directionId)?.name;
     const serviceName = units?.services.find(s => s.id === employee?.serviceId)?.name;
     const isGarde = deptName === "Garde Républicaine";
+
+    // Traditional Authority detection
+    const isTraditional = useMemo(() => {
+        return isTraditionalAuthorityOrMember(employee, deptName);
+    }, [employee, deptName]);
+
+    // Tenure calculation
+    const tenure = useMemo(() => {
+        return calculateTenure(employee?.dateEmbauche);
+    }, [employee?.dateEmbauche]);
+
+    // Military rotation calculation
     const rotationStatus = useMemo(() => {
         if (!isGarde || !employee?.Date_Depart) return null;
         try {
@@ -292,12 +295,15 @@ export default function EmployeeDetailPage() {
 
     if (loading) {
         return (
-            <div className="space-y-4 animate-pulse">
-                <div className="h-40 bg-slate-100 rounded-md" />
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="h-80 bg-slate-50 rounded-md" />
-                    <div className="lg:col-span-2 h-80 bg-slate-50 rounded-md" />
+            <div className="space-y-6 max-w-6xl mx-auto py-6 animate-pulse">
+                <div className="h-44 bg-slate-100 rounded-3xl" />
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="h-24 bg-slate-50 rounded-2xl" />
+                    <div className="h-24 bg-slate-50 rounded-2xl" />
+                    <div className="h-24 bg-slate-50 rounded-2xl" />
+                    <div className="h-24 bg-slate-50 rounded-2xl" />
                 </div>
+                <div className="h-96 bg-slate-50 rounded-2xl" />
             </div>
         );
     }
@@ -306,28 +312,14 @@ export default function EmployeeDetailPage() {
 
     const canEdit = hasPermission('employees:update') || hasPermission('page:employees:edit');
     const canDelete = hasPermission('employees:delete') || hasPermission('page:employees:delete');
-    
-    // Un employé ne peut voir la rémunération que s'il a les droits de modification de la paie, ou si c'est son propre profil
-    const canManagePayroll = hasPermission('page:payroll:update') || hasPermission('page:payroll:create') || hasPermission('page:payroll:delete');
+    const canManagePayroll = hasPermission('payroll:read') || hasPermission('page:payroll:update') || hasPermission('payroll:update') || hasPermission('page:payroll:create');
     const isSelf = user?.employeeId === employee.id || user?.email === employee.email;
     const canViewSalary = canManagePayroll || isSelf;
 
-    // Salary total calculations (fallback if database totals are 0)
-    const baseSalary = employee.baseSalary || 0;
-    const primeAnciennete = employee.primeAnciennete || 0;
-    const indemniteLogement = employee.indemniteLogement || 0;
-    const indemniteTransport = employee.indemniteTransportImposable || 0;
-    const otherIndemnities = (employee.indemniteResponsabilite || 0) + 
-                             (employee.indemniteSujetion || 0) + 
-                             (employee.indemniteCommunication || 0) + 
-                             (employee.indemniteRepresentation || 0);
-    
-    const calculatedBrut = baseSalary + primeAnciennete + indemniteLogement + indemniteTransport + otherIndemnities;
-    const displayBrut = (employee.Salaire_Brut && employee.Salaire_Brut > 0) ? employee.Salaire_Brut : calculatedBrut;
-    const displayNet = (employee.Salaire_Net && employee.Salaire_Net > 0) ? employee.Salaire_Net : displayBrut;
-
-    const isRegionalMember = employee.poste?.toLowerCase().includes("comité régional") || employee.poste?.toLowerCase().includes("comite regional");
+    // Payroll Totals
+    const payroll = calculatePayrollTotals(employee);
     const isActive = employee.status === "Actif";
+    const isRegionalMember = employee.poste?.toLowerCase().includes("comité régional") || employee.poste?.toLowerCase().includes("comite regional");
 
     const handleOpenPromotion = async () => {
         setIsPromotionDialogOpen(true);
@@ -369,150 +361,155 @@ export default function EmployeeDetailPage() {
     };
 
     return (
-        <div className="flex flex-col gap-2 pb-6">
-            <div className="flex items-center pb-1">
+        <div className="max-w-6xl mx-auto space-y-6 pb-20">
+            {/* Top Navigation */}
+            <div className="flex items-center justify-between">
                 <Button 
                     variant="ghost" 
                     onClick={() => router.back()} 
-                    className="h-8 px-3 gap-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg font-black uppercase tracking-widest text-[10px]"
+                    className="h-9 px-3 gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl font-bold text-xs uppercase tracking-wider"
                 >
                     <ChevronLeft className="h-4 w-4" />
-                    Retour
+                    Retour au répertoire
                 </Button>
+
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400 font-medium">Fiche n°</span>
+                    <Badge variant="outline" className="font-mono font-bold text-xs bg-white text-slate-700">
+                        {employee.matricule}
+                    </Badge>
+                </div>
             </div>
-            {/* --- PROFILE HERO SECTION --- */}
-            <div className="relative overflow-hidden rounded-2xl p-0.5 shadow-lg bg-white/20 backdrop-blur-xl border border-white/30">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.1),transparent)]" />
+
+            {/* --- HERO HEADER CARD --- */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 text-white p-6 md:p-8 shadow-xl border border-slate-800">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(59,130,246,0.15),transparent_70%)] pointer-events-none" />
                 
-                <div className="relative z-10 p-3 flex flex-col md:flex-row items-center gap-3 md:gap-4">
-                    {/* Avatar Section */}
-                    <div className="relative group">
-                        <div className={cn(
-                            "absolute -inset-2 rounded-full blur-xl opacity-40 transition-all duration-700 group-hover:opacity-70 group-hover:scale-110",
-                            isActive ? "bg-emerald-500" : "bg-rose-500"
-                        )} />
-                        <Avatar className="h-40 w-40 md:h-48 md:w-48 border-4 border-white/10 shadow-2xl transition-all duration-1000 group-hover:scale-[1.02]">
-                            <AvatarImage src={employee.photoUrl} alt={employee.name} className="object-cover transition-transform duration-700 group-hover:scale-110" />
-                            <AvatarFallback className="text-5xl font-black bg-slate-800 text-slate-500">
-                                {employee.lastName?.charAt(0)}
+                <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
+                    {/* Avatar with Status Ring */}
+                    <div className="relative shrink-0">
+                        <Avatar className="h-32 w-32 md:h-36 md:w-36 rounded-2xl border-4 border-white/10 shadow-2xl object-cover">
+                            <AvatarImage src={employee.photoUrl} alt={employee.name} className="object-cover" />
+                            <AvatarFallback className="text-4xl font-black bg-slate-800 text-slate-400">
+                                {employee.lastName?.charAt(0) || "E"}
                             </AvatarFallback>
                         </Avatar>
                         <div className={cn(
-                            "absolute -bottom-1 -right-1 h-10 w-10 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-xl",
-                            isActive ? "bg-emerald-500" : "bg-rose-500"
+                            "absolute -bottom-2 -right-2 h-8 w-8 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg",
+                            isActive ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
                         )}>
-                            {isActive ? (
-                                <CheckCircle2 className="h-5 w-5 text-white" />
-                            ) : (
-                                <XCircle className="h-5 w-5 text-white" />
-                            )}
+                            {isActive ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                         </div>
                     </div>
 
-                    {/* Info Section */}
-                    <div className="flex-1 text-center md:text-left space-y-1.5">
-                        <div className="space-y-0.5">
-                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-0.5">
-                                <div className="bg-blue-600 text-white px-2 py-0.5 rounded-lg shadow-lg shadow-blue-900/40">
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">{employee.matricule}</span>
-                                </div>
-                                <span className="h-3 w-px bg-white/20" />
-                                <span className="text-blue-400 font-bold uppercase text-[9px] tracking-widest flex items-center gap-2">
-                                    <UserCircle className="h-3 w-3" /> Dossier Actif
-                                </span>
-                            </div>
-                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-none mb-1 uppercase">
-                                {employee.lastName} <br/>
-                                <span className="text-slate-400 font-medium tracking-tight normal-case">{employee.firstName}</span>
-                            </h1>
-                        </div>
+                    {/* Identity & Main Info */}
+                    <div className="flex-1 text-center md:text-left space-y-3">
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl backdrop-blur-md">
-                                <Briefcase className="h-4 w-4 text-amber-500" />
-                                <span className="text-sm md:text-base text-slate-300 font-black uppercase tracking-[0.1em]">{employee.poste}</span>
-                            </div>
-                            {employee.grade && (
-                                <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl backdrop-blur-md">
-                                    <Award className="h-4 w-4 text-blue-400" />
-                                    <span className="text-sm md:text-base text-slate-300 font-black uppercase tracking-[0.1em]">{employee.grade}</span>
-                                </div>
+                            <span className="bg-blue-600 text-white px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                {employee.matricule}
+                            </span>
+                            <Badge variant="outline" className={cn(
+                                "border-none text-[10px] font-black uppercase tracking-wider px-2 py-0.5",
+                                isActive ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"
+                            )}>
+                                {employee.status}
+                            </Badge>
+                            {isTraditional && (
+                                <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider">
+                                    <Crown className="h-3 w-3 mr-1 text-amber-400" /> Autorité Traditionnelle
+                                </Badge>
                             )}
                         </div>
-                        
-                        <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1 pt-1 border-t border-white/5 mt-1">
-                            {[
-                                { icon: Building2, label: "Unité", val: deptName, color: "text-blue-400" },
-                                { icon: MapPin, label: "Lieu", val: employee.Region || "Siège", color: "text-rose-400" },
-                                { icon: ShieldCheck, label: "CNPS", val: employee.CNPS ? "Affilié" : "Non immatriculé", color: employee.CNPS ? "text-emerald-400" : "text-slate-500" },
-                            ].map((item, idx) => (
-                                <div key={idx} className="flex flex-col gap-1">
-                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
-                                    <div className="flex items-center gap-2 text-white text-sm font-bold">
-                                        <item.icon className={cn("h-4 w-4", item.color)} /> {item.val || "—"}
-                                    </div>
-                                </div>
-                            ))}
-                            {employee.remplaceNom && (
-                                <div className="flex flex-col gap-1 col-span-2">
-                                    <span className="text-[9px] font-black text-amber-500/80 uppercase tracking-widest">En remplacement de</span>
-                                    <div className="flex items-center gap-2 text-amber-400 text-sm font-bold">
-                                        <UserCircle2 className="h-4 w-4" /> {employee.remplaceNom}
-                                    </div>
+
+                        <div>
+                            <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tight text-white leading-tight">
+                                {employee.civilite && <span className="text-slate-400 font-normal mr-2 text-xl md:text-2xl">{employee.civilite}</span>}
+                                {employee.lastName} <span className="text-slate-300 font-bold normal-case">{employee.firstName}</span>
+                            </h1>
+                            <p className="text-sm md:text-base font-bold text-blue-400 uppercase tracking-wide mt-1 flex items-center justify-center md:justify-start gap-2">
+                                <Briefcase className="h-4 w-4 shrink-0" />
+                                {employee.poste || "Poste non défini"}
+                                {employee.grade && <span className="text-slate-400 font-normal text-xs">• {employee.grade}</span>}
+                            </p>
+                        </div>
+
+                        {/* Quick tags */}
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 pt-2 border-t border-white/10 text-xs text-slate-300">
+                            <div className="flex items-center gap-1.5">
+                                <Building2 className="h-4 w-4 text-slate-400" />
+                                <span className="font-semibold">{deptName || "Siège Central"}</span>
+                            </div>
+                            {isTraditional && employee.Region && (
+                                <div className="flex items-center gap-1.5 text-amber-300">
+                                    <MapPin className="h-4 w-4" />
+                                    <span className="font-semibold">{employee.Region} {employee.Departement ? `(${employee.Departement})` : ''}</span>
                                 </div>
                             )}
+                            <div className="flex items-center gap-1.5">
+                                <Clock className="h-4 w-4 text-emerald-400" />
+                                <span className="font-semibold">{tenure.label}</span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Actions Panel */}
-                    <div className="flex flex-col gap-1 w-full md:w-auto shrink-0 self-start pt-1">
+                    {/* Action Buttons */}
+                    <div className="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto justify-center">
                         {canEdit && (
-                            <Button asChild className="bg-white text-slate-900 hover:bg-slate-100 rounded-xl h-8 px-3 font-black uppercase tracking-widest text-[9px] shadow-xl shadow-black/10 group">
+                            <Button asChild className="bg-white hover:bg-slate-100 text-slate-900 rounded-xl h-10 px-4 font-bold text-xs uppercase tracking-wider shadow-md">
                                 <Link href={`/employees/${employee.id}/edit`}>
-                                    <Pencil className="mr-2 h-3.5 w-3.5 text-blue-600 transition-transform group-hover:rotate-12" /> Modifier
+                                    <Pencil className="mr-2 h-4 w-4 text-blue-600" /> Modifier la fiche
                                 </Link>
                             </Button>
                         )}
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-2">
                             <Button 
                                 variant="outline" 
-                                className="h-8 flex-1 md:w-12 rounded-lg border-white/10 bg-white/5 text-white hover:bg-white/10 shadow-lg font-black uppercase tracking-widest text-[9px]"
                                 onClick={() => setIsPrinting(true)}
+                                className="h-10 flex-1 md:flex-initial rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold text-xs uppercase tracking-wider"
+                                title="Imprimer la fiche profil"
                             >
-                                <Download className="h-3.5 w-3.5" />
+                                <Download className="h-4 w-4 mr-1.5" /> Fiche
                             </Button>
+
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="h-8 flex-1 md:w-12 rounded-lg border-white/10 bg-white/5 text-white hover:bg-white/10 shadow-lg">
-                                        <PlusCircle className="h-3.5 w-3.5" />
+                                    <Button variant="outline" className="h-10 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 px-3">
+                                        <PlusCircle className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1 bg-slate-900 text-white border-white/10 shadow-3xl">
-                                    <DropdownMenuLabel className="text-[10px] font-black p-2 uppercase tracking-widest text-slate-500">Flux de travail</DropdownMenuLabel>
-                                    <DropdownMenuItem className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold">
-                                        <History className="h-4 w-4 text-blue-400" /> Nouvel historique
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold">
-                                        <FileText className="h-4 w-4 text-emerald-400" /> Générer Attestation
-                                    </DropdownMenuItem>
+                                <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1 bg-slate-900 text-white border-slate-800 shadow-2xl">
+                                    <DropdownMenuLabel className="text-[10px] font-black p-2 uppercase tracking-widest text-slate-400">Actions RH</DropdownMenuLabel>
+                                    {canEdit && (
+                                        <DropdownMenuItem 
+                                            onClick={() => {
+                                                setEventToEdit(null);
+                                                setIsHistorySheetOpen(true);
+                                            }}
+                                            className="p-2.5 rounded-xl gap-2.5 cursor-pointer text-xs font-bold"
+                                        >
+                                            <History className="h-4 w-4 text-blue-400" /> Nouvel événement carrière
+                                        </DropdownMenuItem>
+                                    )}
                                     {canViewSalary && (
-                                        <DropdownMenuItem onClick={() => setIsDateDialogOpen(true)} className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold">
-                                            <Banknote className="h-4 w-4 text-blue-400" /> Bulletin de Paie
+                                        <DropdownMenuItem onClick={() => setIsDateDialogOpen(true)} className="p-2.5 rounded-xl gap-2.5 cursor-pointer text-xs font-bold">
+                                            <Banknote className="h-4 w-4 text-emerald-400" /> Générer Bulletin de Paie
                                         </DropdownMenuItem>
                                     )}
                                     {isRegionalMember && canEdit && (
-                                        <DropdownMenuItem onClick={handleOpenPromotion} className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold text-amber-500 focus:bg-amber-500/10">
+                                        <DropdownMenuItem onClick={handleOpenPromotion} className="p-2.5 rounded-xl gap-2.5 cursor-pointer text-xs font-bold text-amber-400">
                                             <Award className="h-4 w-4" /> Promouvoir au Directoire
                                         </DropdownMenuItem>
                                     )}
-                                    <DropdownMenuSeparator className="bg-white/10"/>
                                     {canDelete && (
-                                        <DropdownMenuItem 
-                                            onClick={() => setIsDeleteDialogOpen(true)} 
-                                            className="p-2.5 rounded-xl gap-3 cursor-pointer text-rose-400 focus:bg-rose-500/10 text-xs font-bold"
-                                        >
-                                            <Trash2 className="h-4 w-4" /> Radier l'agent
-                                        </DropdownMenuItem>
+                                        <>
+                                            <DropdownMenuSeparator className="bg-white/10"/>
+                                            <DropdownMenuItem 
+                                                onClick={() => setIsDeleteDialogOpen(true)} 
+                                                className="p-2.5 rounded-xl gap-2.5 cursor-pointer text-rose-400 focus:bg-rose-500/20 text-xs font-bold"
+                                            >
+                                                <Trash2 className="h-4 w-4" /> Radier / Supprimer l'agent
+                                            </DropdownMenuItem>
+                                        </>
                                     )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -521,319 +518,645 @@ export default function EmployeeDetailPage() {
                 </div>
             </div>
 
-            {/* Alert Rotation Garde Républicaine */}
+            {/* Military Rotation Alert Banner */}
             {rotationStatus && (
                 <div className={cn(
-                    "p-4 rounded-2xl border flex items-start gap-3 mt-4",
+                    "p-4 rounded-2xl border flex items-start gap-3 shadow-sm",
                     rotationStatus.status === 'expired' && "bg-rose-50 border-rose-200 text-rose-800",
                     rotationStatus.status === 'warning' && "bg-amber-50 border-amber-200 text-amber-800",
                     rotationStatus.status === 'ok' && "bg-blue-50 border-blue-200 text-blue-800"
                 )}>
                     {rotationStatus.status === 'expired' && <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />}
                     {rotationStatus.status === 'warning' && <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />}
-                    {rotationStatus.status === 'ok' && <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />}
-                    <div>
-                        <h4 className="text-xs font-black uppercase tracking-wider mb-1">
+                    {rotationStatus.status === 'ok' && <Shield className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />}
+                    <div className="flex-1">
+                        <h4 className="text-xs font-black uppercase tracking-wider mb-0.5">
                             {rotationStatus.label} (Garde Républicaine)
                         </h4>
-                        <p className="text-xs font-medium">
+                        <p className="text-xs font-medium leading-relaxed">
                             {rotationStatus.description}
                         </p>
                     </div>
                 </div>
             )}
 
-            {/* Content Tabs */}
+            {/* Quick KPI Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        <Building2 className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-0.5 overflow-hidden">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Affectation</p>
+                        <p className="text-sm font-bold text-slate-800 truncate" title={deptName || "Siège"}>
+                            {deptName || "Siège Central"}
+                        </p>
+                        <p className="text-[11px] text-slate-500 truncate">{directionName || serviceName || "Services généraux"}</p>
+                    </div>
+                </Card>
+
+                <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Calendar className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-0.5">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Ancienneté</p>
+                        <p className="text-sm font-bold text-slate-800">{tenure.label}</p>
+                        <p className="text-[11px] text-slate-500">Depuis le {formatDate(employee.dateEmbauche)}</p>
+                    </div>
+                </Card>
+
+                <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-0.5">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Couverture CNPS</p>
+                        <p className="text-sm font-bold text-slate-800">{employee.CNPS ? "Immatriculé" : "Non affilié"}</p>
+                        <p className="text-[11px] text-slate-500 font-mono">{employee.cnpsEmploye || (employee.CNPS ? "En règle" : "Sans N°")}</p>
+                    </div>
+                </Card>
+
+                {isTraditional ? (
+                    <Card className="border border-amber-200 bg-amber-50/50 rounded-2xl shadow-sm p-4 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                            <Crown className="h-6 w-6" />
+                        </div>
+                        <div className="space-y-0.5 overflow-hidden">
+                            <p className="text-[10px] font-black uppercase tracking-wider text-amber-700">Territoire Coutumier</p>
+                            <p className="text-sm font-bold text-amber-950 truncate">{employee.Region || "Région non spécifiée"}</p>
+                            <p className="text-[11px] text-amber-800 truncate">{employee.Departement || employee.Village || "Localité"}</p>
+                        </div>
+                    </Card>
+                ) : (
+                    <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                            <UserCircle className="h-6 w-6" />
+                        </div>
+                        <div className="space-y-0.5">
+                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Catégorie</p>
+                            <p className="text-sm font-bold text-slate-800">{employee.categorie || "Agent Général"}</p>
+                            <p className="text-[11px] text-slate-500">{employee.grade || "Standard"}</p>
+                        </div>
+                    </Card>
+                )}
+            </div>
+
+            {/* --- MAIN TABBED CONTENT --- */}
             <Tabs 
-                defaultValue="info" 
+                defaultValue="identity" 
                 value={activeTab}
                 onValueChange={(v) => startTransition(() => setActiveTab(v))}
-                className="space-y-1.5"
+                className="space-y-6"
             >
-                <TabsList className="bg-white/40 backdrop-blur-xl border border-white/20 p-0.5 rounded-xl shadow-xl shadow-slate-200/20 flex flex-wrap h-auto gap-0.5">
-                    <TabsTrigger value="info" className="rounded-lg px-2 py-1 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                        <UserCircle2 className="mr-2 h-4 w-4" /> Identité
+                <TabsList className="bg-slate-100 p-1 rounded-2xl border border-slate-200 flex flex-wrap h-auto gap-1">
+                    <TabsTrigger 
+                        value="identity" 
+                        className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                    >
+                        <UserCircle2 className="mr-2 h-4 w-4 text-blue-600" /> Identité & État Civil
                     </TabsTrigger>
-                    <TabsTrigger value="career" className="rounded-lg px-2 py-1 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                        <Briefcase className="mr-2 h-4 w-4" /> Carrière
+                    
+                    <TabsTrigger 
+                        value="career" 
+                        className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                    >
+                        <Briefcase className="mr-2 h-4 w-4 text-amber-600" /> Carrière & Affectation
                     </TabsTrigger>
-                    {canViewSalary && (
-                        <TabsTrigger value="salary" className="rounded-lg px-2 py-1 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                            <Banknote className="mr-2 h-4 w-4" /> Rémunération
+
+                    {/* Conditionnel : Chefferie & Territoire */}
+                    {isTraditional && (
+                        <TabsTrigger 
+                            value="chefferie" 
+                            className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm bg-amber-50 text-amber-900"
+                        >
+                            <Crown className="mr-2 h-4 w-4" /> Chefferie & Territoire
                         </TabsTrigger>
                     )}
-                    <TabsTrigger value="history" className="rounded-lg px-2 py-1 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                        <History className="mr-2 h-4 w-4" /> Historique
+
+                    {canViewSalary && (
+                        <TabsTrigger 
+                            value="salary" 
+                            className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                        >
+                            <Wallet className="mr-2 h-4 w-4 text-emerald-600" /> Rémunération
+                        </TabsTrigger>
+                    )}
+
+                    <TabsTrigger 
+                        value="social" 
+                        className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                    >
+                        <ShieldCheck className="mr-2 h-4 w-4 text-indigo-600" /> Social & CNPS
+                    </TabsTrigger>
+
+                    <TabsTrigger 
+                        value="history" 
+                        className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                    >
+                        <History className="mr-2 h-4 w-4 text-slate-600" /> Historique ({historyEvents.length})
                     </TabsTrigger>
                 </TabsList>
 
-                {/* Identity Tab */}
-                <TabsContent value="info" className="grid grid-cols-1 lg:grid-cols-3 gap-2 focus-visible:outline-none">
-                    <Card className="lg:col-span-2 border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white/20">
-                        <CardHeader className="p-3 pb-1.5 border-b border-white/10 bg-slate-50/50">
-                            <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                                <div className="h-6 w-6 rounded-lg bg-emerald-100 flex items-center justify-center">
-                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                                </div>
-                                État Civil & Données Privées
+                {/* TAB 1: IDENTITÉ & ÉTAT CIVIL */}
+                <TabsContent value="identity" className="grid grid-cols-1 lg:grid-cols-3 gap-6 focus-visible:outline-none">
+                    <Card className="lg:col-span-2 border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
+                            <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                <UserCircle2 className="h-5 w-5 text-blue-600" />
+                                Données d'État Civil & Coordonnées
                             </CardTitle>
+                            {canEdit && (
+                                <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-bold text-blue-600">
+                                    <Link href={`/employees/${employee.id}/edit`}>
+                                        <Pencil className="h-3.5 w-3.5 mr-1" /> Modifier
+                                    </Link>
+                                </Button>
+                            )}
                         </CardHeader>
-                        <CardContent className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div className="grid grid-cols-1 gap-2">
-                                {[
-                                    { label: "Nom de Famille", val: employee.lastName, icon: UserCircle },
-                                    { label: "Prénoms", val: employee.firstName, icon: null },
-                                    { label: "Sexe & Genre", val: employee.sexe, icon: Sparkles },
-                                    { label: "Date de Naissance", val: formatDate(employee.Date_Naissance), icon: Calendar }
-                                ].map((item, idx) => (
-                                    <div key={idx} className="space-y-0">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
-                                        <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                            {item.icon && <item.icon className="h-3.5 w-3.5 text-slate-300" />} {item.val || "—"}
-                                        </p>
-                                    </div>
-                                ))}
+                        <CardContent className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Nom Complet</span>
+                                    <p className="text-base font-bold text-slate-900">
+                                        {employee.civilite && <span className="text-slate-500 font-normal mr-1">{employee.civilite}</span>}
+                                        {employee.lastName} {employee.firstName}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Sexe / Genre</span>
+                                    <p className="text-sm font-semibold text-slate-800">
+                                        {employee.sexe === 'H' || employee.sexe === 'Homme' ? 'Homme (H)' : employee.sexe === 'F' || employee.sexe === 'Femme' ? 'Femme (F)' : (employee.sexe || "Non renseigné")}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date de Naissance</span>
+                                    <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                                        <Calendar className="h-4 w-4 text-slate-400" />
+                                        {formatDate(employee.Date_Naissance)}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Lieu de Naissance</span>
+                                    <p className="text-sm font-semibold text-slate-800">{employee.Lieu_Naissance || "Non renseigné"}</p>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-1 gap-3">
-                                {[
-                                    { label: "Téléphone Mobile", val: employee.mobile, icon: Phone, color: "text-blue-500" },
-                                    { label: "Canal Email", val: employee.email, icon: Mail, color: "text-amber-500" },
-                                    { label: "Situation Familiale", val: `${employee.enfants || 0} enfant(s)`, icon: Users2, color: "text-slate-300" }
-                                ].map((item, idx) => (
-                                    <div key={idx} className="space-y-0">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
-                                        <p className="text-sm font-bold text-slate-900 flex items-center gap-2 italic">
-                                            <item.icon className={cn("h-3.5 w-3.5", item.color)} /> {item.val || "—"}
-                                        </p>
-                                    </div>
-                                ))}
+
+                            <div className="space-y-4">
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Téléphone Mobile</span>
+                                    <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                                        <Phone className="h-4 w-4 text-emerald-600" />
+                                        {employee.mobile ? (
+                                            <a href={`tel:${employee.mobile}`} className="hover:underline text-blue-600">
+                                                {employee.mobile}
+                                            </a>
+                                        ) : "Non renseigné"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Adresse Email</span>
+                                    <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                                        <Mail className="h-4 w-4 text-blue-600" />
+                                        {employee.email ? (
+                                            <a href={`mailto:${employee.email}`} className="hover:underline text-blue-600 italic">
+                                                {employee.email}
+                                            </a>
+                                        ) : "Non renseignée"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Situation Matrimoniale</span>
+                                    <p className="text-sm font-semibold text-slate-800">{employee.situationMatrimoniale || "Célibataire"}</p>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Enfants à Charge</span>
+                                    <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                                        <Users2 className="h-4 w-4 text-slate-400" />
+                                        {employee.enfants ?? 0} enfant(s)
+                                    </p>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none bg-slate-900 text-white rounded-2xl shadow-xl overflow-hidden self-start relative">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.1),transparent)]" />
-                        <CardHeader className="p-3 pb-1.5 relative z-10">
-                            <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                                <Award className="h-4 w-4 text-amber-500" /> Qualifications
+                    {/* Side card: Qualifications & Summary */}
+                    <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden self-start">
+                        <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                            <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                <Award className="h-5 w-5 text-amber-500" />
+                                Qualification & Profil
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-3 pt-1 space-y-3 relative z-10">
-                            <div className="space-y-1">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Hiérarchie / Catégorie</span>
-                                <div className="bg-white/5 border border-white/10 p-2 rounded-xl">
-                                    <span className="text-lg font-black text-blue-400 uppercase tracking-tighter">
-                                        {employee.categorie || "AGENT GÉNÉRAL"}
-                                    </span>
+                        <CardContent className="p-5 space-y-4">
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Hiérarchie / Rang</span>
+                                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <p className="text-sm font-black text-slate-900 uppercase">
+                                        {employee.categorie || "Agent Général"}
+                                    </p>
+                                    {employee.grade && (
+                                        <p className="text-xs font-bold text-blue-600 mt-0.5">{employee.grade}</p>
+                                    )}
                                 </div>
                             </div>
-                            {employee.grade && (
-                                <div className="space-y-1">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Grade Militaire / Rang</span>
-                                    <div className="bg-white/5 border border-white/10 p-2 rounded-xl">
-                                        <span className="text-lg font-black text-amber-400 uppercase tracking-tighter">
-                                            {employee.grade}
-                                        </span>
+
+                            {Array.isArray(employee.skills) && employee.skills.length > 0 && (
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Expertises Clés</span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {employee.skills.map((skill, i) => (
+                                            <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-700 text-[11px] font-semibold">
+                                                {skill}
+                                            </Badge>
+                                        ))}
                                     </div>
                                 </div>
                             )}
-                            <div className="p-2 bg-amber-500/10 rounded-xl border border-amber-500/20 flex items-center gap-2">
-                                <div className="h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center text-slate-900 font-black text-xs">!</div>
-                                <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest leading-relaxed">Agent habilité à manipuler des ressources stratégiques.</p>
+
+                            <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-xl text-xs text-blue-900 leading-relaxed">
+                                <p className="font-semibold">Dossier individuel vérifié.</p>
+                                <p className="text-[11px] text-blue-700 mt-0.5">Toutes les pièces administratives sont archivées au service des Ressources Humaines.</p>
                             </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
 
-                {/* Career Tab */}
-                <TabsContent value="career" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 focus-visible:outline-none">
-                    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white/20">
-                        <CardHeader className="p-2 pb-1 bg-slate-900 text-white">
-                            <div className="flex items-center gap-2">
-                                <div className="h-6 w-6 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                    <Building2 className="h-3.5 w-3.5 text-blue-400" />
-                                </div>
-                                <CardTitle className="text-base font-black uppercase tracking-tight">Affectation</CardTitle>
-                            </div>
+                {/* TAB 2: CARRIÈRE & AFFECTATION */}
+                <TabsContent value="career" className="grid grid-cols-1 md:grid-cols-3 gap-6 focus-visible:outline-none">
+                    <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                            <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                <Building2 className="h-5 w-5 text-blue-600" />
+                                Rattachement Administratif
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-2 space-y-2">
-                             {[
-                                { label: "Direction", val: directionName },
-                                { label: "Département", val: deptName },
-                                { label: "Service Affecté", val: serviceName }
-                             ].map((item, idx) => (
-                                <div key={idx} className="space-y-0">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
-                                    <p className="text-sm font-bold text-slate-900">{item.val || "Non spécifié"}</p>
+                        <CardContent className="p-5 space-y-4">
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Département</span>
+                                <p className="text-sm font-bold text-slate-900">{deptName || "Non assigné"}</p>
+                            </div>
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Direction</span>
+                                <p className="text-sm font-bold text-slate-800">{directionName || "Non spécifiée"}</p>
+                            </div>
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Service / Unité</span>
+                                <p className="text-sm font-bold text-slate-800">{serviceName || "Non spécifié"}</p>
+                            </div>
+                            {employee.remplaceNom && (
+                                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                                    <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest block mb-0.5">En remplacement de</span>
+                                    <p className="text-xs font-bold text-amber-900">{employee.remplaceNom}</p>
                                 </div>
-                             ))}
+                            )}
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white/20">
-                        <CardHeader className="p-2 pb-1 bg-blue-600 text-white">
-                             <div className="flex items-center gap-2">
-                                <div className="h-6 w-6 rounded-lg bg-white/20 flex items-center justify-center">
-                                    <Calendar className="h-3.5 w-3.5 text-white" />
-                                </div>
-                                <CardTitle className="text-base font-black uppercase tracking-tight">Anciennété</CardTitle>
-                            </div>
+                    <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                            <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-emerald-600" />
+                                Temporalité & Dates Clés
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-3 space-y-3">
-                            <div className="space-y-0">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Entrée en Service</span>
+                        <CardContent className="p-5 space-y-4">
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date d'engagement</span>
                                 <p className="text-sm font-bold text-slate-900">{formatDate(employee.dateEmbauche)}</p>
                             </div>
-                            <div className="p-2 bg-blue-50 border border-blue-100 rounded-xl">
-                                <span className="text-[8px] font-black text-blue-400 uppercase tracking-[0.2em] block mb-0.5">Calcul Automatique</span>
-                                <p className="text-lg font-black text-blue-600 tracking-tighter">
-                                    {(() => {
-                                        if (!employee.dateEmbauche) return 0;
-                                        try {
-                                            const d = parseISO(employee.dateEmbauche);
-                                            return !isNaN(d.getTime()) ? Math.max(0, differenceInYears(new Date(), d)) : 0;
-                                        } catch {
-                                            return 0;
-                                        }
-                                    })()} ANS <span className="text-[10px] font-bold text-blue-400 ml-1">DE SERVICE</span>
-                                </p>
+                            <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                                <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest block mb-0.5">Ancienneté de Service</span>
+                                <p className="text-lg font-black text-emerald-800">{tenure.label}</p>
                             </div>
-                            <div className="space-y-0">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Départ Prévu</span>
-                                <p className="text-sm font-bold text-rose-500">{formatDate(employee.Date_Depart) || "Indéterminée"}</p>
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date de Départ / Relève</span>
+                                <p className="text-sm font-bold text-rose-600">{formatDate(employee.Date_Depart) || "Indéterminée (CDI / Mandat)"}</p>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white/20 lg:col-span-1">
-                        <CardHeader className="p-2 pb-1 bg-emerald-600 text-white">
-                            <div className="flex items-center gap-2">
-                                <div className="h-6 w-6 rounded-lg bg-white/20 flex items-center justify-center">
-                                    <ShieldCheck className="h-3.5 w-3.5 text-white" />
-                                </div>
-                                <CardTitle className="text-base font-black uppercase tracking-tight">Certification</CardTitle>
-                            </div>
+                    <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                            <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-purple-600" />
+                                Actes & Références
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-3 space-y-3">
-                            <div className="space-y-1.5">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">N° Assurance CNPS</span>
-                                <div className="bg-slate-900 text-white p-2 rounded-xl border-l-4 border-emerald-400 font-mono text-sm font-black tracking-widest">
-                                    {employee.CNPS ? "CNPS-RECO-8271" : "REG-INV-4402"}
-                                </div>
-                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center italic">{employee.CNPS ? "Contrat immatriculé" : "En cours"}</p>
+                        <CardContent className="p-5 space-y-4">
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Décision de Nomination</span>
+                                <p className="text-sm font-mono font-bold text-slate-900 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                    {employee.Num_Decision || "DEC-CNRCT-OFFICIEL"}
+                                </p>
                             </div>
-                            <div className="space-y-1">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Badge Identité</span>
-                                <Badge className="bg-emerald-100 text-emerald-700 border-none font-black px-2 h-5 text-[9px] tracking-widest uppercase rounded-lg">
-                                    {employee.categorie || "AGENT STANDARD"}
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Statut Contractuel</span>
+                                <Badge className="bg-slate-900 text-white font-bold text-xs uppercase px-2.5 py-1">
+                                    {employee.status}
                                 </Badge>
                             </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
 
-                {/* Salary Tab */}
-                {canViewSalary && (
-                    <TabsContent value="salary" className="grid grid-cols-1 lg:grid-cols-2 gap-2 focus-visible:outline-none">
-                        <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white/20 relative">
-                             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                                <Banknote className="h-16 w-16" />
-                             </div>
-                             <CardHeader className="p-3 pb-1.5 flex flex-row items-center justify-between space-y-0">
-                                <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                                    <div className="h-6 w-6 rounded-lg bg-emerald-100 flex items-center justify-center">
-                                        <Wallet className="h-3.5 w-3.5 text-emerald-600" />
+                {/* TAB 3: CHEFFERIE & TERRITOIRE (CONDITIONNEL) */}
+                {isTraditional && (
+                    <TabsContent value="chefferie" className="space-y-6 focus-visible:outline-none">
+                        <Card className="border border-amber-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                            <CardHeader className="p-5 pb-3 border-b border-amber-100 bg-amber-50/50 flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle className="text-base font-black uppercase tracking-tight text-amber-900 flex items-center gap-2">
+                                        <Crown className="h-5 w-5 text-amber-600" />
+                                        Ancrage Coutumier & Mandats Territoriaux
+                                    </CardTitle>
+                                    <CardDescription className="text-xs text-amber-700">
+                                        Attributions coutumières au sein de la Chambre Nationale des Rois et Chefs Traditionnels.
+                                    </CardDescription>
+                                </div>
+                                {employee.chiefId && (
+                                    <Button asChild variant="outline" size="sm" className="h-8 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-100">
+                                        <Link href={`/chiefs/${employee.chiefId}`}>
+                                            Voir la Fiche Chef
+                                        </Link>
+                                    </Button>
+                                )}
+                            </CardHeader>
+                            <CardContent className="p-5 space-y-6">
+                                {/* Geographic coordinates */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Région</span>
+                                        <p className="text-base font-black text-slate-900">{employee.Region || "Non assignée"}</p>
                                     </div>
-                                    Architecture Salariale
-                                </CardTitle>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="h-8 px-2 hover:bg-emerald-50 text-emerald-600 rounded-lg"
-                                    onClick={() => setShowSalary(!showSalary)}
-                                >
-                                    {showSalary ? (
-                                        <><EyeOff className="h-4 w-4 mr-2" /> Masquer</>
-                                    ) : (
-                                        <><Eye className="h-4 w-4 mr-2" /> Afficher</>
-                                    )}
-                                </Button>
-                             </CardHeader>
-                             <CardContent className="p-2 pt-1 space-y-2">
-                                <div className="flex justify-between items-center p-2 rounded-xl bg-emerald-900 text-white shadow-xl shadow-emerald-900/10 relative overflow-hidden group">
-                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(16,185,129,0.2),transparent)]" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] relative z-10 opacity-70">Salaire Brut</span>
-                                    <span className="text-xl font-black relative z-10 tracking-tighter">
-                                        {showSalary ? formatCurrency(displayBrut) : "•••••• FCFA"}
-                                    </span>
+                                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Département</span>
+                                        <p className="text-base font-black text-slate-900">{employee.Departement || "Non spécifié"}</p>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Sous-Préfecture</span>
+                                        <p className="text-base font-black text-slate-900">{employee.subPrefecture || "Non spécifiée"}</p>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Village / Localité</span>
+                                        <p className="text-base font-black text-slate-900">{employee.Village || employee.village || "Non spécifié"}</p>
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {[
-                                        { label: "Salaire de Base", val: employee.baseSalary },
-                                        { label: "Primes Ancienneté", val: employee.primeAnciennete },
-                                        { label: "Indemnité Logement", val: employee.indemniteLogement },
-                                        { label: "Indemnité Transport", val: employee.indemniteTransportImposable }
-                                    ].map((field, idx) => (
-                                        <div key={idx} className="space-y-0 border-b border-slate-100 pb-1.5">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{field.label}</span>
-                                            <p className="text-sm font-bold text-slate-900">
-                                                {showSalary ? formatCurrency(field.val || 0) : "••••••"}
-                                            </p>
+                                {/* Customary Titles / Chief Statuses */}
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">
+                                        Titres Coutumiers & Casquettes de Chef
+                                    </span>
+                                    {Array.isArray(employee.statutChef) && employee.statutChef.length > 0 ? (
+                                        <div className="flex flex-wrap gap-2">
+                                            {employee.statutChef.map((st, i) => (
+                                                <Badge key={i} className="bg-amber-500 text-white font-black text-xs uppercase px-3 py-1.5 shadow-sm">
+                                                    <Crown className="h-3.5 w-3.5 mr-1.5" />
+                                                    {st}
+                                                </Badge>
+                                            ))}
                                         </div>
-                                    ))}
+                                    ) : (
+                                        <p className="text-sm font-semibold text-slate-500 italic">Aucun titre coutumier spécifique enregistré.</p>
+                                    )}
                                 </div>
 
-                                <div className="p-3 rounded-xl bg-blue-600 text-white flex justify-between items-center shadow-xl shadow-blue-900/20 relative overflow-hidden">
-                                     <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.1)_50%,rgba(0,0,0,0.1)_75%,transparent_75%,transparent)] bg-[length:20px_20px] opacity-10" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] relative z-10">Net à Payer</span>
-                                    <span className="text-2xl font-black relative z-10 tracking-tighter">
-                                        {showSalary ? formatCurrency(displayNet) : "•••••• FCFA"}
-                                    </span>
-                                </div>
-                             </CardContent>
-                        </Card>
-
-                        <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white/20">
-                             <CardHeader className="p-2 pb-1">
-                                <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                                    <div className="h-6 w-6 rounded-lg bg-blue-100 flex items-center justify-center">
-                                        <CreditCard className="h-3.5 w-3.5 text-blue-600" />
+                                {/* Mandates */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                                    <div>
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date Début Mandat</span>
+                                        <p className="text-sm font-bold text-slate-800">{formatDate(employee.mandatDebut) || "Mandat permanent / En cours"}</p>
                                     </div>
-                                    Paiement
-                                </CardTitle>
-                             </CardHeader>
-                             <CardContent className="p-2 pt-1 space-y-2">
-                                <div className="space-y-1 p-2 bg-slate-900 text-white rounded-xl border border-white/10 shadow-xl relative overflow-hidden">
-                                    <div className="absolute top-1 right-2 text-white/10 italic font-black text-base">SECURE</div>
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Banque</span>
-                                    <p className="text-base font-black italic tracking-tight">{employee.banque || "TRÉSOR PUBLIC"}</p>
+                                    <div>
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date Fin Mandat</span>
+                                        <p className="text-sm font-bold text-slate-800">{formatDate(employee.mandatFin) || "Non définie"}</p>
+                                    </div>
                                 </div>
-                                <div className="space-y-0.5">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Numéro de Compte</span>
-                                    <p className="text-sm font-mono font-black text-slate-700 bg-white p-2 rounded-xl border-2 border-slate-100 shadow-inner tracking-widest">
-                                        {employee.numeroCompte || "— — — — —"}
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-2 p-2 rounded-xl border border-blue-100 bg-blue-50">
-                                    <ShieldCheck className="h-4 w-4 text-blue-500 shrink-0" />
-                                    <p className="text-[8px] font-bold text-blue-600 uppercase tracking-widest leading-relaxed">Cryptage AES-256 activé.</p>
-                                </div>
-                             </CardContent>
+                            </CardContent>
                         </Card>
                     </TabsContent>
                 )}
 
-                {/* History Tab */}
-                <TabsContent value="history" className="focus-visible:outline-none">
-                    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white/20">
-                        <CardHeader className="p-2 pb-1 border-b border-white/10 bg-slate-50/50 flex flex-row items-center justify-between">
-                            <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                                <div className="h-6 w-6 rounded-lg bg-blue-100 flex items-center justify-center">
-                                    <History className="h-3.5 w-3.5 text-blue-600" />
+                {/* TAB 4: RÉMUNÉRATION (ACCESSIBLE AUX AYANTS DROIT OU SELF) */}
+                {canViewSalary && (
+                    <TabsContent value="salary" className="grid grid-cols-1 lg:grid-cols-3 gap-6 focus-visible:outline-none">
+                        {/* Salary Architecture */}
+                        <Card className="lg:col-span-2 border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                            <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
+                                <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                    <Wallet className="h-5 w-5 text-emerald-600" />
+                                    Architecture Salariale & Indemnités
+                                </CardTitle>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="h-8 text-xs font-bold text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                                    onClick={() => setShowSalary(!showSalary)}
+                                >
+                                    {showSalary ? (
+                                        <><EyeOff className="h-3.5 w-3.5 mr-1" /> Masquer</>
+                                    ) : (
+                                        <><Eye className="h-3.5 w-3.5 mr-1" /> Révéler</>
+                                    )}
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="p-5 space-y-6">
+                                {/* Highlights : Brut & Net */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-2xl bg-slate-900 text-white shadow-sm space-y-1">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Salaire Brut Total</span>
+                                        <p className="text-2xl font-black text-white">
+                                            {showSalary ? formatCurrency(payroll.brut) : "•••••••• FCFA"}
+                                        </p>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-emerald-700 text-white shadow-sm space-y-1">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Net Estimé à Payer</span>
+                                        <p className="text-2xl font-black text-white">
+                                            {showSalary ? formatCurrency(payroll.net) : "•••••••• FCFA"}
+                                        </p>
+                                    </div>
                                 </div>
-                                Timeline
+
+                                {/* Detailed breakdown */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                    <div className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Salaire de Base</span>
+                                        <p className="text-base font-bold text-slate-900">
+                                            {showSalary ? formatCurrency(employee.baseSalary || 0) : "••••••••"}
+                                        </p>
+                                    </div>
+
+                                    <div className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Prime d'Ancienneté</span>
+                                        <p className="text-base font-bold text-slate-900">
+                                            {showSalary ? formatCurrency(employee.primeAnciennete || 0) : "••••••••"}
+                                        </p>
+                                    </div>
+
+                                    <div className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Indemnité Logement</span>
+                                        <p className="text-base font-bold text-slate-900">
+                                            {showSalary ? formatCurrency(employee.indemniteLogement || 0) : "••••••••"}
+                                        </p>
+                                    </div>
+
+                                    <div className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Indemnité Transport Imposable</span>
+                                        <p className="text-base font-bold text-slate-900">
+                                            {showSalary ? formatCurrency(employee.indemniteTransportImposable || 0) : "••••••••"}
+                                        </p>
+                                    </div>
+
+                                    <div className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Indemnité Responsabilité</span>
+                                        <p className="text-base font-bold text-slate-900">
+                                            {showSalary ? formatCurrency(employee.indemniteResponsabilite || 0) : "••••••••"}
+                                        </p>
+                                    </div>
+
+                                    <div className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Indemnité Sujétion</span>
+                                        <p className="text-base font-bold text-slate-900">
+                                            {showSalary ? formatCurrency(employee.indemniteSujetion || 0) : "••••••••"}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Bank Details */}
+                        <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden self-start">
+                            <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                                <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                    <CreditCard className="h-5 w-5 text-blue-600" />
+                                    Coordonnées Bancaires
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-5 space-y-4">
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Banque / Trésor</span>
+                                    <p className="text-base font-black text-slate-900 uppercase">
+                                        {employee.banque || "Trésor Public de Côte d'Ivoire"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Numéro de Compte (RIP)</span>
+                                    <p className="text-sm font-mono font-bold text-slate-800 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                        {showSalary ? (employee.numeroCompte || "— — — — —") : "•••• •••• •••• ••••"}
+                                    </p>
+                                </div>
+
+                                {(employee.CB || employee.CG || employee.Cle_RIB) && (
+                                    <div className="grid grid-cols-3 gap-2 pt-2 text-center">
+                                        <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                            <span className="text-[9px] font-bold text-slate-400 block">Code Banque</span>
+                                            <span className="font-mono text-xs font-bold">{showSalary ? (employee.CB || "—") : "•••"}</span>
+                                        </div>
+                                        <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                            <span className="text-[9px] font-bold text-slate-400 block">Code Guichet</span>
+                                            <span className="font-mono text-xs font-bold">{showSalary ? (employee.CG || "—") : "•••"}</span>
+                                        </div>
+                                        <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                            <span className="text-[9px] font-bold text-slate-400 block">Clé RIB</span>
+                                            <span className="font-mono text-xs font-bold">{showSalary ? (employee.Cle_RIB || "—") : "••"}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-blue-600 shrink-0" />
+                                    <p className="text-[11px] font-semibold text-blue-900">Données bancaires chiffrées & protégées.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                )}
+
+                {/* TAB 5: SOCIAL & CNPS */}
+                <TabsContent value="social" className="grid grid-cols-1 md:grid-cols-2 gap-6 focus-visible:outline-none">
+                    <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                            <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                <ShieldCheck className="h-5 w-5 text-indigo-600" />
+                                Immatriculation & Sécurité Sociale
                             </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-5 space-y-4">
+                            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                                <span className="text-xs font-black uppercase tracking-wider text-slate-700">Statut CNPS</span>
+                                <Badge className={cn(
+                                    "font-black text-xs uppercase px-2.5 py-1",
+                                    employee.CNPS ? "bg-emerald-600 text-white" : "bg-slate-500 text-white"
+                                )}>
+                                    {employee.CNPS ? "Immatriculé" : "Non immatriculé"}
+                                </Badge>
+                            </div>
+
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">N° CNPS Salarié</span>
+                                <p className="text-sm font-mono font-bold text-slate-900 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                    {employee.cnpsEmploye || "CNPS-RECO-INDIV"}
+                                </p>
+                            </div>
+
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date d'Immatriculation</span>
+                                <p className="text-sm font-bold text-slate-800">{formatDate(employee.Date_Immatriculation) || "Non renseignée"}</p>
+                            </div>
+
+                            {employee.Date_Cessation_CNPS && (
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date de Cessation</span>
+                                    <p className="text-sm font-bold text-rose-600">{formatDate(employee.Date_Cessation_CNPS)}</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50">
+                            <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                <Clock className="h-5 w-5 text-blue-600" />
+                                Droits & Congés Payés
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-5 space-y-4">
+                            <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-xl space-y-1">
+                                <span className="text-[10px] font-black text-blue-700 uppercase tracking-widest block">Solde de Congés Restants</span>
+                                <p className="text-3xl font-black text-blue-900">
+                                    {employee.solde_conges ?? 30} <span className="text-sm font-bold text-blue-700">Jours</span>
+                                </p>
+                            </div>
+
+                            <div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Dernier Congé Enregistré</span>
+                                <p className="text-sm font-semibold text-slate-700">{formatDate(employee.dateConge) || "Aucun congé récent"}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                {/* TAB 6: HISTORIQUE RH */}
+                <TabsContent value="history" className="focus-visible:outline-none">
+                    <Card className="border border-slate-200 bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <CardHeader className="p-5 pb-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                    <History className="h-5 w-5 text-slate-700" />
+                                    Chronologie & Évolution de Carrière
+                                </CardTitle>
+                                <CardDescription className="text-xs text-slate-500">
+                                    Historique des promotions, augmentations, mutations et décisions administratives.
+                                </CardDescription>
+                            </div>
                             {canEdit && (
                                 <Button 
                                     onClick={() => {
@@ -842,30 +1165,29 @@ export default function EmployeeDetailPage() {
                                             setIsHistorySheetOpen(true);
                                         });
                                     }}
-                                    className="h-8 px-3 rounded-lg bg-slate-900 text-white font-black uppercase tracking-widest text-[9px] hover:bg-black transition-all"
+                                    className="h-9 px-4 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider"
                                 >
-                                    <PlusCircle className="mr-2 h-3 w-3 text-emerald-400" /> Ajouter
+                                    <PlusCircle className="mr-1.5 h-4 w-4 text-emerald-400" /> Ajouter un événement
                                 </Button>
                             )}
                         </CardHeader>
-                        <CardContent className="p-3">
-                            {activeTab === "history" && (
-                                <EmployeeHistoryTimeline 
-                                    events={historyEvents}
-                                    onEdit={(event) => {
-                                        setEventToEdit(event);
-                                        setIsHistorySheetOpen(true);
-                                    }}
-                                    onDelete={handleDeleteEvent}
-                                    canEdit={canEdit}
-                                    canDelete={canDelete}
-                                />
-                            )}
+                        <CardContent className="p-5">
+                            <EmployeeHistoryTimeline 
+                                events={historyEvents}
+                                onEdit={(event) => {
+                                    setEventToEdit(event);
+                                    setIsHistorySheetOpen(true);
+                                }}
+                                onDelete={handleDeleteEvent}
+                                canEdit={canEdit}
+                                canDelete={canDelete}
+                            />
                         </CardContent>
                     </Card>
                 </TabsContent>
             </Tabs>
 
+            {/* Sheets & Dialogs */}
             <AddHistoryEventSheet 
                 isOpen={isHistorySheetOpen}
                 onCloseAction={() => setIsHistorySheetOpen(false)}
@@ -891,7 +1213,7 @@ export default function EmployeeDetailPage() {
                 confirmText={isPending ? "Annulation..." : "Confirmer l'annulation"}
             />
 
-            {/* --- PRINT PORTAL --- */}
+            {/* Print Profile Portal */}
             {employee && (
                 <EmployeeProfileReport 
                     employee={employee}
@@ -905,25 +1227,26 @@ export default function EmployeeDetailPage() {
                 />
             )}
             
+            {/* Promotion Dialog */}
             <Dialog open={isPromotionDialogOpen} onOpenChange={setIsPromotionDialogOpen}>
-                <DialogContent className="rounded-2xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl sm:max-w-md">
+                <DialogContent className="rounded-2xl border-slate-200 bg-white shadow-2xl sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-black uppercase tracking-tight text-slate-900">Promouvoir au Directoire</DialogTitle>
-                        <DialogDescription className="font-medium text-slate-500">
-                            Cette action nommera automatiquement le membre au sein du Directoire.
+                        <DialogTitle className="text-lg font-black uppercase tracking-tight text-slate-900">Promouvoir au Directoire</DialogTitle>
+                        <DialogDescription className="text-xs text-slate-500">
+                            Cette action nommera automatiquement le membre au sein du Directoire central.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">En remplacement de</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-600">En remplacement de</Label>
                             <Select value={promotionRemplaceId} onValueChange={setPromotionRemplaceId}>
-                                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold">
+                                <SelectTrigger className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                                     <SelectValue placeholder="Personne (Nouvelle nomination)" />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
-                                    <SelectItem value="none" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-400">Personne (Nouvelle nomination)</SelectItem>
+                                <SelectContent className="rounded-xl">
+                                    <SelectItem value="none" className="font-bold text-xs text-slate-400">Personne (Nouvelle nomination)</SelectItem>
                                     {inactiveEmployees.map(emp => (
-                                        <SelectItem key={emp.id} value={emp.id} className="font-bold py-3 uppercase text-[9px] tracking-widest">
+                                        <SelectItem key={emp.id} value={emp.id} className="font-bold text-xs">
                                             {`${emp.lastName || ''} ${emp.firstName || ''} - ${emp.poste || 'Sans poste'} (${emp.status})`}
                                         </SelectItem>
                                     ))}
@@ -932,30 +1255,33 @@ export default function EmployeeDetailPage() {
                         </div>
                     </div>
                     <DialogFooter className="flex gap-2 sm:justify-between">
-                        <Button variant="outline" onClick={() => setIsPromotionDialogOpen(false)} disabled={isPromoting} className="rounded-xl h-10 font-black uppercase tracking-widest text-[9px]">Annuler</Button>
-                        <Button onClick={handlePromote} disabled={isPromoting} className="rounded-xl h-10 font-black uppercase tracking-widest text-[9px] bg-amber-500 hover:bg-amber-600 text-white">
-                            {isPromoting ? "En cours..." : "Confirmer"}
+                        <Button variant="outline" onClick={() => setIsPromotionDialogOpen(false)} disabled={isPromoting} className="rounded-xl h-10 font-bold text-xs uppercase tracking-wider">
+                            Annuler
+                        </Button>
+                        <Button onClick={handlePromote} disabled={isPromoting} className="rounded-xl h-10 font-bold text-xs uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-white">
+                            {isPromoting ? "En cours..." : "Confirmer la promotion"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
+            {/* Payslip Generation Dialog */}
             <Dialog open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
-                <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-slate-50/50 border-slate-200 shadow-xl">
-                    <DialogHeader className="px-6 py-5 bg-white border-b border-slate-100 shrink-0">
-                        <DialogTitle className="text-xl font-semibold text-slate-800">Choisir la Période du Bulletin</DialogTitle>
-                        <DialogDescription className="text-sm text-slate-500 mt-1.5">
-                            Sélectionnez le mois et l'année pour générer le bulletin de paie de <span className="font-medium text-slate-700">{employee.name}</span>.
+                <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-white border-slate-200 shadow-xl rounded-2xl">
+                    <DialogHeader className="px-6 py-5 bg-slate-50 border-b border-slate-100">
+                        <DialogTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Période du Bulletin de Paie</DialogTitle>
+                        <DialogDescription className="text-xs text-slate-500 mt-1">
+                            Sélectionnez le mois et l'année pour générer le bulletin de paie de <span className="font-bold text-slate-700">{employee.name}</span>.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-5 px-6 py-6">
-                        <div className="grid gap-2">
-                            <Label className="text-slate-700 font-medium">Mode de génération</Label>
+                    <div className="space-y-4 px-6 py-5">
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold text-slate-700">Mode de génération</Label>
                             <Select value={generationMode} onValueChange={(v: any) => setGenerationMode(v)}>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-10 rounded-xl">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="rounded-xl">
                                     <SelectItem value="monthly">Bulletin Unique (Mensuel)</SelectItem>
                                     <SelectItem value="period">Période Personnalisée</SelectItem>
                                 </SelectContent>
@@ -963,20 +1289,20 @@ export default function EmployeeDetailPage() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="year" className="text-slate-700 font-medium">Année</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="year" className="text-xs font-bold text-slate-700">Année</Label>
                                 <Select value={year} onValueChange={setYear}>
-                                    <SelectTrigger id="year"><SelectValue /></SelectTrigger>
-                                    <SelectContent className="max-h-[200px]">
+                                    <SelectTrigger id="year" className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="max-h-[200px] rounded-xl">
                                         {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="month" className="text-slate-700 font-medium">{generationMode === 'monthly' ? 'Mois' : 'Mois de début'}</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="month" className="text-xs font-bold text-slate-700">{generationMode === 'monthly' ? 'Mois' : 'Mois de début'}</Label>
                                 <Select value={month} onValueChange={setMonth}>
-                                    <SelectTrigger id="month"><SelectValue /></SelectTrigger>
-                                    <SelectContent className="max-h-[200px]">
+                                    <SelectTrigger id="month" className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="max-h-[200px] rounded-xl">
                                         {months.map(m => (
                                             <SelectItem key={m.value} value={m.value}>
                                                 {m.label}
@@ -989,20 +1315,20 @@ export default function EmployeeDetailPage() {
 
                         {generationMode === 'period' && (
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="endYear" className="text-slate-700 font-medium">Année de fin</Label>
+                                <div className="space-y-2">
+                                    <Label htmlFor="endYear" className="text-xs font-bold text-slate-700">Année de fin</Label>
                                     <Select value={endYear} onValueChange={setEndYear}>
-                                        <SelectTrigger id="endYear"><SelectValue /></SelectTrigger>
-                                        <SelectContent className="max-h-[200px]">
+                                        <SelectTrigger id="endYear" className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="max-h-[200px] rounded-xl">
                                             {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="endMonth" className="text-slate-700 font-medium">Mois de fin</Label>
+                                <div className="space-y-2">
+                                    <Label htmlFor="endMonth" className="text-xs font-bold text-slate-700">Mois de fin</Label>
                                     <Select value={endMonth} onValueChange={setEndMonth}>
-                                        <SelectTrigger id="endMonth"><SelectValue /></SelectTrigger>
-                                        <SelectContent className="max-h-[200px]">
+                                        <SelectTrigger id="endMonth" className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="max-h-[200px] rounded-xl">
                                             {months.map(m => {
                                                 const isBeforeStart = parseInt(endYear) < parseInt(year) || (parseInt(endYear) === parseInt(year) && parseInt(m.value) < parseInt(month));
                                                 return (
@@ -1017,10 +1343,10 @@ export default function EmployeeDetailPage() {
                             </div>
                         )}
                     </div>
-                    <DialogFooter className="px-6 py-4 bg-white border-t border-slate-100 shrink-0 flex gap-2 sm:justify-between">
-                        <Button variant="outline" className="px-6 border-slate-200" onClick={() => setIsDateDialogOpen(false)}>Annuler</Button>
-                        <Button className="px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={handleNavigateToPayslip}>
-                            Générer
+                    <DialogFooter className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-2 sm:justify-between">
+                        <Button variant="outline" className="rounded-xl h-10 font-bold text-xs" onClick={() => setIsDateDialogOpen(false)}>Annuler</Button>
+                        <Button className="rounded-xl h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm" onClick={handleNavigateToPayslip}>
+                            Générer le Bulletin
                         </Button>
                     </DialogFooter>
                 </DialogContent>

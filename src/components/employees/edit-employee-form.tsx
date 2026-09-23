@@ -117,7 +117,9 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
   // Initialize traditional mode based on strict detection
   const initialTraditional = useMemo(() => {
-    return isTraditionalAuthorityOrMember(employee, employee.department) || (Array.isArray(employee.statutChef) && employee.statutChef.length > 0);
+    if ((employee as any).isTraditional === false) return false;
+    if ((employee as any).isTraditional === true) return true;
+    return isTraditionalAuthorityOrMember(employee, employee.department);
   }, [employee]);
 
   const [isTraditionalMode, setIsTraditionalMode] = useState<boolean>(initialTraditional);
@@ -324,6 +326,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       }
       
       // If employee is not in traditional mode, clear all customary and territorial fields
+      dataToSave.isTraditional = isTraditionalMode;
       if (!isTraditionalMode) {
         dataToSave.statutChef = [];
         dataToSave.titresCoutumiers = [];

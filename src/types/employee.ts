@@ -90,6 +90,7 @@ export type Employe = {
     bActif?: boolean;
 
     // Chief & Village Link
+    isTraditional?: boolean; // Explicit toggle for customary profile
     chiefId?: string; // Firestore doc ID in the 'chiefs' collection for this chief
     subPrefecture?: string; // Sub-prefecture for chiefs/regional committee members
     statutChef?: string[]; // E.g., ['Chef de Canton', 'Chef de Village']

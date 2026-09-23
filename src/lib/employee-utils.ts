@@ -11,13 +11,10 @@ export function isTraditionalAuthorityOrMember(
 ): boolean {
     if (!employee) return false;
 
-    // 0. Statut de chef explicitement attribué dans les données de l'employé
-    const hasExplicitChiefData = 
-        (Array.isArray(employee.statutChef) && employee.statutChef.length > 0) ||
-        (Array.isArray(employee.titresCoutumiers) && employee.titresCoutumiers.length > 0) ||
-        Boolean(employee.chiefId);
-
-    if (hasExplicitChiefData) return true;
+    // 1. Désactivation explicite prioritaire
+    if ((employee as any).isTraditional === false) {
+        return false;
+    }
 
     const poste = (employee.poste || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     const dept = (departmentName || employee.department || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -25,7 +22,8 @@ export function isTraditionalAuthorityOrMember(
     const groupe2 = ((employee as any).groupe_2 || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     const matricule = (employee.matricule || '').toUpperCase().trim();
 
-    // Personnel administratif, technique, support, cabinet ou direction (NE DOIT PAS être considéré comme autorité traditionnelle)
+    // 2. Personnel administratif, technique, support, cabinet ou direction
+    // Les agents occupant ces postes NE DOIVENT PAS être considérés comme autorités traditionnelles
     const isAdministrativeRole = [
         'secretaire', 'secretariat', 'assistant', 'assistante', 'chauffeur', 'conducteur', 
         'garde', 'gendarme', 'agent', 'coursier', 'informaticien', 'technicien', 'cuisinier', 
@@ -40,7 +38,20 @@ export function isTraditionalAuthorityOrMember(
         return false;
     }
 
-    // 1. Membres du Directoire (titulaires / présidents du Directoire)
+    // 3. Activation explicite
+    if ((employee as any).isTraditional === true) {
+        return true;
+    }
+
+    // 4. Statut de chef explicitement attribué dans les données de l'employé
+    const hasExplicitChiefData = 
+        (Array.isArray(employee.statutChef) && employee.statutChef.length > 0) ||
+        (Array.isArray(employee.titresCoutumiers) && employee.titresCoutumiers.length > 0) ||
+        Boolean(employee.chiefId);
+
+    if (hasExplicitChiefData) return true;
+
+    // 5. Membres du Directoire (titulaires / présidents du Directoire)
     const isDirectoireMember = 
         (employee.departmentId === '9ywKFDgVMS86rZLPYhpm' || dept.includes('directoire') || matricule.startsWith('D 0') || matricule.startsWith('D-') || matricule.startsWith('DIR')) &&
         (
@@ -54,7 +65,7 @@ export function isTraditionalAuthorityOrMember(
             matricule.startsWith('D 0')
         );
 
-    // 2. Membres des Comités Régionaux
+    // 6. Membres des Comités Régionaux
     const isComiteRegional = 
         poste.includes('membre du comite regional') ||
         poste.includes('membre comite regional') ||
@@ -66,7 +77,7 @@ export function isTraditionalAuthorityOrMember(
         groupe1.includes('comite regional') ||
         groupe2.includes('comite regional');
 
-    // 3. Assemblée des Rois et Chefs Traditionnels / Titres Coutumiers Spécifiques
+    // 7. Assemblée des Rois et Chefs Traditionnels / Titres Coutumiers Spécifiques
     const isTraditionalTitle = 
         poste.includes('chef de canton') ||
         poste.includes('chef de caton') ||

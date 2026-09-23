@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback, startTransition } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, startTransition, memo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -34,13 +34,8 @@ import {
   Building2, 
   MapPin, 
   ChevronLeft,
-  Calendar, 
   CreditCard,
-  Phone,
-  Mail,
-  Award,
-  AlertCircle,
-  Sparkles
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -75,7 +70,6 @@ const MILITARY_RANKS = [
   "Aspirant",
   "Sous-Lieutenant",
   "Lieutenant",
-  "Capitaine",
   "Commandant",
   "Lieutenant-Colonel",
   "Colonel"
@@ -189,16 +183,18 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   }, [formData.departmentId, departmentList]);
 
   // Handle traditional mode toggle
-  const handleToggleTraditional = (checked: boolean) => {
+  const handleToggleTraditional = useCallback((checked: boolean) => {
     setIsTraditionalMode(checked);
     if (!checked) {
-      setFormData(prev => ({
-        ...prev,
-        statutChef: []
-      }));
-      if (activeTab === 'chefferie') {
-        setActiveTab('identity');
-      }
+      startTransition(() => {
+        setFormData(prev => ({
+          ...prev,
+          statutChef: []
+        }));
+        if (activeTab === 'chefferie') {
+          setActiveTab('identity');
+        }
+      });
       toast({
         title: "Mode Standard Activé",
         description: "Les informations coutumières sont désormais désactivées pour cet agent.",
@@ -209,7 +205,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         description: "L'onglet Chefferie & Territoire est maintenant disponible.",
       });
     }
-  };
+  }, [activeTab, toast]);
 
   const officialRegion = useMemo(() => getOfficialRegion(formData.Region || ""), [formData.Region]);
   const officialDepartment = useMemo(() => getOfficialDepartment(formData.Region || "", formData.Departement || ""), [formData.Region, formData.Departement]);
@@ -243,58 +239,64 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     return [];
   }, [formData.departmentId, formData.directionId, serviceList]);
 
+  // High performance non-blocking change handlers
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    setFormData(prev => {
-      const newData = { ...prev, [id]: value };
-      
-      // Auto calculate Date_Depart if department is Garde Républicaine and dateEmbauche changes
-      if (id === 'dateEmbauche') {
-        const isGarde = currentDeptName === "Garde Républicaine";
-        if (isGarde && value) {
-          try {
-            const start = new Date(value);
-            if (!isNaN(start.getTime())) {
-              start.setMonth(start.getMonth() + 6);
-              newData.Date_Depart = start.toISOString().split('T')[0];
+    startTransition(() => {
+      setFormData(prev => {
+        const newData = { ...prev, [id]: value };
+        
+        if (id === 'dateEmbauche') {
+          const isGarde = currentDeptName === "Garde Républicaine";
+          if (isGarde && value) {
+            try {
+              const start = new Date(value);
+              if (!isNaN(start.getTime())) {
+                start.setMonth(start.getMonth() + 6);
+                newData.Date_Depart = start.toISOString().split('T')[0];
+              }
+            } catch (err) {
+              console.error("Invalid dateEmbauche:", err);
             }
-          } catch (err) {
-            console.error("Invalid dateEmbauche:", err);
           }
         }
-      }
-      return newData;
+        return newData;
+      });
     });
   }, [currentDeptName]);
 
   const handleSelectChange = useCallback((id: keyof Employe, value: any) => {
-    setFormData(prev => {
-      const newData = { ...prev, [id]: value };
-      if (id === 'departmentId') {
-        newData.directionId = undefined;
-        newData.serviceId = undefined;
-        
-        const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
-        if (isGarde && prev.dateEmbauche) {
-          try {
-            const start = new Date(prev.dateEmbauche);
-            if (!isNaN(start.getTime())) {
-              start.setMonth(start.getMonth() + 6);
-              newData.Date_Depart = start.toISOString().split('T')[0];
+    startTransition(() => {
+      setFormData(prev => {
+        const newData = { ...prev, [id]: value };
+        if (id === 'departmentId') {
+          newData.directionId = undefined;
+          newData.serviceId = undefined;
+          
+          const isGarde = departmentList.find(d => d.id === value)?.name === "Garde Républicaine";
+          if (isGarde && prev.dateEmbauche) {
+            try {
+              const start = new Date(prev.dateEmbauche);
+              if (!isNaN(start.getTime())) {
+                start.setMonth(start.getMonth() + 6);
+                newData.Date_Depart = start.toISOString().split('T')[0];
+              }
+            } catch (err) {
+              console.error("Invalid dateEmbauche for Garde:", err);
             }
-          } catch (err) {
-            console.error("Invalid dateEmbauche for Garde:", err);
           }
+        } else if (id === 'directionId') {
+          newData.serviceId = undefined;
         }
-      } else if (id === 'directionId') {
-        newData.serviceId = undefined;
-      }
-      return newData;
+        return newData;
+      });
     });
   }, [departmentList]);
 
   const handleValueChange = useCallback((id: string, value: string | number | boolean | string[]) => {
-    setFormData(prev => ({ ...prev, [id]: value }));
+    startTransition(() => {
+      setFormData(prev => ({ ...prev, [id]: value }));
+    });
   }, []);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -501,7 +503,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   </Select>
                 </div>
 
-                {/* Profil Coutumier Toggle Switch - Fully functional */}
+                {/* Profil Coutumier Toggle Switch */}
                 <div className={cn(
                   "p-4 rounded-xl border transition-all space-y-2.5",
                   isTraditionalMode 
@@ -553,12 +555,11 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
               >
                 <Briefcase className="mr-1.5 h-4 w-4 text-amber-600" /> Carrière & Poste
               </TabsTrigger>
-
-              {/* Conditional Chefferie & Territoire Tab */}
+              
               {isTraditionalMode && (
                 <TabsTrigger 
                   value="chefferie" 
-                  className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm bg-amber-50 text-amber-900 animate-in fade-in duration-300"
+                  className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-wider bg-amber-500/10 text-amber-800 data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
                 >
                   <Crown className="mr-1.5 h-4 w-4" /> Chefferie & Territoire
                 </TabsTrigger>
@@ -598,7 +599,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     <Label htmlFor="civilite" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
                       Civilité / Titre
                     </Label>
-                    <Select value={formData.civilite || 'M.'} onValueChange={(val) => handleSelectChange('civilite', val)}>
+                    <Select 
+                      value={formData.civilite || 'M.'} 
+                      onValueChange={(val) => handleSelectChange('civilite', val)}
+                    >
                       <SelectTrigger id="civilite" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                         <SelectValue />
                       </SelectTrigger>
@@ -664,7 +668,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     <Label htmlFor="situationMatrimoniale" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
                       Situation Matrimoniale
                     </Label>
-                    <Select value={formData.situationMatrimoniale || 'Célibataire'} onValueChange={(val) => handleSelectChange('situationMatrimoniale', val)}>
+                    <Select 
+                      value={formData.situationMatrimoniale || 'Célibataire'} 
+                      onValueChange={(val) => handleSelectChange('situationMatrimoniale', val)}
+                    >
                       <SelectTrigger id="situationMatrimoniale" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                         <SelectValue />
                       </SelectTrigger>
@@ -685,7 +692,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       type="number" 
                       min="0"
                       value={formData.enfants ?? 0} 
-                      onChange={(e) => setFormData(prev => ({ ...prev, enfants: parseInt(e.target.value) || 0 }))} 
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        startTransition(() => {
+                          setFormData(prev => ({ ...prev, enfants: val }));
+                        });
+                      }} 
                       className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                     />
                   </div>
@@ -747,7 +759,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       Grade / Rang
                     </Label>
                     {isGardeOrGendarme ? (
-                      <Select value={formData.grade || ''} onValueChange={(val) => handleSelectChange('grade', val)}>
+                      <Select 
+                        value={formData.grade || ''} 
+                        onValueChange={(val) => handleSelectChange('grade', val)}
+                      >
                         <SelectTrigger id="grade" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                           <SelectValue placeholder="Sélectionner le grade militaire..." />
                         </SelectTrigger>
@@ -825,7 +840,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     <Label htmlFor="departmentId" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
                       Département Parent
                     </Label>
-                    <Select value={formData.departmentId || ''} onValueChange={(v) => handleSelectChange('departmentId', v)}>
+                    <Select 
+                      value={formData.departmentId || ''} 
+                      onValueChange={(v) => handleSelectChange('departmentId', v)}
+                    >
                       <SelectTrigger id="departmentId" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                         <SelectValue placeholder="Sélectionner le département..." />
                       </SelectTrigger>
@@ -841,7 +859,11 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     <Label htmlFor="directionId" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
                       Direction
                     </Label>
-                    <Select value={formData.directionId || ''} onValueChange={(v) => handleSelectChange('directionId', v)} disabled={filteredDirections.length === 0}>
+                    <Select 
+                      value={formData.directionId || ''} 
+                      onValueChange={(v) => handleSelectChange('directionId', v)} 
+                      disabled={filteredDirections.length === 0}
+                    >
                       <SelectTrigger id="directionId" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
@@ -857,7 +879,11 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     <Label htmlFor="serviceId" className="text-[10px] font-black uppercase tracking-wider text-slate-600">
                       Service / Unité
                     </Label>
-                    <Select value={formData.serviceId || ''} onValueChange={(v) => handleSelectChange('serviceId', v)} disabled={filteredServices.length === 0}>
+                    <Select 
+                      value={formData.serviceId || ''} 
+                      onValueChange={(v) => handleSelectChange('serviceId', v)} 
+                      disabled={filteredServices.length === 0}
+                    >
                       <SelectTrigger id="serviceId" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
@@ -879,11 +905,13 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       onValueChange={(val) => {
                         const id = val === "none" ? undefined : val;
                         const replacedEmp = inactiveEmployees.find(e => e.id === id);
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          remplaceId: id,
-                          remplaceNom: replacedEmp ? `${replacedEmp.lastName || ''} ${replacedEmp.firstName || ''}`.trim() : undefined
-                        }));
+                        startTransition(() => {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            remplaceId: id,
+                            remplaceNom: replacedEmp ? `${replacedEmp.lastName || ''} ${replacedEmp.firstName || ''}`.trim() : undefined
+                          }));
+                        });
                       }}
                     >
                       <SelectTrigger id="remplaceId" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
@@ -903,7 +931,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
               </Card>
             </TabsContent>
 
-            {/* TAB 3: CHEFFERIE & TERRITOIRE (CONDITIONNEL AUX CHEFS / DIRECTOIRE / COMITÉS RÉGIONAUX / ASSEMBLÉE) */}
+            {/* TAB 3: CHEFFERIE & TERRITOIRE */}
             {isTraditionalMode && (
               <TabsContent value="chefferie" className="space-y-6 focus-visible:outline-none">
                 <Card className="border border-amber-200 bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -934,10 +962,15 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                         <Select 
                           value={formData.Region || ''} 
                           onValueChange={(v) => { 
-                            handleSelectChange('Region', v); 
-                            handleSelectChange('Departement', ''); 
-                            handleSelectChange('subPrefecture', ''); 
-                            handleSelectChange('Village', ''); 
+                            startTransition(() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                Region: v,
+                                Departement: '',
+                                subPrefecture: '',
+                                Village: ''
+                              }));
+                            });
                           }}
                         >
                           <SelectTrigger id="Region" className="h-11 rounded-xl border-slate-200 font-bold text-xs">
@@ -958,9 +991,14 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                         <Select 
                           value={formData.Departement || ''} 
                           onValueChange={(val) => { 
-                            handleSelectChange('Departement', val); 
-                            handleSelectChange('subPrefecture', ''); 
-                            handleSelectChange('Village', ''); 
+                            startTransition(() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                Departement: val,
+                                subPrefecture: '',
+                                Village: ''
+                              }));
+                            });
                           }} 
                           disabled={!formData.Region}
                         >
@@ -982,8 +1020,13 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                         <Select 
                           value={formData.subPrefecture || ''} 
                           onValueChange={(val) => { 
-                            handleSelectChange('subPrefecture', val); 
-                            handleSelectChange('Village', ''); 
+                            startTransition(() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                subPrefecture: val,
+                                Village: ''
+                              }));
+                            });
                           }} 
                           disabled={!formData.Departement}
                         >
@@ -1027,9 +1070,13 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                               type="button"
                               onClick={(e) => {
                                 e.preventDefault();
-                                const current = Array.isArray(formData.statutChef) ? [...formData.statutChef] : [];
-                                const next = isSelected ? current.filter(s => s !== status) : [...current, status];
-                                setFormData(prev => ({ ...prev, statutChef: next }));
+                                startTransition(() => {
+                                  setFormData(prev => {
+                                    const current = Array.isArray(prev.statutChef) ? [...prev.statutChef] : [];
+                                    const next = isSelected ? current.filter(s => s !== status) : [...current, status];
+                                    return { ...prev, statutChef: next };
+                                  });
+                                });
                               }}
                               className={cn(
                                 "flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all cursor-pointer",
@@ -1108,7 +1155,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="baseSalary" 
                           type="number" 
                           value={formData.baseSalary ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, baseSalary: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, baseSalary: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-black text-sm text-slate-900" 
                         />
                       </div>
@@ -1121,7 +1173,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="primeAnciennete" 
                           type="number" 
                           value={formData.primeAnciennete ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, primeAnciennete: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, primeAnciennete: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1134,7 +1191,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="indemniteLogement" 
                           type="number" 
                           value={formData.indemniteLogement ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteLogement: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, indemniteLogement: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1147,7 +1209,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="indemniteTransportImposable" 
                           type="number" 
                           value={formData.indemniteTransportImposable ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteTransportImposable: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, indemniteTransportImposable: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1160,7 +1227,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="transportNonImposable" 
                           type="number" 
                           value={formData.transportNonImposable ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, transportNonImposable: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, transportNonImposable: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1173,7 +1245,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="indemniteResponsabilite" 
                           type="number" 
                           value={formData.indemniteResponsabilite ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteResponsabilite: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, indemniteResponsabilite: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1186,7 +1263,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="indemniteSujetion" 
                           type="number" 
                           value={formData.indemniteSujetion ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteSujetion: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, indemniteSujetion: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1199,7 +1281,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="indemniteCommunication" 
                           type="number" 
                           value={formData.indemniteCommunication ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteCommunication: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, indemniteCommunication: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1212,7 +1299,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           id="indemniteRepresentation" 
                           type="number" 
                           value={formData.indemniteRepresentation ?? 0} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, indemniteRepresentation: parseFloat(e.target.value) || 0 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, indemniteRepresentation: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1226,7 +1318,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           type="number" 
                           step="0.5"
                           value={formData.parts ?? 1} 
-                          onChange={(e) => setFormData(prev => ({ ...prev, parts: parseFloat(e.target.value) || 1 }))} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 1;
+                            startTransition(() => {
+                              setFormData(prev => ({ ...prev, parts: val }));
+                            });
+                          }} 
                           className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                         />
                       </div>
@@ -1325,7 +1422,11 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Checkbox 
                         id="CNPS" 
                         checked={!!formData.CNPS} 
-                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, CNPS: !!checked }))}
+                        onCheckedChange={(checked) => {
+                          startTransition(() => {
+                            setFormData(prev => ({ ...prev, CNPS: !!checked }));
+                          });
+                        }}
                         className="h-6 w-6 rounded-lg data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                       />
                       <Label htmlFor="CNPS" className="text-xs font-black uppercase tracking-wider text-slate-800 cursor-pointer">
@@ -1403,7 +1504,12 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                         type="number" 
                         step="0.5"
                         value={formData.solde_conges ?? 0} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, solde_conges: parseFloat(e.target.value) || 0 }))} 
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          startTransition(() => {
+                            setFormData(prev => ({ ...prev, solde_conges: val }));
+                          });
+                        }} 
                         className="h-11 rounded-xl border-slate-200 font-bold text-xs" 
                       />
                     </div>

@@ -2,15 +2,29 @@
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 
+const normalizeStringCache = new Map<string, string>();
+const officialRegionCache = new Map<string, string>();
+const officialDeptCache = new Map<string, string>();
+const officialSPCache = new Map<string, string>();
+const regionFromDeptCache = new Map<string, string>();
+
 /**
  * Normalizes a string by removing accents, special characters and converting to lowercase.
  */
 export const normalizeString = (s: string): string => {
     if (!s) return "";
-    return s.toLowerCase()
+    const cached = normalizeStringCache.get(s);
+    if (cached !== undefined) return cached;
+
+    const res = s.toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "") // Remove accents
         .replace(/[^a-z0-9]/g, ""); // Remove non-alphanumeric
+
+    if (normalizeStringCache.size < 5000) {
+        normalizeStringCache.set(s, res);
+    }
+    return res;
 };
 
 /**
@@ -39,6 +53,8 @@ export const formatEmployeeName = (lastName?: string | null, firstName?: string 
  */
 export const getOfficialRegion = (input: string): string => {
     if (!input || input === "all" || input === "National") return input;
+    const cached = officialRegionCache.get(input);
+    if (cached !== undefined) return cached;
     
     // Remove common prefixes
     let cleaned = input.toLowerCase()
@@ -52,6 +68,7 @@ export const getOfficialRegion = (input: string): string => {
     // Check in official list
     for (const official of IVORIAN_REGIONS) {
         if (normalizeString(official) === normalizedCleaned) {
+            if (officialRegionCache.size < 1000) officialRegionCache.set(input, official);
             return official;
         }
     }
@@ -59,6 +76,7 @@ export const getOfficialRegion = (input: string): string => {
     const normalizedInput = normalizeString(input);
     for (const official of IVORIAN_REGIONS) {
         if (normalizedInput.includes(normalizeString(official))) {
+            if (officialRegionCache.size < 1000) officialRegionCache.set(input, official);
             return official;
         }
     }
@@ -78,9 +96,16 @@ export const getOfficialRegion = (input: string): string => {
         "agnebi": "Agnéby-Tiassa"
     };
     
-    if (overrides[normalizedCleaned]) return overrides[normalizedCleaned];
-    if (overrides[normalizedInput]) return overrides[normalizedInput];
+    if (overrides[normalizedCleaned]) {
+        if (officialRegionCache.size < 1000) officialRegionCache.set(input, overrides[normalizedCleaned]);
+        return overrides[normalizedCleaned];
+    }
+    if (overrides[normalizedInput]) {
+        if (officialRegionCache.size < 1000) officialRegionCache.set(input, overrides[normalizedInput]);
+        return overrides[normalizedInput];
+    }
     
+    if (officialRegionCache.size < 1000) officialRegionCache.set(input, input);
     return input; // Fallback to original if no match
 };
 
@@ -114,14 +139,20 @@ export const compareRegionsWithDistrictsFirst = (regionA?: string | null, region
  */
 export const getRegionFromDepartment = (department: string): string => {
     if (!department || department === "all") return "";
+    const cached = regionFromDeptCache.get(department);
+    if (cached !== undefined) return cached;
+
     const normDept = normalizeString(department);
     for (const [regionName, deptMap] of Object.entries(divisions)) {
         for (const deptKey of Object.keys(deptMap)) {
             if (normalizeString(deptKey) === normDept) {
-                return getOfficialRegion(regionName);
+                const res = getOfficialRegion(regionName);
+                if (regionFromDeptCache.size < 1000) regionFromDeptCache.set(department, res);
+                return res;
             }
         }
     }
+    if (regionFromDeptCache.size < 1000) regionFromDeptCache.set(department, "");
     return "";
 };
 
@@ -130,20 +161,28 @@ export const getRegionFromDepartment = (department: string): string => {
  */
 export const getOfficialDepartment = (region: string, input: string): string => {
     if (!input || input === "all" || !region || region === "all") return input;
+    const cacheKey = `${region}:${input}`;
+    const cached = officialDeptCache.get(cacheKey);
+    if (cached !== undefined) return cached;
     
     const officialRegion = getOfficialRegion(region);
     const regionData = divisions[officialRegion];
-    if (!regionData) return input;
+    if (!regionData) {
+        if (officialDeptCache.size < 2000) officialDeptCache.set(cacheKey, input);
+        return input;
+    }
     
     const normalizedInput = normalizeString(input);
     const officialDepts = Object.keys(regionData);
     
     for (const official of officialDepts) {
         if (normalizeString(official) === normalizedInput) {
+            if (officialDeptCache.size < 2000) officialDeptCache.set(cacheKey, official);
             return official;
         }
     }
     
+    if (officialDeptCache.size < 2000) officialDeptCache.set(cacheKey, input);
     return input;
 };
 
@@ -152,22 +191,30 @@ export const getOfficialDepartment = (region: string, input: string): string => 
  */
 export const getOfficialSubPrefecture = (region: string, department: string, input: string): string => {
     if (!input || input === "all" || !region || !department || region === "all" || department === "all") return input;
+    const cacheKey = `${region}:${department}:${input}`;
+    const cached = officialSPCache.get(cacheKey);
+    if (cached !== undefined) return cached;
     
     const officialRegion = getOfficialRegion(region);
     const officialDept = getOfficialDepartment(officialRegion, department);
     
     const deptData = divisions[officialRegion]?.[officialDept];
-    if (!deptData) return input;
+    if (!deptData) {
+        if (officialSPCache.size < 3000) officialSPCache.set(cacheKey, input);
+        return input;
+    }
     
     const normalizedInput = normalizeString(input);
     const officialSPs = Object.keys(deptData);
     
     for (const official of officialSPs) {
         if (normalizeString(official) === normalizedInput) {
+            if (officialSPCache.size < 3000) officialSPCache.set(cacheKey, official);
             return official;
         }
     }
     
+    if (officialSPCache.size < 3000) officialSPCache.set(cacheKey, input);
     return input;
 };
 

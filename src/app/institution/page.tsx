@@ -82,20 +82,7 @@ export default function InstitutionPage() {
                 });
                 setRegionalCommittees(computedCommittees);
 
-                const directors = directory.filter(m => {
-                    const p = m.poste?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
-                    return (p.includes('directeur') || p.includes('directrice')) &&
-                           !p.includes('secretaire general') &&
-                           !p.includes('directrice de cabinet') &&
-                           !p.includes('directeur de cabinet') &&
-                           !p.includes('chef de cabinet') &&
-                           !p.includes('cabinet') &&
-                           !p.includes('sous-directeur') &&
-                           !p.includes('sous-directrice') &&
-                           !p.includes('assistant') &&
-                           !p.includes('chauffeur');
-                });
-                setAllDirectors(directors);
+                setAllDirectors(directoryRaw);
 
                 if (computedCommittees.length > 0) {
                     setSelectedRegionIndex(0);

@@ -342,12 +342,7 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
     }
 
     if (photoFile) {
-        try {
-            updateData.photoUrl = await uploadToCloudinary(photoFile);
-        } catch (error) {
-            console.error("Cloudinary upload failed:", error);
-            // We continue without photo update if it fails, or throw
-        }
+        updateData.photoUrl = await uploadToCloudinary(photoFile);
     }
 
     // Ensure numeric values are stored as numbers

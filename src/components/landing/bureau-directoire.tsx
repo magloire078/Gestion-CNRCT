@@ -54,8 +54,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [], pastDire
     return (
       p.includes('secretaire general') ||
       p.includes('directrice de cabinet') ||
-      p.includes('directeur de cabinet') ||
-      p.includes('chef de cabinet')
+      p.includes('directeur de cabinet')
     ) &&
       !p.includes('chauffeur') &&
       !p.includes('assistant') &&

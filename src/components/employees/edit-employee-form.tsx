@@ -79,10 +79,11 @@ const CIVILITIES = [
   "M.",
   "Mme",
   "Mlle",
-  "Dr",
-  "Pr",
+  "Chef",
   "Sa Majesté",
   "Nanan",
+  "Dr",
+  "Pr",
   "Honorable",
   "Vénérable"
 ];
@@ -305,17 +306,26 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     const file = e.target.files?.[0];
     if (file) {
       setPhotoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const objectUrl = URL.createObjectURL(file);
+        setPhotoPreview(objectUrl);
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhotoPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    setIsSubmitting(true);
+    startTransition(() => {
+      setIsSubmitting(true);
+    });
+    // Yield to the event loop to ensure the button UI updates and paints immediately (INP < 16ms)
+    await new Promise(resolve => setTimeout(resolve, 0));
     try {
       const dataToSave = { ...formData };
       if (dataToSave.lastName || dataToSave.firstName) {
@@ -354,7 +364,9 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         description: err?.message || "Impossible de mettre à jour la fiche de l'employé.",
       });
     } finally {
-      setIsSubmitting(false);
+      startTransition(() => {
+        setIsSubmitting(false);
+      });
     }
   };
 
@@ -448,16 +460,23 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
               {/* Photo Upload Section */}
               <div className="flex flex-col items-center gap-4">
                 <div className="relative group">
-                  <Avatar className="h-36 w-36 rounded-2xl border-4 border-slate-100 shadow-lg object-cover">
-                    <AvatarImage src={photoPreview} alt={employee.name} className="object-cover" />
-                    <AvatarFallback className="text-3xl font-black bg-slate-100 text-slate-400 uppercase">
-                      {formData.lastName?.charAt(0) || "E"}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="h-36 w-36 rounded-2xl border-4 border-slate-100 shadow-lg overflow-hidden bg-slate-100 flex items-center justify-center relative">
+                    {photoPreview ? (
+                      <img 
+                        src={photoPreview} 
+                        alt={employee.name || "Photo de l'agent"} 
+                        className="h-full w-full object-cover" 
+                      />
+                    ) : (
+                      <span className="text-3xl font-black text-slate-400 uppercase">
+                        {formData.lastName?.charAt(0) || "E"}
+                      </span>
+                    )}
+                  </div>
                   <Button 
                     type="button" 
                     size="icon" 
-                    className="absolute -bottom-2 -right-2 h-9 w-9 rounded-xl bg-slate-900 hover:bg-black text-white border-2 border-white shadow-lg transition-transform hover:scale-105" 
+                    className="absolute -bottom-2 -right-2 h-9 w-9 rounded-xl bg-slate-900 hover:bg-black text-white border-2 border-white shadow-lg transition-transform hover:scale-105 z-10" 
                     onClick={() => fileInputRef.current?.click()}
                     title="Changer la photo"
                   >

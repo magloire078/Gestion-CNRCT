@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { Check, ChevronsUpDown, PlusCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { addVillage, getVillages } from "@/services/village-service";
 import type { Village } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { divisions } from "@/lib/ivory-coast-divisions";
-import { getOfficialRegion, getOfficialDepartment, getOfficialSubPrefecture } from "@/lib/normalization-utils";
+import { getOfficialRegion, getOfficialDepartment, getOfficialSubPrefecture, normalizeString } from "@/lib/normalization-utils";
 
 interface VillageComboboxProps {
     value?: string;
@@ -34,7 +34,7 @@ interface VillageComboboxProps {
     disabled?: boolean;
 }
 
-export function VillageCombobox({
+export const VillageCombobox = memo(function VillageCombobox({
     value,
     onValueChange,
     region,
@@ -49,13 +49,20 @@ export function VillageCombobox({
     const [isCreating, setIsCreating] = useState(false);
     const { toast } = useToast();
 
-    // Load villages from Firestore (custom villages)
+    // Load villages from Firestore when combobox is opened the first time or mounted
     useEffect(() => {
-        getVillages().then(setFirestoreVillages).catch(console.error);
-    }, []);
+        let isMounted = true;
+        if (open && firestoreVillages.length === 0) {
+            getVillages().then(data => {
+                if (isMounted) setFirestoreVillages(data);
+            }).catch(console.error);
+        }
+        return () => { isMounted = false; };
+    }, [open, firestoreVillages.length]);
 
     // Villages from the ivory-coast-divisions static file for current location
     const staticVillages = useMemo<string[]>(() => {
+        if (!open) return [];
         if (region && department && subPrefecture) {
             const officialRegion = getOfficialRegion(region);
             const officialDept = getOfficialDepartment(officialRegion, department);
@@ -63,25 +70,32 @@ export function VillageCombobox({
             return divisions[officialRegion]?.[officialDept]?.[officialSP] || [];
         }
         return [];
-    }, [region, department, subPrefecture]);
+    }, [open, region, department, subPrefecture]);
 
     // Merge static and Firestore villages, deduplicated, filtered by location if possible
     const allVillageOptions = useMemo(() => {
+        if (!open) return [];
+
         const officialRegion = getOfficialRegion(region || "");
-        const officialSP = region && department && subPrefecture ? getOfficialSubPrefecture(officialRegion, getOfficialDepartment(officialRegion, department), subPrefecture) : "";
+        const normTargetRegion = normalizeString(officialRegion);
+
+        const officialDept = region && department ? getOfficialDepartment(officialRegion, department) : "";
+        const normTargetDept = normalizeString(officialDept);
+
+        const officialSP = region && department && subPrefecture ? getOfficialSubPrefecture(officialRegion, officialDept, subPrefecture) : "";
+        const normTargetSP = normalizeString(officialSP);
+
+        const staticNamesSet = new Set(staticVillages.map(s => s.toLowerCase()));
 
         const firestoreNames = firestoreVillages
             .filter(v => {
-                if (!region) return true;
-                if (!v.region) return false;
-                return getOfficialRegion(v.region) === officialRegion;
-            })
-            .filter(v => {
-                if (!subPrefecture) return true;
-                if (!v.subPrefecture) return false;
-                const vRegion = getOfficialRegion(v.region || "");
-                const vDept = getOfficialDepartment(vRegion, v.department || "");
-                return getOfficialSubPrefecture(vRegion, vDept, v.subPrefecture) === officialSP;
+                if (normTargetRegion && v.region && normalizeString(v.region) !== normTargetRegion) {
+                    return false;
+                }
+                if (normTargetSP && v.subPrefecture && normalizeString(v.subPrefecture) !== normTargetSP) {
+                    return false;
+                }
+                return true;
             })
             .map(v => ({ name: v.name, id: v.id, isFirestore: true }));
 
@@ -90,13 +104,14 @@ export function VillageCombobox({
             .map(name => ({ name, id: undefined, isFirestore: false }));
 
         return [...firestoreNames, ...staticNames].sort((a, b) => a.name.localeCompare(b.name));
-    }, [firestoreVillages, staticVillages, region, department, subPrefecture]);
+    }, [open, firestoreVillages, staticVillages, region, department, subPrefecture]);
 
     const filteredOptions = useMemo(() => {
+        if (!open) return [];
         if (!searchQuery) return allVillageOptions;
         const lower = searchQuery.toLowerCase();
         return allVillageOptions.filter(v => v.name.toLowerCase().includes(lower));
-    }, [allVillageOptions, searchQuery]);
+    }, [open, allVillageOptions, searchQuery]);
 
     const showAddOption = searchQuery.trim().length > 1 &&
         !allVillageOptions.some(v => v.name.toLowerCase() === searchQuery.trim().toLowerCase());
@@ -195,4 +210,4 @@ export function VillageCombobox({
             </PopoverContent>
         </Popover>
     );
-}
+});

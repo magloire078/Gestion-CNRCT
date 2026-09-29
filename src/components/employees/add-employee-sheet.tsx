@@ -224,11 +224,16 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     const file = e.target.files?.[0];
     if (file) {
       setPhotoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const objectUrl = URL.createObjectURL(file);
+        setPhotoPreview(objectUrl);
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhotoPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 

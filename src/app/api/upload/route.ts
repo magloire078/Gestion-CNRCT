@@ -57,23 +57,31 @@ export async function POST(req: NextRequest) {
 }
 
 async function uploadToCloudinarySigned(buffer: Buffer, filename: string): Promise<string> {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME;
     const apiKey = process.env.CLOUDINARY_API_KEY;
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || process.env.CLOUDINARY_UPLOAD_PRESET;
 
-    if (!cloudName || !apiKey || !apiSecret) {
-        throw new Error('Configuration Cloudinary manquante (CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET).');
+    if (!cloudName) {
+        throw new Error('Configuration Cloudinary manquante (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME).');
     }
-
-    const timestamp = Math.round(Date.now() / 1000);
-    const paramsToSign = `timestamp=${timestamp}`;
-    const signature = createHash('sha1').update(paramsToSign + apiSecret).digest('hex');
 
     const formData = new FormData();
     formData.append('file', new Blob([buffer]), filename);
-    formData.append('api_key', apiKey);
-    formData.append('timestamp', String(timestamp));
-    formData.append('signature', signature);
+
+    if (apiKey && apiSecret) {
+        const timestamp = Math.round(Date.now() / 1000);
+        const paramsToSign = `timestamp=${timestamp}`;
+        const signature = createHash('sha1').update(paramsToSign + apiSecret).digest('hex');
+
+        formData.append('api_key', apiKey);
+        formData.append('timestamp', String(timestamp));
+        formData.append('signature', signature);
+    } else if (uploadPreset) {
+        formData.append('upload_preset', uploadPreset);
+    } else {
+        throw new Error('Configuration Cloudinary manquante (CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET ou NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET).');
+    }
 
     const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
         method: 'POST',
@@ -86,5 +94,5 @@ async function uploadToCloudinarySigned(buffer: Buffer, filename: string): Promi
     }
 
     const data = await response.json();
-    return data.secure_url;
+    return data.secure_url || data.url;
 }

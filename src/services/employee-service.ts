@@ -470,11 +470,7 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
         const docRef = doc(collection(db, "employees"));
 
         if (photoFile) {
-            try {
-                photoUrl = await uploadToCloudinary(photoFile);
-            } catch (error) {
-                console.error("Cloudinary upload failed, using default avatar:", error);
-            }
+            photoUrl = await uploadToCloudinary(photoFile);
         }
 
         const processedData = processEmployeeData({ ...employeeData, photoUrl });
@@ -571,11 +567,7 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
         let updateData: Partial<Employe> = { ...employeeDataToUpdate };
 
         if (photoFile) {
-            try {
-                updateData.photoUrl = await uploadToCloudinary(photoFile);
-            } catch (error) {
-                console.error("Cloudinary upload failed during update:", error);
-            }
+            updateData.photoUrl = await uploadToCloudinary(photoFile);
         }
 
         updateData = processEmployeeData(updateData);

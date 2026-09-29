@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useMemo, useCallback, startTransition, memo } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,43 @@ interface RegionalCommitteesProps {
   conflicts?: Conflict[];
 }
 
+interface RegionItemProps {
+  region: string;
+  hasPresident: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+const RegionItem = memo(function RegionItem({
+  region,
+  hasPresident,
+  isSelected,
+  onSelect
+}: RegionItemProps) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200",
+        isSelected
+          ? "bg-[#006039] text-white shadow-xl shadow-[#006039]/20 translate-x-1 scale-[1.02]"
+          : "bg-transparent hover:bg-muted/50 border border-transparent hover:border-primary/5"
+      )}
+    >
+      <div className="flex flex-col items-start text-left">
+        <span className={cn("font-bold text-sm", isSelected ? "text-white" : "text-[#1a1a1a]")}>
+          {cleanRegionName(region)}
+        </span>
+        <span className={cn("text-[10px] uppercase tracking-wider", isSelected ? "text-white/60" : "text-muted-foreground")}>
+          {hasPresident ? "Bureau Actif" : "Coordination locale"}
+        </span>
+      </div>
+      <ArrowRight className={cn("h-4 w-4 transition-opacity", isSelected ? "opacity-100" : "opacity-0")} />
+    </button>
+  );
+});
+
 export function RegionalCommittees({
   loading,
   regionalCommittees,
@@ -38,14 +76,62 @@ export function RegionalCommittees({
   const { canSeeGovernanceStatus } = usePermissions();
   const showStatus = canSeeGovernanceStatus();
 
-  const filteredCommittees = regionalCommittees.filter(c => {
-    const q = searchQuery.toLowerCase();
-    return c.region.toLowerCase().includes(q) ||
-           (c.president?.name || '').toLowerCase().includes(q) ||
-           c.members.some(m => (m.name || '').toLowerCase().includes(q));
-  });
+  const filteredCommittees = useMemo(() => {
+    if (!searchQuery.trim()) return regionalCommittees;
+    const q = searchQuery.toLowerCase().trim();
+    return regionalCommittees.filter(c => {
+      return c.region.toLowerCase().includes(q) ||
+             (c.president?.name || '').toLowerCase().includes(q) ||
+             c.members.some(m => (m.name || '').toLowerCase().includes(q));
+    });
+  }, [regionalCommittees, searchQuery]);
 
-  const selected = filteredCommittees[selectedRegionIndex];
+  const selected = filteredCommittees[selectedRegionIndex] || filteredCommittees[0];
+
+  const handleSelectRegion = useCallback((index: number) => {
+    startTransition(() => {
+      setSelectedRegionIndex(index);
+    });
+  }, [setSelectedRegionIndex]);
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    startTransition(() => {
+      setSearchQuery(value);
+      setSelectedRegionIndex(0);
+    });
+  }, [setSearchQuery, setSelectedRegionIndex]);
+
+  const activeMembers = useMemo(() => {
+    if (!selected?.members) return [];
+    return selected.members.filter(m => !m.status || m.status === 'Actif');
+  }, [selected?.members]);
+
+  const departmentStats = useMemo(() => {
+    if (!selected?.region || !divisions[selected.region] || !conflicts.length) return {};
+    const cleanSel = cleanRegionName(selected.region);
+    const regionConflicts = conflicts.filter(c => cleanRegionName(c.region || '') === cleanSel);
+    
+    const stats: Record<string, { resolved: number; ongoing: number }> = {};
+    const depts = Object.keys(divisions[selected.region] || {});
+    
+    for (const dept of depts) {
+      const deptLower = dept.toLowerCase();
+      let resolved = 0;
+      let ongoing = 0;
+      for (const c of regionConflicts) {
+        if ((c.district || '').toLowerCase().includes(deptLower)) {
+          if (c.status === 'Résolu') {
+            resolved++;
+          } else if (c.status !== 'Classé sans suite') {
+            ongoing++;
+          }
+        }
+      }
+      stats[dept] = { resolved, ongoing };
+    }
+    return stats;
+  }, [selected?.region, conflicts]);
 
   return (
     <section id="regional-committees" className="py-12 bg-white border-t border-primary/5 scroll-mt-24 overflow-hidden">
@@ -73,34 +159,21 @@ export function RegionalCommittees({
                   placeholder="Rechercher une région ou un nom..."
                   className="pl-11 h-14 rounded-2xl border-primary/10 bg-muted/30 focus-visible:ring-[#006039]/20 transition-all"
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setSelectedRegionIndex(0); // Reset selection on search
-                  }}
+                  onChange={handleSearchChange}
                 />
               </div>
 
               <ScrollArea className="h-[720px] pr-4 rounded-2xl border border-primary/5 bg-white/50 p-2">
                 <div className="space-y-1.5">
-                  {filteredCommittees.map((committee, index) => {
-                    const isSelected = index === selectedRegionIndex;
-                    return (
-                      <button
-                        key={committee.region}
-                        onClick={() => setSelectedRegionIndex(index)}
-                        className={`w-full flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${isSelected
-                          ? 'bg-[#006039] text-white shadow-xl shadow-[#006039]/20 translate-x-1 scale-[1.02]'
-                          : 'bg-transparent hover:bg-muted/50 border border-transparent hover:border-primary/5'
-                          }`}
-                      >
-                        <div className="flex flex-col items-start">
-                          <span className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-[#1a1a1a]'}`}>{cleanRegionName(committee.region)}</span>
-                          <span className={`text-[10px] uppercase tracking-wider ${isSelected ? 'text-white/60' : 'text-muted-foreground'}`}>{committee.president ? 'Bureau Actif' : 'Coordination locale'}</span>
-                        </div>
-                        <ArrowRight className={`h-4 w-4 ${isSelected ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
-                      </button>
-                    );
-                  })}
+                  {filteredCommittees.map((committee, index) => (
+                    <RegionItem
+                      key={committee.region}
+                      region={committee.region}
+                      hasPresident={Boolean(committee.president)}
+                      isSelected={index === selectedRegionIndex}
+                      onSelect={() => handleSelectRegion(index)}
+                    />
+                  ))}
                 </div>
               </ScrollArea>
             </div>
@@ -129,177 +202,170 @@ export function RegionalCommittees({
                   </div>
 
                   <CardContent className="flex-1 p-5 md:p-12 relative">
-                    {(() => {
-                      const activeMembers = selected.members.filter(m => !m.status || m.status === 'Actif');
-                      return (
-                        <>
-                          <div className="grid md:grid-cols-2 gap-6">
-                            {/* President / Focal Point */}
-                            <div className="space-y-4">
-                              <div className="space-y-6">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40 border-b border-primary/5 pb-2">Présidence du Comité</h4>
-                                <div className="flex items-center gap-6">
-                                  <div className="relative">
-                                    <div className="absolute inset-[-4px] bg-gradient-to-br from-[#006039] to-[#D4AF37] rounded-full blur opacity-20" />
-                                    <Avatar className="h-[100px] w-[100px] border-[6px] border-white shadow-2xl relative z-10 transition-transform duration-500 group-hover/card:scale-110">
-                                      {selected.president?.photoUrl && !selected.president?.photoUrl.includes('ui-avatars.com') && !selected.president?.photoUrl.includes('placehold.co') ? (
-                                        <AvatarImage src={selected.president.photoUrl} className="object-cover" />
-                                      ) : (
-                                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selected.president?.name || selected.region[0])}&backgroundColor=006039&fontFamily=Arial`} className="object-cover" />
-                                      )}
-                                      <AvatarFallback className="bg-muted text-[#006039] font-black text-2xl">
-                                        {getInitials(selected.president?.name || selected.region[0])}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  </div>
-                                  <div>
-                                    <h5 className="text-2xl font-bold text-[#1a1a1a] leading-tight">
-                                      {selected.president?.name || "Installation en cours"}
-                                    </h5>
-                                    <p className="text-[#006039] font-bold text-sm mt-1 uppercase tracking-wider">
-                                      {selected.president?.poste || 'Point Focal Régional'}
-                                    </p>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* President / Focal Point */}
+                      <div className="space-y-4">
+                        <div className="space-y-6">
+                          <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40 border-b border-primary/5 pb-2">Présidence du Comité</h4>
+                          <div className="flex items-center gap-6">
+                            <div className="relative">
+                              <div className="absolute inset-[-4px] bg-gradient-to-br from-[#006039] to-[#D4AF37] rounded-full blur opacity-20" />
+                              <Avatar className="h-[100px] w-[100px] border-[6px] border-white shadow-2xl relative z-10 transition-transform duration-500 group-hover/card:scale-110">
+                                {selected.president?.photoUrl && !selected.president?.photoUrl.includes('ui-avatars.com') && !selected.president?.photoUrl.includes('placehold.co') ? (
+                                  <AvatarImage src={selected.president.photoUrl} className="object-cover" />
+                                ) : (
+                                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selected.president?.name || selected.region[0])}&backgroundColor=006039&fontFamily=Arial`} className="object-cover" />
+                                )}
+                                <AvatarFallback className="bg-muted text-[#006039] font-black text-2xl">
+                                  {getInitials(selected.president?.name || selected.region[0])}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
+                            <div>
+                              <h5 className="text-2xl font-bold text-[#1a1a1a] leading-tight">
+                                {selected.president?.name || "Installation en cours"}
+                              </h5>
+                              <p className="text-[#006039] font-bold text-sm mt-1 uppercase tracking-wider">
+                                {selected.president?.poste || 'Point Focal Régional'}
+                              </p>
+                              {showStatus && (
+                                <Badge 
+                                  className={cn(
+                                    "mt-2 border-none rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest",
+                                    selected.president?.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                                  )}
+                                >
+                                  {selected.president?.status || 'Actif'}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 pt-4">
+                          <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
+                            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                              <MapPin className="h-5 w-5 text-[#006039]" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Territoire</p>
+                              <p className="text-sm font-semibold">{cleanRegionName(selected.region)}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
+                            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                              <ShieldCheck className="h-5 w-5 text-[#006039]" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Mission Locale</p>
+                              <p className="text-sm font-semibold">Médiation & Cohésion</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Members List */}
+                      <div className="bg-[#fafaf8] rounded-xl p-5 border border-primary/5 flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                          <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40">Bureau Local</h5>
+                          <Badge className="bg-[#006039]/10 text-[#006039] border-none font-bold">{activeMembers.length} Membres</Badge>
+                        </div>
+
+                        <ScrollArea className="flex-1 pr-4">
+                          <div className="space-y-4">
+                            {activeMembers.length > 0 ? activeMembers.map((member, mIdx) => (
+                              <div key={mIdx} className="group/item flex items-center gap-4 p-3 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300">
+                                <div className="w-10 h-10 rounded-full bg-white border border-primary/5 flex items-center justify-center text-xs font-black text-[#006039] shadow-sm overflow-hidden relative">
+                                  {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') ? (
+                                    <Image src={member.photoUrl} alt={member.name} fill className="object-cover" sizes="40px" />
+                                  ) : (
+                                    getInitials(member.name || '')
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-bold text-[#1a1a1a] leading-tight mb-0.5">{member.name}</p>
+                                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                                    <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">{member.poste}</p>
+                                    {member.Departement && (
+                                      <>
+                                        <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                                        <p className="text-[10px] text-[#006039] font-bold uppercase tracking-tighter">{member.Departement}</p>
+                                      </>
+                                    )}
                                     {showStatus && (
-                                      <Badge 
-                                        className={cn(
-                                          "mt-2 border-none rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest",
-                                          selected.president?.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
-                                        )}
-                                      >
-                                        {selected.president?.status || 'Actif'}
-                                      </Badge>
+                                      <>
+                                        <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                                        <Badge 
+                                          className={cn(
+                                            "bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent",
+                                            member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
+                                          )}
+                                        >
+                                          {member.status || 'Actif'}
+                                        </Badge>
+                                      </>
                                     )}
                                   </div>
                                 </div>
                               </div>
-
-                              <div className="grid grid-cols-1 gap-4 pt-4">
-                                <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
-                                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                                    <MapPin className="h-5 w-5 text-[#006039]" />
-                                  </div>
-                                  <div>
-                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Territoire</p>
-                                    <p className="text-sm font-semibold">{cleanRegionName(selected.region)}</p>
-                                  </div>
+                            )) : (
+                              <div className="py-8 text-center space-y-3">
+                                <div className="w-12 h-12 rounded-full bg-muted/50 mx-auto flex items-center justify-center">
+                                  <Loader2 className="h-5 w-5 text-muted-foreground opacity-30" />
                                 </div>
-                                <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
-                                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                                    <ShieldCheck className="h-5 w-5 text-[#006039]" />
-                                  </div>
-                                  <div>
-                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Mission Locale</p>
-                                    <p className="text-sm font-semibold">Médiation & Cohésion</p>
-                                  </div>
-                                </div>
+                                <p className="text-xs text-muted-foreground italic max-w-[150px] mx-auto">
+                                  Composition du bureau en attente de validation officielle.
+                                </p>
                               </div>
-                            </div>
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </div>
 
-                            {/* Members List */}
-                            <div className="bg-[#fafaf8] rounded-xl p-5 border border-primary/5 flex flex-col">
-                              <div className="flex items-center justify-between mb-4">
-                                <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40">Bureau Local</h5>
-                                <Badge className="bg-[#006039]/10 text-[#006039] border-none font-bold">{activeMembers.length} Membres</Badge>
-                              </div>
-
-                              <ScrollArea className="flex-1 pr-4">
-                                <div className="space-y-4">
-                                  {activeMembers.length > 0 ? activeMembers.map((member, mIdx) => (
-                                    <div key={mIdx} className="group/item flex items-center gap-4 p-3 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300">
-                                      <div className="w-10 h-10 rounded-full bg-white border border-primary/5 flex items-center justify-center text-xs font-black text-[#006039] shadow-sm overflow-hidden relative">
-                                        {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') ? (
-                                          <Image src={member.photoUrl} alt={member.name} fill className="object-cover" sizes="40px" />
-                                        ) : (
-                                          getInitials(member.name || '')
-                                        )}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-[#1a1a1a] leading-tight mb-0.5">{member.name}</p>
-                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                                          <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">{member.poste}</p>
-                                          {member.Departement && (
-                                            <>
-                                              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                                              <p className="text-[10px] text-[#006039] font-bold uppercase tracking-tighter">{member.Departement}</p>
-                                            </>
-                                          )}
-                                          {showStatus && (
-                                            <>
-                                              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                                              <Badge 
-                                                className={cn(
-                                                  "bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent",
-                                                  member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
-                                                )}
-                                              >
-                                                {member.status || 'Actif'}
-                                              </Badge>
-                                            </>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )) : (
-                                    <div className="py-8 text-center space-y-3">
-                                      <div className="w-12 h-12 rounded-full bg-muted/50 mx-auto flex items-center justify-center">
-                                        <Loader2 className="h-5 w-5 text-muted-foreground opacity-30" />
-                                      </div>
-                                      <p className="text-xs text-muted-foreground italic max-w-[150px] mx-auto">
-                                        Composition du bureau en attente de validation officielle.
-                                      </p>
-                                    </div>
+                    {/* Conflict Stats by Department */}
+                    {divisions[selected.region] && (
+                      <div className="mt-8 pt-8 border-t border-primary/5">
+                        <div className="flex items-center gap-3 mb-6">
+                          <ShieldCheck className="h-6 w-6 text-[#006039]" />
+                          <div>
+                            <h4 className="text-lg font-black text-[#1a1a1a]">Situation Sécuritaire & Conflits</h4>
+                            <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Répartition par département</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                          {Object.keys(divisions[selected.region]).map(dept => {
+                            const { resolved = 0, ongoing = 0 } = departmentStats[dept] || {};
+                            
+                            return (
+                              <div key={dept} className="flex flex-col gap-3 p-4 rounded-2xl bg-[#fafaf8] border border-primary/5 hover:border-primary/10 transition-colors">
+                                <h5 className="font-bold text-sm text-[#1a1a1a] flex items-center gap-2">
+                                  <MapPin className="h-3 w-3 text-muted-foreground" />
+                                  {dept}
+                                </h5>
+                                <div className="flex flex-wrap gap-2">
+                                  {ongoing > 0 && (
+                                    <Badge variant="destructive" className="bg-red-50 text-red-600 border-red-100 hover:bg-red-100 font-bold text-[10px] gap-1 px-2">
+                                      <ShieldAlert className="h-3 w-3" />
+                                      {ongoing} En cours
+                                    </Badge>
+                                  )}
+                                  {resolved > 0 && (
+                                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100 font-bold text-[10px] gap-1 px-2 border">
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      {resolved} Résolu{resolved > 1 ? 's' : ''}
+                                    </Badge>
+                                  )}
+                                  {ongoing === 0 && resolved === 0 && (
+                                    <span className="text-[10px] text-muted-foreground italic bg-white px-2 py-1 rounded-md border border-slate-100">Aucun conflit signalé</span>
                                   )}
                                 </div>
-                              </ScrollArea>
-                            </div>
-                          </div>
-
-                          {/* Conflict Stats by Department */}
-                          {divisions[selected.region] && (
-                            <div className="mt-8 pt-8 border-t border-primary/5">
-                              <div className="flex items-center gap-3 mb-6">
-                                <ShieldCheck className="h-6 w-6 text-[#006039]" />
-                                <div>
-                                  <h4 className="text-lg font-black text-[#1a1a1a]">Situation Sécuritaire & Conflits</h4>
-                                  <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Répartition par département</p>
-                                </div>
                               </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                                {Object.keys(divisions[selected.region]).map(dept => {
-                                  const regionConflicts = conflicts.filter(c => cleanRegionName(c.region || '') === cleanRegionName(selected.region));
-                                  const deptConflicts = regionConflicts.filter(c => (c.district || '').toLowerCase().includes(dept.toLowerCase()));
-                                  const resolved = deptConflicts.filter(c => c.status === 'Résolu').length;
-                                  const ongoing = deptConflicts.filter(c => c.status !== 'Résolu' && c.status !== 'Classé sans suite').length;
-                                  
-                                  return (
-                                    <div key={dept} className="flex flex-col gap-3 p-4 rounded-2xl bg-[#fafaf8] border border-primary/5 hover:border-primary/10 transition-colors">
-                                      <h5 className="font-bold text-sm text-[#1a1a1a] flex items-center gap-2">
-                                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                                        {dept}
-                                      </h5>
-                                      <div className="flex flex-wrap gap-2">
-                                        {ongoing > 0 && (
-                                          <Badge variant="destructive" className="bg-red-50 text-red-600 border-red-100 hover:bg-red-100 font-bold text-[10px] gap-1 px-2">
-                                            <ShieldAlert className="h-3 w-3" />
-                                            {ongoing} En cours
-                                          </Badge>
-                                        )}
-                                        {resolved > 0 && (
-                                          <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100 font-bold text-[10px] gap-1 px-2 border">
-                                            <CheckCircle2 className="h-3 w-3" />
-                                            {resolved} Résolu{resolved > 1 ? 's' : ''}
-                                          </Badge>
-                                        )}
-                                        {ongoing === 0 && resolved === 0 && (
-                                          <span className="text-[10px] text-muted-foreground italic bg-white px-2 py-1 rounded-md border border-slate-100">Aucun conflit signalé</span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                           <div className="mt-8 pt-8 border-t border-primary/5 flex items-center justify-between">
                             <div className="flex -space-x-3 overflow-hidden">
@@ -319,9 +385,6 @@ export function RegionalCommittees({
                               <a href={`/chiefs?region=${encodeURIComponent(cleanRegionName(selected.region))}`}>Consulter l'annuaire de la région</a>
                             </Button>
                           </div>
-                        </>
-                      );
-                    })()}
                   </CardContent>
                 </Card>
               )}

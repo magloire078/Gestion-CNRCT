@@ -189,7 +189,13 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     const isCnpsRegistered = formState.CNPS === true;
 
     if (isCnpsRegistered && !formState.baseSalary) {
-      setError("Le salaire de base est obligatoire pour les employés déclarés à la CNPS.");
+      const msg = "Le salaire de base est obligatoire pour les employés déclarés à la CNPS.";
+      setError(msg);
+      toast({
+        variant: "destructive",
+        title: "Champ requis",
+        description: msg,
+      });
       return;
     }
 
@@ -200,7 +206,13 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       await onUpdatePayroll(employee.id, { ...formState, payFrequency: 'Mensuel' });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Échec de la mise à jour de l'entrée de paie.");
+      const msg = err instanceof Error ? err.message : "Échec de la mise à jour de l'entrée de paie.";
+      setError(msg);
+      toast({
+        variant: "destructive",
+        title: "Erreur d'enregistrement",
+        description: msg,
+      });
     } finally {
       setIsSubmitting(false);
     }

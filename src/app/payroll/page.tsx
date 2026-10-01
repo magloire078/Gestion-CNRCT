@@ -312,17 +312,17 @@ export default function PayrollPage() {
 
   const handleUpdatePayroll = async (employeeId: string, updatedPayrollData: Partial<Employe>) => {
     try {
-      if (updatedPayrollData.firstName || updatedPayrollData.lastName) {
-        const originalEmployee = employees.find(e => e.id === employeeId);
-        const firstName = updatedPayrollData.firstName || originalEmployee?.firstName;
-        const lastName = updatedPayrollData.lastName || originalEmployee?.lastName;
-        updatedPayrollData.name = `${firstName} ${lastName}`.trim();
-      }
+      const originalEmployee = employees.find(e => e.id === employeeId);
+      const firstName = updatedPayrollData.firstName !== undefined ? updatedPayrollData.firstName : originalEmployee?.firstName;
+      const lastName = updatedPayrollData.lastName !== undefined ? updatedPayrollData.lastName : originalEmployee?.lastName;
+      const employeeName = `${lastName || ''} ${firstName || ''}`.trim() || originalEmployee?.name || 'l\'employé';
+      updatedPayrollData.name = employeeName;
+
       await updateEmployee(employeeId, updatedPayrollData);
       setIsEditSheetOpen(false);
       toast({
         title: "Informations de paie mises à jour",
-        description: `Les informations de paie pour ${updatedPayrollData.name} ont été modifiées.`,
+        description: `Les informations de paie pour ${employeeName} ont été modifiées avec succès.`,
       });
     } catch (err) {
       console.error("Failed to update payroll entry:", err);

@@ -438,7 +438,7 @@ const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> =
     const numericFields: (keyof Employe)[] = [
         'baseSalary', 'primeAnciennete', 'indemniteTransportImposable', 'indemniteResponsabilite',
         'indemniteLogement', 'indemniteSujetion', 'indemniteCommunication', 'indemniteRepresentation',
-        'Salaire_Brut', 'transportNonImposable', 'Salaire_Net', 'enfants'
+        'Salaire_Brut', 'transportNonImposable', 'Salaire_Net', 'enfants', 'parts'
     ];
     numericFields.forEach(field => {
         if (data[field] !== undefined && typeof data[field] !== 'number') {
@@ -451,6 +451,8 @@ const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> =
     delete (data as any).calculatedRetirementDate;
     delete (data as any).age;
     delete (data as any).retirementNotificationSent;
+    delete (data as any).netSalary;
+    delete (data as any).grossSalary;
 
     Object.keys(data).forEach(key => {
         if ((data as any)[key] === undefined) {
@@ -600,7 +602,7 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
 
         if (hasSalaryChange) {
             try {
-                // If salary events exist, update the "origin" salary (previous_* of the first event)
+                // If salary events exist, update the latest salary event with the new values
                 // and recalculate the entire chain
                 const history = await getEmployeeHistory(employeeId);
                 const salaryEventTypes = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Autre'];
@@ -609,11 +611,26 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
                     .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime());
 
                 if (salaryEvents.length > 0) {
-                    // Recalculate the salary chain across all historical events
+                    const latestEvent = salaryEvents[salaryEvents.length - 1];
+                    const latestEventRef = doc(db, `employees/${employeeId}/history`, latestEvent.id);
+                    const updatedDetails = { ...latestEvent.details };
+
+                    for (const field of salaryFields) {
+                        if (updateData[field] !== undefined) {
+                            updatedDetails[field] = updateData[field];
+                        }
+                    }
+                    if (updateData.primeAnciennete !== undefined) {
+                        updatedDetails.primeAnciennete = updateData.primeAnciennete;
+                    }
+
+                    await updateDoc(latestEventRef, { details: updatedDetails });
+
+                    // Recalculate the salary chain across all historical events and sync to employee doc
                     await recalculateSalaryChain(employeeId);
                 }
             } catch (historyError) {
-                console.warn("[EmployeeService] Non-blocking salary history recalculation failed:", historyError);
+                console.warn("[EmployeeService] Salary history sync failed:", historyError);
             }
         }
     } catch (error: any) {

@@ -110,32 +110,39 @@ export default function PayslipDetailPage() {
         fetchData();
     }, [employeeId, payslipDate, effectivePayslipDate, endDate, isHrAdmin, user?.employeeId, authLoading, router, toast]);
 
-    const handlePrint = () => {
-        // Log the printing action
+    const [isPending, startTransition] = useState(false);
+
+    const handlePrint = async () => {
+        // Yield to browser event loop to let click animation paint immediately (INP < 16ms)
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        // Background non-blocking logging
         if (allPayslips.length > 0) {
-            if (endDate) {
-                // For a range, we log each payslip individually to ensure they appear in their respective monthly stats
-                allPayslips.forEach(ps => {
-                    const psDate = ps.employeeInfo.paymentDate ? parseISO(ps.employeeInfo.paymentDate) : parseISO(payslipDate);
+            try {
+                if (endDate) {
+                    allPayslips.forEach(ps => {
+                        const psDate = ps.employeeInfo.paymentDate ? parseISO(ps.employeeInfo.paymentDate) : parseISO(payslipDate);
+                        logPrintAction({
+                            userId: user?.id || 'anonymous',
+                            userName: user?.name || 'Utilisateur inconnu',
+                            actionType: 'print',
+                            period: format(psDate, 'MM-yyyy'),
+                            count: 1,
+                            employeeIds: [employeeId]
+                        }).catch(e => console.warn("Failed to log print:", e));
+                    });
+                } else {
                     logPrintAction({
                         userId: user?.id || 'anonymous',
                         userName: user?.name || 'Utilisateur inconnu',
                         actionType: 'print',
-                        period: format(psDate, 'MM-yyyy'),
+                        period: format(parseISO(payslipDate), 'MM-yyyy'),
                         count: 1,
                         employeeIds: [employeeId]
-                    });
-                });
-            } else {
-                // Single mode
-                logPrintAction({
-                    userId: user?.id || 'anonymous',
-                    userName: user?.name || 'Utilisateur inconnu',
-                    actionType: 'print',
-                    period: format(parseISO(payslipDate), 'MM-yyyy'),
-                    count: 1,
-                    employeeIds: [employeeId]
-                });
+                    }).catch(e => console.warn("Failed to log print:", e));
+                }
+            } catch (err) {
+                console.warn("Failed to log print action:", err);
             }
         }
         
@@ -177,16 +184,18 @@ export default function PayslipDetailPage() {
                 <div className="flex flex-wrap gap-3">
                     <Button 
                         variant="outline" 
+                        disabled={isPrinting}
                         className="rounded-2xl h-12 px-6 border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-bold transition-all shadow-xl shadow-slate-200"
                         onClick={handlePrint}
                     >
-                        <Printer className="mr-2 h-4 w-4" /> Imprimer
+                        {isPrinting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />} Imprimer
                     </Button>
                     <Button 
+                        disabled={isPrinting}
                         onClick={handlePrint}
                         className="rounded-2xl h-12 px-6 bg-slate-900 text-white hover:bg-slate-800 font-bold transition-all shadow-xl shadow-slate-900/20"
                     >
-                        <Download className="mr-2 h-4 w-4" /> Télécharger PDF
+                        {isPrinting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />} Télécharger PDF
                     </Button>
                 </div>
             </div>

@@ -178,12 +178,23 @@ export async function getPayslipDetails(
     const parsedCessation = employee.Date_Cessation_CNPS ? parseISO(employee.Date_Cessation_CNPS) : null;
     const dateCessation = parsedCessation && isValid(parsedCessation) ? parsedCessation : null;
 
+    const isDeclaredCNPS = 
+        employee.CNPS === true || 
+        (employee.CNPS as unknown) === 'true' || 
+        (employee.CNPS as unknown) === '1' || 
+        (employee.CNPS as unknown) === 'OUI' || 
+        (employee.CNPS as unknown) === 'oui' || 
+        (employee.CNPS as unknown) === 'Oui' ||
+        (typeof employee.cnpsEmploye === 'string' && employee.cnpsEmploye.trim() !== '' && employee.cnpsEmploye.trim() !== 'N/A' && employee.cnpsEmploye.trim() !== '0') ||
+        !!dateImmatriculation;
+
     const isAfterImmatriculation = !dateImmatriculation || !isAfter(dateImmatriculation, payslipDateObj);
     const isBeforeCessation = !dateCessation || isBefore(payslipDateObj, dateCessation);
 
-    const isCNPSActive = (employee.CNPS || (!!dateImmatriculation && !!dateCessation)) && 
+    const isCNPSActive = isDeclaredCNPS && 
                          isAfterImmatriculation && 
-                         isBeforeCessation;
+                         isBeforeCessation && 
+                         employee.status !== 'Retraité';
 
     const cnps = isCNPSActive ? (brutImposable * 0.063) : 0;
     const its = 0;

@@ -167,8 +167,18 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
         let gratification = 0;
         const isPresentInDecember = !departureDate || !isBefore(departureDate, dateForGratification);
 
+        const isDeclaredCNPS = 
+          employee.CNPS === true || 
+          (employee.CNPS as unknown) === 'true' || 
+          (employee.CNPS as unknown) === '1' || 
+          (employee.CNPS as unknown) === 'OUI' || 
+          (employee.CNPS as unknown) === 'oui' || 
+          (employee.CNPS as unknown) === 'Oui' ||
+          (typeof employee.cnpsEmploye === 'string' && employee.cnpsEmploye.trim() !== '' && employee.cnpsEmploye.trim() !== 'N/A' && employee.cnpsEmploye.trim() !== '0') ||
+          !!dateImmatriculation;
+
         const startOfDec = startOfMonth(dateForGratification);
-        const isCNPSActiveForDec = (employee.CNPS || (!!dateImmatriculation && !!dateCessation)) &&
+        const isCNPSActiveForDec = isDeclaredCNPS &&
           (!dateImmatriculation || !isAfter(dateImmatriculation, startOfDec)) &&
           (!dateCessation || isBefore(startOfDec, dateCessation));
 
@@ -195,7 +205,7 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
           const validBrut = isNaN(brutImposable) ? 0 : brutImposable;
           
           const startOfPayslipMonth = startOfMonth(dateForPayslip);
-          const isCNPSActiveForMonth = (employee.CNPS || (!!dateImmatriculation && !!dateCessation)) &&
+          const isCNPSActiveForMonth = isDeclaredCNPS &&
             (!dateImmatriculation || !isAfter(dateImmatriculation, startOfPayslipMonth)) &&
             (!dateCessation || isBefore(startOfPayslipMonth, dateCessation));
 

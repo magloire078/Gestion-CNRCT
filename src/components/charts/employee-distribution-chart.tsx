@@ -29,7 +29,7 @@ const chartConfig = {
   "Direction Financière et du Patrimoine": { label: "DFP", color: "hsl(var(--chart-3))" },
   "Secretariat Général": { label: "Secrétariat", color: "hsl(var(--chart-4))" },
   "Communication": { label: "Communication", color: "hsl(var(--chart-5))" },
-  "Comités Régionaux": { label: "Régions", color: "hsl(var(--chart-1))" },
+  "Comités Régionaux": { label: "ARCT", color: "hsl(var(--chart-1))" },
   "Direction Administrative": { label: "Admin", color: "hsl(var(--chart-2))" },
   "Protocole": { label: "Protocole", color: "hsl(var(--chart-3))" },
   "Cabinet": { label: "Cabinet", color: "hsl(var(--chart-4))" },

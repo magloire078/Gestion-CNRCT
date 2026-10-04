@@ -82,7 +82,9 @@ import {
     Clock,
     Sparkles,
     Landmark,
-    Shield
+    Shield,
+    RefreshCw,
+    UserPlus
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -95,6 +97,7 @@ import {
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { SecurityConfirmationDialog } from "@/components/common/security-confirmation-dialog";
 import { isTraditionalAuthorityOrMember, calculateTenure, calculatePayrollTotals } from "@/lib/employee-utils";
+import { getMemberProfile } from "@/lib/comites-regionaux-2026";
 import { cn } from "@/lib/utils";
 
 export default function EmployeeDetailPage() {
@@ -414,6 +417,25 @@ export default function EmployeeDetailPage() {
                             )}>
                                 {employee.status}
                             </Badge>
+                            {(() => {
+                                const prof = getMemberProfile(employee);
+                                if (!prof) return null;
+                                return (
+                                    <Badge className={cn(
+                                        "text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 border shadow-sm inline-flex items-center gap-1",
+                                        prof === 'Reconduit' 
+                                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" 
+                                            : "bg-blue-500/20 text-blue-300 border-blue-500/40"
+                                    )}>
+                                        {prof === 'Reconduit' ? (
+                                            <RefreshCw className="h-3 w-3 mr-0.5 text-emerald-300" />
+                                        ) : (
+                                            <UserPlus className="h-3 w-3 mr-0.5 text-blue-300" />
+                                        )}
+                                        {prof === 'Reconduit' ? 'Membre Reconduit' : 'Nouveau Membre'}
+                                    </Badge>
+                                );
+                            })()}
                             {isTraditional && (
                                 <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider">
                                     <Crown className="h-3 w-3 mr-1 text-amber-400" /> Autorité Traditionnelle

@@ -149,7 +149,7 @@ export function ChiefsOfficialReport({
                                                 </div>
                                                 
                                                 <div className="pt-2">
-                                                    <span className="text-[10px] font-bold text-slate-600 uppercase block mb-3">Membres des Comités Régionaux (Assemblée Générale) :</span>
+                                                    <span className="text-[10px] font-bold text-slate-600 uppercase block mb-3">Membres de l'Assemblée des Rois et Chefs Traditionnels (ARCT) :</span>
                                                     <div className="grid grid-cols-2 gap-x-8 gap-y-4 pl-4">
                                                         {Array.from(uniqueDepts).sort().map(dept => (
                                                             <div key={dept} className="flex flex-col gap-2">

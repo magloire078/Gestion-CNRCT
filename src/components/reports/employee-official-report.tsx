@@ -10,7 +10,7 @@ import { allColumns, chiefColumns, type ColumnKeys } from "@/lib/constants/emplo
 import { InstitutionalHeader } from "./institutional-header";
 import { InstitutionalFooter } from "./institutional-footer";
 import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
-import { findComiteRegionalMember, getMemberChiefStatuses } from "@/lib/comites-regionaux-2026";
+import { findComiteRegionalMember, getMemberChiefStatuses, getMemberProfile } from "@/lib/comites-regionaux-2026";
 import { getOfficialRegion, getOfficialDepartment, compareRegionsWithDistrictsFirst } from "@/lib/normalization-utils";
 
 interface EmployeeOfficialReportProps {
@@ -187,6 +187,19 @@ export function EmployeeOfficialReport({
                             );
                         })}
                     </div>
+                );
+            }
+            case 'profile': {
+                const prof = getMemberProfile(emp) || (emp as any).profile || (emp.estRenouvele !== undefined ? (emp.estRenouvele ? 'Reconduit' : 'Nouveau') : '');
+                if (!prof) return <span className="text-slate-300 font-bold text-[8px]">-</span>;
+                const isReconduit = prof.toLowerCase().includes('reconduit');
+                return (
+                    <span className={cn(
+                        "text-[7.5px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider whitespace-nowrap inline-block",
+                        isReconduit ? "bg-emerald-50 text-emerald-800 border border-emerald-300" : "bg-blue-50 text-blue-800 border border-blue-300"
+                    )}>
+                        {prof}
+                    </span>
                 );
             }
             case 'contact':

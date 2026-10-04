@@ -32,8 +32,8 @@ export function OrganizationStructure() {
       bg: "bg-slate-100"
     },
     {
-      title: "Comités Régionaux",
-      desc: "Relais opérationnels de la Chambre au niveau de chaque région administrative.",
+      title: "Assemblée des Rois et Chefs Traditionnels (ARCT)",
+      desc: "Assemblée des autorités traditionnelles et relais territoriaux de la Chambre dans les régions.",
       icon: Map,
       color: "text-emerald-600",
       bg: "bg-emerald-50",

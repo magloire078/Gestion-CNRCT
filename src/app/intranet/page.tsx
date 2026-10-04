@@ -300,7 +300,7 @@ function IntranetContent() {
                     <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-2xl bg-white border border-slate-200/70 overflow-hidden group">
                         <CardContent className="p-5 flex items-center justify-between">
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Comités Régionaux</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Assemblée Rois & Chefs (ARCT)</span>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
                                         {Object.keys(divisions).length}

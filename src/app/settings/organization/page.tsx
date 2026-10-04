@@ -267,7 +267,7 @@ function OrganizationSettingsContent() {
                     <div className="flex items-center space-x-2 pt-2">
                         <Checkbox id="show-regional" checked={showRegional} onCheckedChange={(checked) => setShowRegional(checked as boolean)} />
                         <Label htmlFor="show-regional" className="font-normal cursor-pointer leading-tight">
-                            Afficher les espaces de signature pour les Comités Régionaux (Rapports Autorités)
+                            Afficher les espaces de signature pour l'Assemblée des Rois et Chefs Traditionnels - ARCT (Rapports Autorités)
                         </Label>
                     </div>
                 </CardContent>

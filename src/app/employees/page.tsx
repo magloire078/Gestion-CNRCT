@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
 import { format, parseISO, differenceInYears } from "date-fns";
 import { fr } from "date-fns/locale";
-import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building, BarChart3, Shield, Users2, Zap, Heart, LayoutGrid, List } from "lucide-react";
+import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building, BarChart3, Shield, Users2, Zap, Heart, LayoutGrid, List, RefreshCw, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -44,7 +44,7 @@ import dynamic from 'next/dynamic';
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { cn } from "@/lib/utils";
 import { Crown, Layers } from "lucide-react";
-import { getMemberChiefStatuses } from "@/lib/comites-regionaux-2026";
+import { getMemberChiefStatuses, getMemberProfile } from "@/lib/comites-regionaux-2026";
 
 const DirectoireMap = dynamic<{ members: any[]; className?: string }>(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
   ssr: false,
@@ -140,8 +140,8 @@ export default function EmployeesPage() {
       case 'directoire': return 'Membres du Directoire';
       case 'personnel-siege': return 'Personnel Siège';
       case 'chauffeur-directoire': return 'Chauffeurs du Directoire';
-      case 'regional': return 'Comités Régionaux';
-      case 'all-geo': return 'Directoire & Comités Régionaux';
+      case 'regional': return 'Assemblée des Rois et Chefs Traditionnels (ARCT)';
+      case 'all-geo': return 'Directoire & Assemblée des Rois et Chefs (ARCT)';
       case 'garde-republicaine': return 'Garde Républicaine';
       case 'gendarme': return 'Gendarmes';
       default: return 'Effectif Global';
@@ -307,6 +307,7 @@ export default function EmployeesPage() {
       const normDept = (emp.Departement || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normSubPref = (emp.subPrefecture || emp.Commune || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const chiefStatuses = getMemberChiefStatuses(emp);
+      const memberProfile = getMemberProfile(emp);
 
       const _sortName = `${(emp.lastName || '').toLowerCase()} ${(emp.firstName || '').toLowerCase()}`;
       const _sortMatricule = normMatricule;
@@ -318,6 +319,7 @@ export default function EmployeesPage() {
         calculatedGroup: getEmployeeGroup(emp, departments),
         resolvedVillage,
         chiefStatuses,
+        memberProfile,
         _searchTokens: [normFullName, normName, normMatricule, normVillage, normPoste, normRegion, normDept, normSubPref],
         _normVillage: normVillage,
         _sortName,
@@ -352,7 +354,11 @@ export default function EmployeesPage() {
 
       let matchesMandat = true;
       if (isGeoTab) {
-        if (deferredMandatFilter === 'actuelle') {
+        if (deferredMandatFilter === 'reconduit') {
+          matchesMandat = employee.memberProfile === 'Reconduit' || employee.estRenouvele === true;
+        } else if (deferredMandatFilter === 'nouveau') {
+          matchesMandat = employee.memberProfile === 'Nouveau' || (employee.estRenouvele === false && employee.status === 'Actif');
+        } else if (deferredMandatFilter === 'actuelle') {
           matchesMandat = employee.estRenouvele !== false; // Active mandate if not explicitly archived
         } else if (deferredMandatFilter === 'precedente') {
           matchesMandat = employee.estRenouvele === false; // Previous mandate
@@ -386,6 +392,8 @@ export default function EmployeesPage() {
     let village = 0;
     let multi = 0;
     let roi = 0;
+    let reconduit = 0;
+    let nouveau = 0;
 
     const list = isGeoTab ? filteredEmployees : enrichedEmployees;
     for (let i = 0; i < list.length; i++) {
@@ -397,9 +405,11 @@ export default function EmployeesPage() {
       if (st.includes("Chef de Village")) village++;
       if (st.includes("Roi") || st.includes("Chef de Province")) roi++;
       if (st.length > 1) multi++;
+      if (emp.memberProfile === 'Reconduit') reconduit++;
+      if (emp.memberProfile === 'Nouveau') nouveau++;
     }
 
-    return { canton, tribu, village, multi, roi };
+    return { canton, tribu, village, multi, roi, reconduit, nouveau };
   }, [filteredEmployees, enrichedEmployees, isGeoTab]);
 
   // Adjust page safely
@@ -568,15 +578,15 @@ export default function EmployeesPage() {
       setSubPrefectureFilter('all');
       setVillageFilter('');
 
-      const params = new URLSearchParams(searchParams.toString());
+      const url = new URL(window.location.href);
       if (value === 'all') {
-        params.delete('filter');
+        url.searchParams.delete('filter');
       } else {
-        params.set('filter', value);
+        url.searchParams.set('filter', value);
       }
-      router.push(`/employees?${params.toString()}`);
+      window.history.replaceState(null, '', url.pathname + url.search);
     });
-  }
+  };
 
   const getEmployeeOrgUnit = (employee: Employe) => {
     const service = services.find(s => s.id === employee.serviceId);
@@ -669,18 +679,19 @@ export default function EmployeesPage() {
             </div>
           </div>
 
-          {/* Customary Chiefs KPIs for Regional / Geo tabs vs Standard HR KPIs */}
+          {/* Customary Chiefs & Regional Profiles KPIs */}
           <div className={cn(
             "grid gap-4 mb-6",
-            isGeoTab ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+            isGeoTab ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
           )}>
             {isGeoTab ? (
               [
                 { label: "Effectif Total", value: filteredEmployees.length, sub: "Membres du périmètre", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
+                { label: "Reconduits", value: chiefMetrics.reconduit, sub: "Mandat renouvelé", icon: RefreshCw, color: "text-emerald-600", bg: "bg-emerald-50/50" },
+                { label: "Nouveaux", value: chiefMetrics.nouveau, sub: "Nouveau membre", icon: UserPlus, color: "text-blue-600", bg: "bg-blue-50/50" },
                 { label: "Chefs de Canton", value: chiefMetrics.canton, sub: "Autorités cantonales", icon: Crown, color: "text-amber-600", bg: "bg-amber-50/50" },
                 { label: "Chefs de Tribu", value: chiefMetrics.tribu, sub: "Autorités de tribu", icon: Shield, color: "text-blue-600", bg: "bg-blue-50/50" },
                 { label: "Chefs de Village", value: chiefMetrics.village, sub: "Autorités villageoises", icon: Building, color: "text-emerald-600", bg: "bg-emerald-50/50" },
-                { label: "Plusieurs Casquettes", value: chiefMetrics.multi, sub: "Cumul de mandats/titres", icon: Layers, color: "text-purple-600", bg: "bg-purple-50/50" },
               ].map((stat, i) => (
                 <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
                   <CardContent className="p-5 relative">
@@ -730,25 +741,14 @@ export default function EmployeesPage() {
 
           <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
             <TabsList className="bg-white/20 backdrop-blur-xl border border-white/20 p-1 rounded-xl shadow-xl shadow-slate-200/50 flex h-auto overflow-x-auto no-scrollbar gap-1 mb-6">
-              {!isGeoTab && (
-                <>
-                  <TabsTrigger value="all" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Effectif Global</TabsTrigger>
-                  <TabsTrigger value="directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
-                  <TabsTrigger value="personnel-siege" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Personnel Siège</TabsTrigger>
-                  <TabsTrigger value="chauffeur-directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Chauffeurs</TabsTrigger>
-                  <TabsTrigger value="regional" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Comités Régionaux</TabsTrigger>
-                  <TabsTrigger value="garde-republicaine" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Garde Républicaine</TabsTrigger>
-                </>
-              )}
-              {isGeoTab && (
-                <>
-                  <TabsTrigger value="all-geo" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Membres Géo-localisés</TabsTrigger>
-                  <TabsTrigger value="directoire" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
-                  <TabsTrigger value="regional" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Comités Régionaux</TabsTrigger>
-                  <TabsTrigger value="garde-republicaine" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Garde Républicaine</TabsTrigger>
-                </>
-              )}
-              <TabsTrigger value="analytics" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all gap-2">
+              <TabsTrigger value="all" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Effectif Global</TabsTrigger>
+              <TabsTrigger value="directoire" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
+              <TabsTrigger value="personnel-siege" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Personnel Siège</TabsTrigger>
+              <TabsTrigger value="chauffeur-directoire" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Chauffeurs</TabsTrigger>
+              <TabsTrigger value="regional" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Assemblée Rois & Chefs (ARCT)</TabsTrigger>
+              <TabsTrigger value="garde-republicaine" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Garde Républicaine</TabsTrigger>
+              <TabsTrigger value="all-geo" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Membres Géo-localisés</TabsTrigger>
+              <TabsTrigger value="analytics" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all gap-2">
                 <BarChart3 className="h-4 w-4" /> Synthèse
               </TabsTrigger>
             </TabsList>
@@ -850,13 +850,15 @@ export default function EmployeesPage() {
                               setCurrentPage(1);
                             })}
                           >
-                            <SelectTrigger className="h-10 w-full md:w-[190px] rounded-lg border-slate-200 bg-amber-50/50 text-amber-900 font-medium text-sm">
-                              <SelectValue placeholder="Mandature" />
+                            <SelectTrigger className="h-10 w-full md:w-[200px] rounded-lg border-slate-200 bg-amber-50/50 text-amber-900 font-medium text-sm">
+                              <SelectValue placeholder="Profil / Mandat" />
                             </SelectTrigger>
                             <SelectContent className="rounded-lg border-slate-100 shadow-xl">
-                              <SelectItem value="all" className="font-medium">Toutes mandatures</SelectItem>
-                              <SelectItem value="actuelle" className="font-medium">Mandat Actuel</SelectItem>
-                              <SelectItem value="precedente" className="font-medium">Mandat Précédent</SelectItem>
+                              <SelectItem value="all" className="font-medium">Tous les membres</SelectItem>
+                              <SelectItem value="reconduit" className="font-medium text-emerald-700">Membres Reconduits</SelectItem>
+                              <SelectItem value="nouveau" className="font-medium text-blue-700">Nouveaux Membres</SelectItem>
+                              <SelectItem value="actuelle" className="font-medium">Mandat Actuel (Tous)</SelectItem>
+                              <SelectItem value="precedente" className="font-medium text-slate-500">Mandat Précédent (Archivés)</SelectItem>
                             </SelectContent>
                           </Select>
 
@@ -949,6 +951,7 @@ export default function EmployeesPage() {
                             {isGeoTab ? (
                               <>
                                 <TableHead>Titre / Fonction</TableHead>
+                                <TableHead className="text-center">Profil</TableHead>
                                 <TableHead>Région</TableHead>
                                 <TableHead>Département</TableHead>
                                 <TableHead>Village</TableHead>
@@ -974,6 +977,7 @@ export default function EmployeesPage() {
                                  {isGeoTab ? (
                                     <>
                                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -1059,6 +1063,25 @@ export default function EmployeesPage() {
                                           </span>
                                         ))}
                                       </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                      {employee.memberProfile ? (
+                                        <Badge className={cn(
+                                          "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border shadow-2xs whitespace-nowrap inline-flex items-center gap-1",
+                                          employee.memberProfile === 'Reconduit'
+                                            ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                            : "bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
+                                        )}>
+                                          {employee.memberProfile === 'Reconduit' ? (
+                                            <RefreshCw className="h-2.5 w-2.5" />
+                                          ) : (
+                                            <UserPlus className="h-2.5 w-2.5" />
+                                          )}
+                                          {employee.memberProfile}
+                                        </Badge>
+                                      ) : (
+                                        <span className="text-slate-300 font-bold text-xs">-</span>
+                                      )}
                                     </TableCell>
                                     <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region || '-'}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement || '-'}</TableCell>
@@ -1170,6 +1193,24 @@ export default function EmployeesPage() {
                                     </div>
                                     {isGeoTab ? (
                                       <>
+                                        {employee.memberProfile && (
+                                          <div className="flex justify-between items-center text-[10px]">
+                                            <span className="text-slate-400 font-bold uppercase tracking-widest">Profil</span>
+                                            <span className={cn(
+                                              "px-2 py-0.5 rounded-full font-black text-[9px] uppercase tracking-wider border inline-flex items-center gap-1",
+                                              employee.memberProfile === 'Reconduit'
+                                                ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                                                : "bg-blue-50 text-blue-700 border-blue-300"
+                                            )}>
+                                              {employee.memberProfile === 'Reconduit' ? (
+                                                <RefreshCw className="h-2 w-2" />
+                                              ) : (
+                                                <UserPlus className="h-2 w-2" />
+                                              )}
+                                              {employee.memberProfile}
+                                            </span>
+                                          </div>
+                                        )}
                                         <div className="flex justify-between items-center text-[10px]">
                                           <span className="text-slate-400 font-bold uppercase tracking-widest">Région</span>
                                           <span className="font-bold text-slate-700 truncate max-w-[120px]">{employee.Region || '-'}</span>

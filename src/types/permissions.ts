@@ -238,7 +238,7 @@ export const ENTERPRISE_ROLES: RoleConfig[] = [
     { id: 'gestionnaire-carburant', label: 'Gestionnaire de carburant', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['gestionnaire-carburant'] },
     { id: 'auditeur', label: 'Contrôleur / CAC', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['auditeur'] },
     { id: 'directoire-central', label: 'Membre du Directoire Central', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['directoire-central'] },
-    { id: 'comite-regional', label: 'Membre de Comité Régional', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['comite-regional'] },
+    { id: 'comite-regional', label: "Membre de l'Assemblée des Rois et Chefs Traditionnels (ARCT)", isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['comite-regional'] },
     { id: 'employe', label: 'Employé Opérationnel', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['employe'] },
     { id: 'employe-operationnel', label: 'Employé Opérationnel', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['employe-operationnel'] },
     { id: 'stagiaire', label: 'Stagiaire / Apprenti', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['stagiaire'] },

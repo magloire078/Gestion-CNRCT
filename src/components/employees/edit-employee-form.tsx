@@ -560,7 +560,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   </div>
                   <p className="text-[10px] text-slate-500 leading-relaxed">
                     {isTraditionalMode 
-                      ? "Options territoriales & titres de chefferie activés (Directoire, Comités Régionaux, Assemblée)."
+                      ? "Options territoriales & titres de chefferie activés (Directoire, Assemblée des Rois et Chefs - ARCT)."
                       : "Agent standard (les champs territoriaux et coutumiers sont masqués)."}
                   </p>
                 </div>
@@ -972,7 +972,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                         Rattachement Coutumier & Territorial
                       </CardTitle>
                       <CardDescription className="text-xs text-amber-700 mt-1">
-                        Ces informations sont configurées pour les membres du Directoire, des Comités Régionaux et de l'Assemblée des Rois et Chefs.
+                        Ces informations sont configurées pour les membres du Directoire et de l'Assemblée des Rois et Chefs Traditionnels (ARCT).
                       </CardDescription>
                     </div>
                     {Array.isArray(formData.statutChef) && formData.statutChef.length > 1 && (

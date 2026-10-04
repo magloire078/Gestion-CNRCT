@@ -33,16 +33,61 @@ const comitesByRegionDept = new Map<string, ComiteRegionalMember[]>();
 const memberLookupCache = new Map<string, ComiteRegionalMember | null>();
 const chiefStatusCache = new Map<string, ChiefStatusType[]>();
 
+interface IndexedComiteMember {
+  item: ComiteRegionalMember;
+  normFullName: string;
+  normReverseName: string;
+  normNom: string;
+  normPrenoms: string;
+  normReg: string;
+  normDept: string;
+  tokens: string[];
+}
+
+const indexedMembers: IndexedComiteMember[] = [];
+const tokenToMembersMap = new Map<string, IndexedComiteMember[]>();
+
 comitesRegionaux2026List.forEach(item => {
   const normFullName = normalizeStr(item.nomComplet);
   const normReverseName = normalizeStr(`${item.prenoms} ${item.nom}`);
   const normNom = normalizeStr(item.nom);
-  
+  const normPrenoms = normalizeStr(item.prenoms);
+  const normReg = normalizeStr(item.region);
+  const normDept = normalizeStr(item.department);
+
+  const rawTokens = item.nomComplet
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(t => t.length >= 2);
+
+  const indexed: IndexedComiteMember = {
+    item,
+    normFullName,
+    normReverseName,
+    normNom,
+    normPrenoms,
+    normReg,
+    normDept,
+    tokens: rawTokens
+  };
+
+  indexedMembers.push(indexed);
+
   if (normFullName) comitesByNormName.set(normFullName, item);
   if (normReverseName) comitesByNormName.set(normReverseName, item);
   if (normNom && !comitesByNormName.has(normNom)) comitesByNormName.set(normNom, item);
 
-  const regDeptKey = `${normalizeStr(item.region)}_${normalizeStr(item.department)}`;
+  rawTokens.forEach(t => {
+    if (!tokenToMembersMap.has(t)) {
+      tokenToMembersMap.set(t, []);
+    }
+    tokenToMembersMap.get(t)!.push(indexed);
+  });
+
+  const regDeptKey = `${normReg}_${normDept}`;
   if (!comitesByRegionDept.has(regDeptKey)) {
     comitesByRegionDept.set(regDeptKey, []);
   }
@@ -77,34 +122,29 @@ export function findComiteRegionalMember(nameOrFullName: string, region?: string
     .split(/\s+/)
     .filter(t => t.length >= 2);
 
-  // 1. Direct match or Substring match
-  for (let i = 0; i < comitesRegionaux2026List.length; i++) {
-    const item = comitesRegionaux2026List[i];
-    const itemNorm = normalizeStr(item.nomComplet);
-    const itemReverseNorm = normalizeStr(`${item.prenoms} ${item.nom}`);
-    if (norm === itemNorm || norm === itemReverseNorm) {
-      memberLookupCache.set(cacheKey, item);
-      return item;
+  // 1. Direct or Substring match
+  for (let i = 0; i < indexedMembers.length; i++) {
+    const indexed = indexedMembers[i];
+    if (norm === indexed.normFullName || norm === indexed.normReverseName) {
+      memberLookupCache.set(cacheKey, indexed.item);
+      return indexed.item;
     }
-    if (itemNorm.length >= 5 && (norm.includes(itemNorm) || itemNorm.includes(norm))) {
-      memberLookupCache.set(cacheKey, item);
-      return item;
+    if (indexed.normFullName.length >= 5 && (norm.includes(indexed.normFullName) || indexed.normFullName.includes(norm))) {
+      memberLookupCache.set(cacheKey, indexed.item);
+      return indexed.item;
     }
   }
 
-  // 2. Token overlap match (e.g. "KAREKE" + "CHRISTOPHE")
+  // 2. Token overlap match
   if (rawTokens.length >= 2) {
-    for (let i = 0; i < comitesRegionaux2026List.length; i++) {
-      const item = comitesRegionaux2026List[i];
-      const itemNomNorm = normalizeStr(item.nom);
-      const itemPrenomsNorm = normalizeStr(item.prenoms);
-      
-      const hasNom = rawTokens.some(t => itemNomNorm.includes(t) || t.includes(itemNomNorm));
-      const hasPrenom = rawTokens.some(t => itemPrenomsNorm.includes(t) || t.includes(itemPrenomsNorm));
+    for (let i = 0; i < indexedMembers.length; i++) {
+      const indexed = indexedMembers[i];
+      const hasNom = rawTokens.some(t => indexed.normNom.includes(t) || t.includes(indexed.normNom));
+      const hasPrenom = rawTokens.some(t => indexed.normPrenoms.includes(t) || t.includes(indexed.normPrenoms));
       
       if (hasNom && hasPrenom) {
-        memberLookupCache.set(cacheKey, item);
-        return item;
+        memberLookupCache.set(cacheKey, indexed.item);
+        return indexed.item;
       }
     }
   }
@@ -114,31 +154,26 @@ export function findComiteRegionalMember(nameOrFullName: string, region?: string
     const normReg = normalizeStr(region || '');
     const normDept = normalizeStr(department || '');
 
-    for (let i = 0; i < comitesRegionaux2026List.length; i++) {
-      const item = comitesRegionaux2026List[i];
-      const itemRegNorm = normalizeStr(item.region);
-      const itemDeptNorm = normalizeStr(item.department);
-      
-      const regMatch = !normReg || itemRegNorm.includes(normReg) || normReg.includes(itemRegNorm);
-      const deptMatch = !normDept || itemDeptNorm.includes(normDept) || normDept.includes(itemDeptNorm);
+    for (let i = 0; i < indexedMembers.length; i++) {
+      const indexed = indexedMembers[i];
+      const regMatch = !normReg || indexed.normReg.includes(normReg) || normReg.includes(indexed.normReg);
+      const deptMatch = !normDept || indexed.normDept.includes(normDept) || normDept.includes(indexed.normDept);
 
       if (regMatch || deptMatch) {
-        const itemNomNorm = normalizeStr(item.nom);
-        if (itemNomNorm.length >= 3 && rawTokens.some(t => t === itemNomNorm || itemNomNorm.includes(t))) {
-          memberLookupCache.set(cacheKey, item);
-          return item;
+        if (indexed.normNom.length >= 3 && rawTokens.some(t => t === indexed.normNom || indexed.normNom.includes(t))) {
+          memberLookupCache.set(cacheKey, indexed.item);
+          return indexed.item;
         }
       }
     }
   }
 
   // 4. Single token match if specific enough
-  for (let i = 0; i < comitesRegionaux2026List.length; i++) {
-    const item = comitesRegionaux2026List[i];
-    const itemNomNorm = normalizeStr(item.nom);
-    if (itemNomNorm.length >= 5 && rawTokens.includes(itemNomNorm)) {
-      memberLookupCache.set(cacheKey, item);
-      return item;
+  for (let i = 0; i < indexedMembers.length; i++) {
+    const indexed = indexedMembers[i];
+    if (indexed.normNom.length >= 5 && rawTokens.includes(indexed.normNom)) {
+      memberLookupCache.set(cacheKey, indexed.item);
+      return indexed.item;
     }
   }
 
@@ -223,4 +258,21 @@ export function getMemberChiefStatuses(emp: any): ChiefStatusType[] {
   const result = extractChiefStatuses(rawRole);
   chiefStatusCache.set(empKey, result);
   return result;
+}
+
+export function getMemberProfile(emp: any): 'Reconduit' | 'Nouveau' | '' {
+  if (!emp) return '';
+  if (emp.profile === 'Reconduit' || emp.profile === 'Nouveau') return emp.profile;
+  if (typeof emp.estRenouvele === 'boolean') {
+    return emp.estRenouvele ? 'Reconduit' : 'Nouveau';
+  }
+  const fullName = `${emp.lastName || ''} ${emp.firstName || ''}`.trim() || emp.name || '';
+  const comite = findComiteRegionalMember(fullName, emp.Region || emp.region, emp.Departement || emp.departement);
+  if (comite?.profile) {
+    const p = comite.profile.trim();
+    if (p.toLowerCase().includes('reconduit')) return 'Reconduit';
+    if (p.toLowerCase().includes('nouveau')) return 'Nouveau';
+    return p as any;
+  }
+  return '';
 }

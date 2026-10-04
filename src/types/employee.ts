@@ -105,6 +105,7 @@ export type Employe = {
     mandatDebut?: string; // YYYY-MM-DD
     mandatFin?: string; // YYYY-MM-DD
     estRenouvele?: boolean;
+    profile?: 'Nouveau' | 'Reconduit' | string;
     historiqueNominations?: Array<{
         periode: string; // e.g., "2018-2024"
         poste: string; // e.g., "Membre du Comité Régional"

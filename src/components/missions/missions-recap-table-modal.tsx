@@ -40,6 +40,9 @@ export function MissionsRecapTableModal({
   const [groupBy, setGroupBy] = useState<"objet" | "dossier">("objet");
   const [copied, setCopied] = useState(false);
 
+  // If modal is closed, skip calculations
+  if (!isOpen) return null;
+
   // Computations
   const { rows, totalCount, totalParticipants } = useMemo(() => {
     const totalCount = missions.length;

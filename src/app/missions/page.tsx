@@ -466,37 +466,37 @@ export default function MissionsPage() {
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [missions]);
 
-  const getTargetMissionDate = (m: Mission, target: "dateSaisie" | "missionDate"): Date | null => {
-    if (target === "dateSaisie") {
+  const missionDatesMap = useMemo(() => {
+    const map = new Map<string, { dateSaisieStr: string; missionDateStr: string; dateSaisieMonth: string; missionDateMonth: string; dateSaisieYear: string; missionDateYear: string }>();
+    missions.forEach(m => {
+      let ds: Date | null = null;
+      let md: Date | null = null;
       if (m.dateSaisie) {
         try {
           const d = parseISO(m.dateSaisie);
-          if (!isNaN(d.getTime())) return d;
+          if (!isNaN(d.getTime())) ds = d;
         } catch {}
       }
       if (m.startDate) {
         try {
           const d = parseISO(m.startDate);
-          if (!isNaN(d.getTime())) return d;
+          if (!isNaN(d.getTime())) md = d;
         } catch {}
       }
-      return null;
-    } else {
-      if (m.startDate) {
-        try {
-          const d = parseISO(m.startDate);
-          if (!isNaN(d.getTime())) return d;
-        } catch {}
-      }
-      if (m.dateSaisie) {
-        try {
-          const d = parseISO(m.dateSaisie);
-          if (!isNaN(d.getTime())) return d;
-        } catch {}
-      }
-      return null;
-    }
-  };
+      const finalDs = ds || md;
+      const finalMd = md || ds;
+
+      map.set(m.id, {
+        dateSaisieStr: finalDs ? format(finalDs, "yyyy-MM-dd") : "",
+        missionDateStr: finalMd ? format(finalMd, "yyyy-MM-dd") : "",
+        dateSaisieMonth: finalDs ? format(finalDs, "MM") : "",
+        missionDateMonth: finalMd ? format(finalMd, "MM") : "",
+        dateSaisieYear: finalDs ? finalDs.getFullYear().toString() : "",
+        missionDateYear: finalMd ? finalMd.getFullYear().toString() : "",
+      });
+    });
+    return map;
+  }, [missions]);
 
   const filteredMissions = useMemo(() => {
     return missions.filter(mission => {
@@ -522,38 +522,27 @@ export default function MissionsPage() {
         }
       }
 
-      // Date Evaluation
-      const targetDate = getTargetMissionDate(mission, dateFilterTarget);
+      // Fast Date Evaluation
+      const dateInfo = missionDatesMap.get(mission.id);
+      const targetDateStr = dateFilterTarget === "dateSaisie" ? dateInfo?.dateSaisieStr : dateInfo?.missionDateStr;
+      const targetMonth = dateFilterTarget === "dateSaisie" ? dateInfo?.dateSaisieMonth : dateInfo?.missionDateMonth;
+      const targetYear = dateFilterTarget === "dateSaisie" ? dateInfo?.dateSaisieYear : dateInfo?.missionDateYear;
 
       // Filter by Custom Date Range (Période: Du ... Au ...)
       if (startDateFilter || endDateFilter) {
-        if (!targetDate) return false;
-        const targetDateFormatted = format(targetDate, "yyyy-MM-dd");
-
-        if (startDateFilter && targetDateFormatted < startDateFilter) {
-          return false;
-        }
-        if (endDateFilter && targetDateFormatted > endDateFilter) {
-          return false;
-        }
+        if (!targetDateStr) return false;
+        if (startDateFilter && targetDateStr < startDateFilter) return false;
+        if (endDateFilter && targetDateStr > endDateFilter) return false;
       }
 
       // Filter by Month
       if (selectedMonth !== "all") {
-        if (!targetDate) return false;
-        const monthFormatted = format(targetDate, "MM");
-        if (monthFormatted !== selectedMonth) {
-          return false;
-        }
+        if (!targetMonth || targetMonth !== selectedMonth) return false;
       }
 
       // Filter by Year
       if (selectedYear !== "all") {
-        if (!targetDate) return false;
-        const yearFormatted = targetDate.getFullYear().toString();
-        if (yearFormatted !== selectedYear) {
-          return false;
-        }
+        if (!targetYear || targetYear !== selectedYear) return false;
       }
 
       // Search term
@@ -576,6 +565,7 @@ export default function MissionsPage() {
     });
   }, [
     missions,
+    missionDatesMap,
     searchTerm,
     selectedStatus,
     dossierNumberFilter,
@@ -725,7 +715,7 @@ export default function MissionsPage() {
           <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
             <Button 
               variant="outline" 
-              onClick={() => setShowRecapModal(true)} 
+              onClick={() => startTransition(() => setShowRecapModal(true))} 
               className="h-10 rounded-xl border-slate-200/80 bg-white px-3.5 font-bold text-xs text-slate-700 hover:bg-slate-50 transition-all shadow-sm gap-2"
               title="Afficher le tableau récapitulatif des ordres de mission"
             >
@@ -986,13 +976,16 @@ export default function MissionsPage() {
                   className="h-10 pl-8 pr-7 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none"
                   value={dossierNumberFilter}
                   onChange={(e) => {
-                    setDossierNumberFilter(e.target.value);
-                    setCurrentPage(1);
+                    const val = e.target.value;
+                    startTransition(() => {
+                      setDossierNumberFilter(val);
+                      setCurrentPage(1);
+                    });
                   }}
                 />
                 {dossierNumberFilter && (
                   <button 
-                    onClick={() => setDossierNumberFilter("")}
+                    onClick={() => startTransition(() => setDossierNumberFilter(""))}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
                     <XCircle className="h-3.5 w-3.5" />
@@ -1005,12 +998,14 @@ export default function MissionsPage() {
                 <Select
                   value={selectedMonth}
                   onValueChange={(val) => {
-                    setSelectedMonth(val);
-                    if (val !== "all") {
-                      setStartDateFilter("");
-                      setEndDateFilter("");
-                    }
-                    setCurrentPage(1);
+                    startTransition(() => {
+                      setSelectedMonth(val);
+                      if (val !== "all") {
+                        setStartDateFilter("");
+                        setEndDateFilter("");
+                      }
+                      setCurrentPage(1);
+                    });
                   }}
                 >
                   <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none">
@@ -1033,8 +1028,10 @@ export default function MissionsPage() {
                 <Select
                   value={selectedYear}
                   onValueChange={(val) => {
-                    setSelectedYear(val);
-                    setCurrentPage(1);
+                    startTransition(() => {
+                      setSelectedYear(val);
+                      setCurrentPage(1);
+                    });
                   }}
                 >
                   <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none">
@@ -1062,9 +1059,12 @@ export default function MissionsPage() {
                   className="h-10 pl-8 pr-2 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none"
                   value={startDateFilter}
                   onChange={(e) => {
-                    setStartDateFilter(e.target.value);
-                    if (e.target.value) setSelectedMonth("all");
-                    setCurrentPage(1);
+                    const val = e.target.value;
+                    startTransition(() => {
+                      setStartDateFilter(val);
+                      if (val) setSelectedMonth("all");
+                      setCurrentPage(1);
+                    });
                   }}
                 />
               </div>
@@ -1080,9 +1080,12 @@ export default function MissionsPage() {
                   className="h-10 pl-8 pr-2 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none"
                   value={endDateFilter}
                   onChange={(e) => {
-                    setEndDateFilter(e.target.value);
-                    if (e.target.value) setSelectedMonth("all");
-                    setCurrentPage(1);
+                    const val = e.target.value;
+                    startTransition(() => {
+                      setEndDateFilter(val);
+                      if (val) setSelectedMonth("all");
+                      setCurrentPage(1);
+                    });
                   }}
                 />
               </div>
@@ -1095,13 +1098,16 @@ export default function MissionsPage() {
                   className="h-10 pl-8 pr-7 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none"
                   value={searchTerm}
                   onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
+                    const val = e.target.value;
+                    startTransition(() => {
+                      setSearchTerm(val);
+                      setCurrentPage(1);
+                    });
                   }}
                 />
                 {searchTerm && (
                   <button 
-                    onClick={() => setSearchTerm("")}
+                    onClick={() => startTransition(() => setSearchTerm(""))}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
                     <XCircle className="h-3.5 w-3.5" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, startTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -429,7 +429,7 @@ export default function MissionReportPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowRecapModal(true)}
+              onClick={() => startTransition(() => setShowRecapModal(true))}
               className="h-10 rounded-xl border-slate-200 bg-white font-bold text-xs text-slate-700 hover:bg-slate-50 gap-2 shadow-2xs"
             >
               <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
@@ -464,7 +464,7 @@ export default function MissionReportPage() {
               {/* Quick Target Toggle: Date de Saisie vs Date Déroulement */}
               <div className="inline-flex items-center bg-white border border-slate-200/80 rounded-xl p-0.5 text-[11px] font-bold shadow-2xs self-start sm:self-auto">
                 <button
-                  onClick={() => setDateTarget("dateSaisie")}
+                  onClick={() => startTransition(() => setDateTarget("dateSaisie"))}
                   className={cn(
                     "px-2.5 py-1 rounded-lg transition-all text-[11px]",
                     dateTarget === "dateSaisie"
@@ -475,7 +475,7 @@ export default function MissionReportPage() {
                   Date de saisie
                 </button>
                 <button
-                  onClick={() => setDateTarget("startDate")}
+                  onClick={() => startTransition(() => setDateTarget("startDate"))}
                   className={cn(
                     "px-2.5 py-1 rounded-lg transition-all text-[11px]",
                     dateTarget === "startDate"
@@ -496,7 +496,13 @@ export default function MissionReportPage() {
                 <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                   Année Fiscale
                 </Label>
-                <Select value={year} onValueChange={(val) => { setYear(val); setStartDate(""); setEndDate(""); }}>
+                <Select value={year} onValueChange={(val) => {
+                  startTransition(() => {
+                    setYear(val);
+                    setStartDate("");
+                    setEndDate("");
+                  });
+                }}>
                   <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white font-bold text-xs shadow-2xs">
                     <SelectValue placeholder="Année" />
                   </SelectTrigger>
@@ -514,7 +520,13 @@ export default function MissionReportPage() {
                 <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                   Période Mensuelle
                 </Label>
-                <Select value={month} onValueChange={(val) => { setMonth(val); setStartDate(""); setEndDate(""); }}>
+                <Select value={month} onValueChange={(val) => {
+                  startTransition(() => {
+                    setMonth(val);
+                    setStartDate("");
+                    setEndDate("");
+                  });
+                }}>
                   <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white font-bold text-xs shadow-2xs">
                     <SelectValue placeholder="Mois" />
                   </SelectTrigger>
@@ -535,10 +547,11 @@ export default function MissionReportPage() {
                   type="date"
                   value={startDate}
                   onChange={(e) => {
-                    setStartDate(e.target.value);
-                    if (e.target.value) {
-                      setMonth("all");
-                    }
+                    const val = e.target.value;
+                    startTransition(() => {
+                      setStartDate(val);
+                      if (val) setMonth("all");
+                    });
                   }}
                   className="h-10 rounded-xl border-slate-200 bg-white text-xs font-semibold shadow-2xs"
                 />
@@ -553,10 +566,11 @@ export default function MissionReportPage() {
                   type="date"
                   value={endDate}
                   onChange={(e) => {
-                    setEndDate(e.target.value);
-                    if (e.target.value) {
-                      setMonth("all");
-                    }
+                    const val = e.target.value;
+                    startTransition(() => {
+                      setEndDate(val);
+                      if (val) setMonth("all");
+                    });
                   }}
                   className="h-10 rounded-xl border-slate-200 bg-white text-xs font-semibold shadow-2xs"
                 />
@@ -567,7 +581,7 @@ export default function MissionReportPage() {
             <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100 text-[11px]">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Raccourcis :</span>
               <button
-                onClick={() => { setYear(currentYear); setMonth("all"); setStartDate(""); setEndDate(""); }}
+                onClick={() => startTransition(() => { setYear(currentYear); setMonth("all"); setStartDate(""); setEndDate(""); })}
                 className={cn(
                   "px-2.5 py-1 rounded-lg font-bold transition-all",
                   year === currentYear && month === "all" && !startDate && !endDate
@@ -578,7 +592,7 @@ export default function MissionReportPage() {
                 Année {currentYear}
               </button>
               <button
-                onClick={() => { setYear(currentYear); setMonth(currentMonth); setStartDate(""); setEndDate(""); }}
+                onClick={() => startTransition(() => { setYear(currentYear); setMonth(currentMonth); setStartDate(""); setEndDate(""); })}
                 className={cn(
                   "px-2.5 py-1 rounded-lg font-bold transition-all",
                   year === currentYear && month === currentMonth && !startDate && !endDate
@@ -589,7 +603,7 @@ export default function MissionReportPage() {
                 Ce Mois ({MONTHS.find(m => m.value === currentMonth)?.label})
               </button>
               <button
-                onClick={() => { setYear("all"); setMonth("all"); setStartDate(""); setEndDate(""); }}
+                onClick={() => startTransition(() => { setYear("all"); setMonth("all"); setStartDate(""); setEndDate(""); })}
                 className={cn(
                   "px-2.5 py-1 rounded-lg font-bold transition-all",
                   year === "all" && month === "all" && !startDate && !endDate

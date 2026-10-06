@@ -2,8 +2,7 @@
 
 import React, { useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown } from "lucide-react";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -39,6 +38,7 @@ export const PaginationControls = React.memo(function PaginationControls({
 
   const handlePageSizeChange = (value: string) => {
     const newSize = Number(value);
+    if (newSize === itemsPerPage) return;
     startLocalTransition(() => {
       onItemsPerPageChange(newSize);
       onPageChange(1);
@@ -54,21 +54,21 @@ export const PaginationControls = React.memo(function PaginationControls({
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium hidden sm:block">Lignes par page</p>
           <p className="text-sm font-medium sm:hidden">Lignes</p>
-          <Select
-            value={`${itemsPerPage}`}
-            onValueChange={handlePageSizeChange}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={itemsPerPage} />
-            </SelectTrigger>
-            <SelectContent side="top">
+          <div className="relative">
+            <select
+              aria-label="Lignes par page"
+              value={itemsPerPage}
+              onChange={(e) => handlePageSizeChange(e.target.value)}
+              className="h-8 w-[72px] appearance-none rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 pl-2.5 pr-6 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
               {[10, 25, 50, 100].map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
+                <option key={pageSize} value={pageSize}>
                   {pageSize}
-                </SelectItem>
+                </option>
               ))}
-            </SelectContent>
-          </Select>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex w-auto sm:w-[100px] items-center justify-center text-sm font-medium">

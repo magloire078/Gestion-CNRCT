@@ -651,12 +651,32 @@ export default function MissionsPage() {
   }, [userMissions]);
 
   const filteredStats = useMemo(() => {
-    const totalDossiers = filteredMissions.length;
+    const total = filteredMissions.length;
+    const ongoing = filteredMissions.filter(m => m.status === 'En cours').length;
+    const planned = filteredMissions.filter(m => m.status === 'Planifiée').length;
+    const completed = filteredMissions.filter(m => m.status === 'Terminée').length;
+
     const totalParticipants = filteredMissions.reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const ongoingParticipants = filteredMissions.filter(m => m.status === 'En cours').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const plannedParticipants = filteredMissions.filter(m => m.status === 'Planifiée').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const completedParticipants = filteredMissions.filter(m => m.status === 'Terminée').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+
     const uniqueAgents = new Set(
       filteredMissions.flatMap(m => (m.participants || []).map(p => p.employeeId || p.employeeName).filter(Boolean))
     ).size;
-    return { totalDossiers, totalParticipants, uniqueAgents };
+
+    return { 
+      total,
+      totalDossiers: total,
+      ongoing,
+      planned,
+      completed,
+      totalParticipants, 
+      ongoingParticipants,
+      plannedParticipants,
+      completedParticipants,
+      uniqueAgents 
+    };
   }, [filteredMissions]);
 
   return (
@@ -706,9 +726,9 @@ export default function MissionsPage() {
           </div>
         </div>
 
-        {/* 4 KPI Metric Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 lg:gap-4">
-          {/* Total */}
+        {/* 5 KPI Metric Cards for Displayed / Filtered Missions */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-4">
+          {/* Total Dossiers */}
           <div 
             onClick={() => setSelectedStatus("all")}
             className={cn(
@@ -725,11 +745,32 @@ export default function MissionsPage() {
               </div>
             </div>
             <div className="text-2xl lg:text-3xl font-black text-slate-900 mt-2">
-              {loading ? <Skeleton className="h-8 w-16" /> : stats.total}
+              {loading ? <Skeleton className="h-8 w-16" /> : filteredStats.total}
             </div>
-            <div className="text-[10px] font-medium text-slate-500 mt-1 flex items-center gap-1">
-              <Users className="h-3 w-3 text-slate-400 shrink-0" />
-              <span>{stats.totalParticipants} participants au total</span>
+            <div className="text-[10px] font-medium text-slate-400 mt-1">
+              {hasActiveFilters ? `sur ${stats.total} au total` : "Registre global actif"}
+            </div>
+          </div>
+
+          {/* Total Participants à l'ensemble des missions affichées */}
+          <div 
+            className="rounded-2xl bg-white p-4 lg:p-5 border border-indigo-200/80 shadow-sm transition-all duration-200 group bg-gradient-to-br from-white to-indigo-50/30"
+          >
+            <div className="flex items-start justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-indigo-700">
+                Total Participants
+              </span>
+              <div className="h-9 w-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Users className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl lg:text-3xl font-black text-indigo-950 mt-2">
+              {loading ? <Skeleton className="h-8 w-16" /> : filteredStats.totalParticipants}
+            </div>
+            <div className="text-[10px] font-medium text-indigo-600/80 mt-1">
+              {filteredStats.uniqueAgents > 0 
+                ? `${filteredStats.uniqueAgents} agents uniques mobilisés` 
+                : "Membres déployés"}
             </div>
           </div>
 
@@ -750,11 +791,10 @@ export default function MissionsPage() {
               </div>
             </div>
             <div className="text-2xl lg:text-3xl font-black text-slate-900 mt-2">
-              {loading ? <Skeleton className="h-8 w-16" /> : stats.ongoing}
+              {loading ? <Skeleton className="h-8 w-16" /> : filteredStats.ongoing}
             </div>
             <div className="text-[10px] font-medium text-amber-600 mt-1 flex items-center gap-1">
-              <Users className="h-3 w-3 text-amber-500 shrink-0" />
-              <span>{stats.ongoingParticipants} agents sur le terrain</span>
+              <span>{filteredStats.ongoingParticipants} agents sur le terrain</span>
             </div>
           </div>
 
@@ -775,11 +815,10 @@ export default function MissionsPage() {
               </div>
             </div>
             <div className="text-2xl lg:text-3xl font-black text-slate-900 mt-2">
-              {loading ? <Skeleton className="h-8 w-16" /> : stats.planned}
+              {loading ? <Skeleton className="h-8 w-16" /> : filteredStats.planned}
             </div>
             <div className="text-[10px] font-medium text-blue-600 mt-1 flex items-center gap-1">
-              <Users className="h-3 w-3 text-blue-500 shrink-0" />
-              <span>{stats.plannedParticipants} agents programmés</span>
+              <span>{filteredStats.plannedParticipants} agents programmés</span>
             </div>
           </div>
 
@@ -800,11 +839,10 @@ export default function MissionsPage() {
               </div>
             </div>
             <div className="text-2xl lg:text-3xl font-black text-slate-900 mt-2">
-              {loading ? <Skeleton className="h-8 w-16" /> : stats.completed}
+              {loading ? <Skeleton className="h-8 w-16" /> : filteredStats.completed}
             </div>
             <div className="text-[10px] font-medium text-emerald-600 mt-1 flex items-center gap-1">
-              <Users className="h-3 w-3 text-emerald-500 shrink-0" />
-              <span>{stats.completedParticipants} agents clôturés</span>
+              <span>{filteredStats.completedParticipants} agents clôturés</span>
             </div>
           </div>
         </div>
@@ -818,10 +856,10 @@ export default function MissionsPage() {
               {/* Status Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
                 {[
-                  { id: "all", label: "Toutes", count: stats.total },
-                  { id: "En cours", label: "En cours", count: stats.ongoing },
-                  { id: "Planifiée", label: "Planifiées", count: stats.planned },
-                  { id: "Terminée", label: "Terminées", count: stats.completed },
+                  { id: "all", label: "Toutes", count: filteredStats.total },
+                  { id: "En cours", label: "En cours", count: filteredStats.ongoing },
+                  { id: "Planifiée", label: "Planifiées", count: filteredStats.planned },
+                  { id: "Terminée", label: "Terminées", count: filteredStats.completed },
                 ].map(filter => (
                   <button
                     key={filter.id}

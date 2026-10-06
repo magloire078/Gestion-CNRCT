@@ -498,7 +498,8 @@ export default function MissionsPage() {
     return map;
   }, [missions]);
 
-  const filteredMissions = useMemo(() => {
+  // Base filtering by search, dossier number, dates (excluding selectedStatus tab)
+  const baseFilteredMissions = useMemo(() => {
     return missions.filter(mission => {
       // Data-level filtering: If not admin/HR/manager, only show missions where user is a participant
       if (!canManageAllMissions && user?.employeeId) {
@@ -507,10 +508,6 @@ export default function MissionsPage() {
           (user.name && p.employeeName && p.employeeName.toLowerCase().trim() === user.name.toLowerCase().trim())
         );
         if (!isParticipant) return false;
-      }
-
-      if (selectedStatus !== "all" && mission.status !== selectedStatus) {
-        return false;
       }
 
       // Filter by Dossier Number
@@ -567,7 +564,6 @@ export default function MissionsPage() {
     missions,
     missionDatesMap,
     searchTerm,
-    selectedStatus,
     dossierNumberFilter,
     selectedMonth,
     selectedYear,
@@ -577,6 +573,11 @@ export default function MissionsPage() {
     canManageAllMissions,
     user?.employeeId
   ]);
+
+  const filteredMissions = useMemo(() => {
+    if (selectedStatus === "all") return baseFilteredMissions;
+    return baseFilteredMissions.filter(mission => mission.status === selectedStatus);
+  }, [baseFilteredMissions, selectedStatus]);
 
   const hasActiveFilters = 
     searchTerm !== "" || 
@@ -635,7 +636,7 @@ export default function MissionsPage() {
       ongoing, 
       planned, 
       completed,
-      totalParticipants,
+      totalParticipants, 
       ongoingParticipants,
       plannedParticipants,
       completedParticipants
@@ -643,23 +644,24 @@ export default function MissionsPage() {
   }, [userMissions]);
 
   const filteredStats = useMemo(() => {
-    const total = filteredMissions.length;
-    const ongoing = filteredMissions.filter(m => m.status === 'En cours').length;
-    const planned = filteredMissions.filter(m => m.status === 'Planifiée').length;
-    const completed = filteredMissions.filter(m => m.status === 'Terminée').length;
+    const total = baseFilteredMissions.length;
+    const ongoing = baseFilteredMissions.filter(m => m.status === 'En cours').length;
+    const planned = baseFilteredMissions.filter(m => m.status === 'Planifiée').length;
+    const completed = baseFilteredMissions.filter(m => m.status === 'Terminée').length;
 
-    const totalParticipants = filteredMissions.reduce((acc, m) => acc + (m.participants?.length || 0), 0);
-    const ongoingParticipants = filteredMissions.filter(m => m.status === 'En cours').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
-    const plannedParticipants = filteredMissions.filter(m => m.status === 'Planifiée').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
-    const completedParticipants = filteredMissions.filter(m => m.status === 'Terminée').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const activeMissions = selectedStatus === "all" ? baseFilteredMissions : filteredMissions;
+    const totalParticipants = activeMissions.reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const ongoingParticipants = baseFilteredMissions.filter(m => m.status === 'En cours').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const plannedParticipants = baseFilteredMissions.filter(m => m.status === 'Planifiée').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const completedParticipants = baseFilteredMissions.filter(m => m.status === 'Terminée').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
 
     const uniqueAgents = new Set(
-      filteredMissions.flatMap(m => (m.participants || []).map(p => p.employeeId || p.employeeName).filter(Boolean))
+      activeMissions.flatMap(m => (m.participants || []).map(p => p.employeeId || p.employeeName).filter(Boolean))
     ).size;
 
     return { 
       total,
-      totalDossiers: total,
+      totalDossiers: activeMissions.length,
       ongoing,
       planned,
       completed,
@@ -669,7 +671,7 @@ export default function MissionsPage() {
       completedParticipants,
       uniqueAgents 
     };
-  }, [filteredMissions]);
+  }, [baseFilteredMissions, filteredMissions, selectedStatus]);
 
   const activePeriodLabel = useMemo(() => {
     const parts: string[] = [];

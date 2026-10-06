@@ -40,7 +40,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import type { Mission, MissionParticipant, Employe, Fleet } from "@/lib/data";
 import { subscribeToEmployees } from "@/services/employee-service";
-import { getLatestNumeroOrdre, incrementOrderNumberString } from "@/services/mission-service";
+import { getLatestNumeroOrdre, incrementOrderNumberString, computeMissionStatus } from "@/services/mission-service";
 import { getVehicles } from "@/services/fleet-service";
 import { cn, formatSignataireTitle } from "@/lib/utils";
 import { SearchableSelect } from "@/components/ui/searchable-select";
@@ -72,6 +72,17 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
     const [latestNumeroOrdre, setLatestNumeroOrdre] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("general");
+
+    useEffect(() => {
+        if (startDate) {
+            const sStr = format(startDate, "yyyy-MM-dd");
+            const eStr = endDate ? format(endDate, "yyyy-MM-dd") : sStr;
+            const autoStatus = computeMissionStatus(sStr, eStr, status);
+            if (status !== 'Annulée') {
+                setStatus(autoStatus);
+            }
+        }
+    }, [startDate, endDate]);
 
     useEffect(() => {
         const unsubscribe = subscribeToEmployees((fetched) => {

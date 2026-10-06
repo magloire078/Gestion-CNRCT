@@ -40,6 +40,39 @@ async function notifyParticipants(mission: Omit<Mission, 'id'> | Mission) {
 }
 
 
+/**
+ * Automatically computes mission status based on dates:
+ * - 'Planifiée' : la date n'est pas encore arrivée (today < startDate)
+ * - 'En cours' : nous sommes dans la période (startDate <= today <= endDate)
+ * - 'Terminée' : lorsqu'elle est achevée (today > endDate)
+ * - 'Annulée' : reste 'Annulée' si spécifiquement annulée
+ */
+export function computeMissionStatus(
+    startDate?: string | null,
+    endDate?: string | null,
+    currentStatus?: string | null
+): 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée' {
+    if (currentStatus === 'Annulée') return 'Annulée';
+    if (!startDate || startDate.trim() === '') return (currentStatus as any) || 'Planifiée';
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    const cleanStart = startDate.trim().slice(0, 10);
+    const cleanEnd = (endDate && endDate.trim() !== '' ? endDate.trim() : cleanStart).slice(0, 10);
+
+    if (cleanStart > todayStr) {
+        return 'Planifiée';
+    }
+    if (cleanEnd < todayStr) {
+        return 'Terminée';
+    }
+    return 'En cours';
+}
+
 const syncParticipantIds = (mission: Omit<Mission, 'id'> | Partial<Mission>): string[] => {
     if (!mission.participants) return [];
     return mission.participants
@@ -62,7 +95,9 @@ export function subscribeToMissions(
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const missions = snapshot.docs.map((doc: any) => {
-                const data = { id: doc.id, ...doc.data() };
+                const rawData = doc.data();
+                const computedStatus = computeMissionStatus(rawData.startDate, rawData.endDate, rawData.status);
+                const data = { id: doc.id, ...rawData, status: computedStatus };
                 const result = missionSchema.safeParse(data);
                 if (!result.success) {
                     console.error(`[MissionService] validation error for ${doc.id}:`, result.error.format());
@@ -90,10 +125,13 @@ export async function getMissions(): Promise<Mission[]> {
     try {
         const snapshot = await getDocs(missionsCollection);
         return snapshot.docs.map((doc: any) => {
+            const rawData = doc.data();
+            const computedStatus = computeMissionStatus(rawData.startDate, rawData.endDate, rawData.status);
             const data = { 
                 id: doc.id, 
                 participants: [], // Default to empty array
-                ...doc.data() 
+                ...rawData,
+                status: computedStatus
             };
             const result = missionSchema.safeParse(data);
             if (!result.success) {
@@ -114,7 +152,9 @@ export async function getMission(id: string): Promise<Mission | null> {
     const docRef = doc(db, 'missions', id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as Mission;
+        const rawData = docSnap.data();
+        const computedStatus = computeMissionStatus(rawData.startDate, rawData.endDate, rawData.status);
+        return { id: docSnap.id, ...rawData, status: computedStatus } as Mission;
     }
     return null;
 }
@@ -141,8 +181,11 @@ export async function addMission(missionDataToAdd: Omit<Mission, 'id'>): Promise
         // Non-blocking
     }
 
+    const computedStatus = computeMissionStatus(missionDataToAdd.startDate, missionDataToAdd.endDate, missionDataToAdd.status);
+
     const finalData = { 
         ...missionDataToAdd, 
+        status: computedStatus,
         numeroMission: finalNumeroMission,
         dateSaisie: missionDataToAdd.dateSaisie || new Date().toISOString().split('T')[0],
         participantIds 
@@ -163,7 +206,14 @@ export async function updateMission(id: string, dataToUpdate: Partial<Mission>):
         originalMission = await getMission(id);
     }
 
-    await updateDoc(docRef, dataToUpdate);
+    const payload = { ...dataToUpdate };
+    if (payload.startDate !== undefined || payload.endDate !== undefined) {
+        if (payload.status !== 'Annulée') {
+            payload.status = computeMissionStatus(payload.startDate, payload.endDate, payload.status);
+        }
+    }
+
+    await updateDoc(docRef, payload);
 
     // Notify only new participants
     if (dataToUpdate.participants && originalMission) {

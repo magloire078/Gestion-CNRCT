@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { Mission } from "@/lib/data";
-import { getLatestMissionNumber } from "@/services/mission-service";
+import { getLatestMissionNumber, computeMissionStatus } from "@/services/mission-service";
 import { cn, formatSignataireTitle } from "@/lib/utils";
 import { CalendarIcon, Loader2, LogOut, PlusCircle, MapPin, FileText, AlertCircle, Bookmark, UserCheck } from "lucide-react";
 import type { Employe } from "@/lib/data";
@@ -64,6 +64,17 @@ export function AddMissionSheet({
   const [signataireName, setSignataireName] = useState("");
   const [signataireTitle, setSignataireTitle] = useState("");
   const [employees, setEmployees] = useState<Employe[]>([]);
+
+  useEffect(() => {
+    if (startDate) {
+      const sStr = format(startDate, "yyyy-MM-dd");
+      const eStr = endDate ? format(endDate, "yyyy-MM-dd") : sStr;
+      const autoStatus = computeMissionStatus(sStr, eStr, status);
+      if (status !== 'Annulée') {
+        setStatus(autoStatus);
+      }
+    }
+  }, [startDate, endDate]);
 
   const [loadingInitial, setLoadingInitial] = useState(true);
 

@@ -6,7 +6,7 @@ import {
   MoreHorizontal, FileText, Calendar,
   CheckCircle2, Clock, PlayCircle, MapPin, 
   ChevronRight, Sparkles, Filter, Users, XCircle, ArrowUpRight,
-  Printer
+  Printer, RotateCcw, Hash
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Mission, OrganizationSettings, MissionParticipant } from "@/lib/data";
 import { AddMissionSheet } from "@/components/missions/add-mission-sheet";
 import { Input } from "@/components/ui/input";
@@ -331,6 +338,21 @@ const MissionTableRow = React.memo(function MissionTableRow({
   );
 });
 
+const MONTHS = [
+  { value: "01", label: "Janvier" },
+  { value: "02", label: "Février" },
+  { value: "03", label: "Mars" },
+  { value: "04", label: "Avril" },
+  { value: "05", label: "Mai" },
+  { value: "06", label: "Juin" },
+  { value: "07", label: "Juillet" },
+  { value: "08", label: "Août" },
+  { value: "09", label: "Septembre" },
+  { value: "10", label: "Octobre" },
+  { value: "11", label: "Novembre" },
+  { value: "12", label: "Décembre" },
+];
+
 export default function MissionsPage() {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -338,6 +360,12 @@ export default function MissionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [dossierNumberFilter, setDossierNumberFilter] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [startDateFilter, setStartDateFilter] = useState<string>("");
+  const [endDateFilter, setEndDateFilter] = useState<string>("");
+  const [dateFilterTarget, setDateFilterTarget] = useState<"dateSaisie" | "missionDate">("dateSaisie");
   const { toast } = useToast();
   const router = useRouter();
   const { user, hasPermission } = useAuth();
@@ -417,6 +445,57 @@ export default function MissionsPage() {
     }
   };
 
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    missions.forEach(m => {
+      [m.dateSaisie, m.startDate, m.endDate].forEach(dateStr => {
+        if (dateStr) {
+          try {
+            const d = parseISO(dateStr);
+            if (!isNaN(d.getTime())) {
+              const y = d.getFullYear().toString();
+              if (y && y.length === 4) years.add(y);
+            }
+          } catch {}
+        }
+      });
+    });
+    years.add(new Date().getFullYear().toString());
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [missions]);
+
+  const getTargetMissionDate = (m: Mission, target: "dateSaisie" | "missionDate"): Date | null => {
+    if (target === "dateSaisie") {
+      if (m.dateSaisie) {
+        try {
+          const d = parseISO(m.dateSaisie);
+          if (!isNaN(d.getTime())) return d;
+        } catch {}
+      }
+      if (m.startDate) {
+        try {
+          const d = parseISO(m.startDate);
+          if (!isNaN(d.getTime())) return d;
+        } catch {}
+      }
+      return null;
+    } else {
+      if (m.startDate) {
+        try {
+          const d = parseISO(m.startDate);
+          if (!isNaN(d.getTime())) return d;
+        } catch {}
+      }
+      if (m.dateSaisie) {
+        try {
+          const d = parseISO(m.dateSaisie);
+          if (!isNaN(d.getTime())) return d;
+        } catch {}
+      }
+      return null;
+    }
+  };
+
   const filteredMissions = useMemo(() => {
     return missions.filter(mission => {
       // Data-level filtering: If not admin/HR/manager, only show missions where user is a participant
@@ -432,20 +511,102 @@ export default function MissionsPage() {
         return false;
       }
 
-      const searchTermLower = searchTerm.toLowerCase();
-      const participantsString = (mission.participants || []).map(p => p.employeeName).join(" ").toLowerCase();
-      const orderNumber = mission.numeroMission?.toLowerCase() || "";
-      const lieu = (mission.lieuMission || "").toLowerCase();
+      // Filter by Dossier Number
+      if (dossierNumberFilter.trim()) {
+        const filterDossier = dossierNumberFilter.trim().toLowerCase();
+        const missionDossier = (mission.numeroMission || "").toLowerCase();
+        if (!missionDossier.includes(filterDossier)) {
+          return false;
+        }
+      }
 
-      return (
-        mission.title.toLowerCase().includes(searchTermLower) ||
-        participantsString.includes(searchTermLower) ||
-        orderNumber.includes(searchTermLower) ||
-        lieu.includes(searchTermLower) ||
-        mission.description.toLowerCase().includes(searchTermLower)
-      );
+      // Date Evaluation
+      const targetDate = getTargetMissionDate(mission, dateFilterTarget);
+
+      // Filter by Custom Date Range (Période: Du ... Au ...)
+      if (startDateFilter || endDateFilter) {
+        if (!targetDate) return false;
+        const targetDateFormatted = format(targetDate, "yyyy-MM-dd");
+
+        if (startDateFilter && targetDateFormatted < startDateFilter) {
+          return false;
+        }
+        if (endDateFilter && targetDateFormatted > endDateFilter) {
+          return false;
+        }
+      }
+
+      // Filter by Month
+      if (selectedMonth !== "all") {
+        if (!targetDate) return false;
+        const monthFormatted = format(targetDate, "MM");
+        if (monthFormatted !== selectedMonth) {
+          return false;
+        }
+      }
+
+      // Filter by Year
+      if (selectedYear !== "all") {
+        if (!targetDate) return false;
+        const yearFormatted = targetDate.getFullYear().toString();
+        if (yearFormatted !== selectedYear) {
+          return false;
+        }
+      }
+
+      // Search term
+      if (searchTerm.trim()) {
+        const searchTermLower = searchTerm.toLowerCase();
+        const participantsString = (mission.participants || []).map(p => p.employeeName).join(" ").toLowerCase();
+        const orderNumber = mission.numeroMission?.toLowerCase() || "";
+        const lieu = (mission.lieuMission || "").toLowerCase();
+
+        return (
+          mission.title.toLowerCase().includes(searchTermLower) ||
+          participantsString.includes(searchTermLower) ||
+          orderNumber.includes(searchTermLower) ||
+          lieu.includes(searchTermLower) ||
+          mission.description.toLowerCase().includes(searchTermLower)
+        );
+      }
+
+      return true;
     });
-  }, [missions, searchTerm, selectedStatus, canManageAllMissions, user?.employeeId]);
+  }, [
+    missions,
+    searchTerm,
+    selectedStatus,
+    dossierNumberFilter,
+    selectedMonth,
+    selectedYear,
+    startDateFilter,
+    endDateFilter,
+    dateFilterTarget,
+    canManageAllMissions,
+    user?.employeeId
+  ]);
+
+  const hasActiveFilters = 
+    searchTerm !== "" || 
+    selectedStatus !== "all" || 
+    dossierNumberFilter !== "" || 
+    selectedMonth !== "all" || 
+    selectedYear !== "all" ||
+    startDateFilter !== "" ||
+    endDateFilter !== "" ||
+    dateFilterTarget !== "dateSaisie";
+
+  const resetFilters = () => {
+    setSearchTerm("");
+    setSelectedStatus("all");
+    setDossierNumberFilter("");
+    setSelectedMonth("all");
+    setSelectedYear("all");
+    setStartDateFilter("");
+    setEndDateFilter("");
+    setDateFilterTarget("dateSaisie");
+    setCurrentPage(1);
+  };
 
   useEffect(() => {
     const maxPages = Math.max(1, Math.ceil(filteredMissions.length / itemsPerPage));
@@ -625,53 +786,222 @@ export default function MissionsPage() {
         {/* Main Data Container */}
         <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
           {/* Filter & Search Bar */}
-          <div className="p-4 lg:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-slate-50/50">
-            {/* Status Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-              {[
-                { id: "all", label: "Toutes", count: stats.total },
-                { id: "En cours", label: "En cours", count: stats.ongoing },
-                { id: "Planifiée", label: "Planifiées", count: stats.planned },
-                { id: "Terminée", label: "Terminées", count: stats.completed },
-              ].map(filter => (
-                <button
-                  key={filter.id}
-                  onClick={() => startTransition(() => setSelectedStatus(filter.id))}
-                  className={cn(
-                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5",
-                    selectedStatus === filter.id
-                      ? "bg-slate-900 text-white shadow-sm"
-                      : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/70"
-                  )}
-                >
-                  <span>{filter.label}</span>
-                  <span className={cn(
-                    "text-[10px] px-1.5 py-0.2 rounded-full font-black",
-                    selectedStatus === filter.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
-                  )}>
-                    {filter.count}
-                  </span>
-                </button>
-              ))}
+          <div className="p-4 lg:p-5 border-b border-slate-100 flex flex-col gap-3.5 bg-slate-50/50">
+            {/* Top Row: Status Pills & Target Toggle & Active Filters Reset */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              {/* Status Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+                {[
+                  { id: "all", label: "Toutes", count: stats.total },
+                  { id: "En cours", label: "En cours", count: stats.ongoing },
+                  { id: "Planifiée", label: "Planifiées", count: stats.planned },
+                  { id: "Terminée", label: "Terminées", count: stats.completed },
+                ].map(filter => (
+                  <button
+                    key={filter.id}
+                    onClick={() => startTransition(() => setSelectedStatus(filter.id))}
+                    className={cn(
+                      "px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5",
+                      selectedStatus === filter.id
+                        ? "bg-slate-900 text-white shadow-sm"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/70"
+                    )}
+                  >
+                    <span>{filter.label}</span>
+                    <span className={cn(
+                      "text-[10px] px-1.5 py-0.2 rounded-full font-black",
+                      selectedStatus === filter.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                    )}>
+                      {filter.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Date Target Selector & Reset Action */}
+              <div className="flex items-center gap-2 flex-wrap self-start lg:self-auto">
+                <div className="inline-flex items-center bg-white border border-slate-200/80 rounded-xl p-0.5 text-[11px] font-bold shadow-2xs">
+                  <button
+                    onClick={() => {
+                      setDateFilterTarget("dateSaisie");
+                      setCurrentPage(1);
+                    }}
+                    className={cn(
+                      "px-2.5 py-1 rounded-lg transition-all text-[11px]",
+                      dateFilterTarget === "dateSaisie"
+                        ? "bg-indigo-600 text-white shadow-xs font-bold"
+                        : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    Date de saisie
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDateFilterTarget("missionDate");
+                      setCurrentPage(1);
+                    }}
+                    className={cn(
+                      "px-2.5 py-1 rounded-lg transition-all text-[11px]",
+                      dateFilterTarget === "missionDate"
+                        ? "bg-indigo-600 text-white shadow-xs font-bold"
+                        : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    Date mission
+                  </button>
+                </div>
+
+                {hasActiveFilters && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      {filteredMissions.length} {filteredMissions.length > 1 ? "trouvés" : "trouvé"}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetFilters}
+                      className="h-7 px-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 rounded-lg gap-1"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      Réinitialiser
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Search Input */}
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Rechercher une mission, un agent..."
-                className="h-10 pl-10 pr-4 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-none"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button 
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            {/* Bottom Row: Filters (N° Dossier, Mois, Année, Période Du/Au, Recherche globale) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-2.5 pt-1">
+              {/* N° Dossier Filter */}
+              <div className="relative lg:col-span-2">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <Input
+                  placeholder="N° dossier (ex: 054)..."
+                  className="h-10 pl-8 pr-7 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none"
+                  value={dossierNumberFilter}
+                  onChange={(e) => {
+                    setDossierNumberFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+                {dossierNumberFilter && (
+                  <button 
+                    onClick={() => setDossierNumberFilter("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <XCircle className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Mois Filter */}
+              <div className="lg:col-span-2">
+                <Select
+                  value={selectedMonth}
+                  onValueChange={(val) => {
+                    setSelectedMonth(val);
+                    if (val !== "all") {
+                      setStartDateFilter("");
+                      setEndDateFilter("");
+                    }
+                    setCurrentPage(1);
+                  }}
                 >
-                  <XCircle className="h-4 w-4" />
-                </button>
-              )}
+                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none">
+                    <Calendar className="mr-1.5 h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <SelectValue placeholder="Mois" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg">
+                    <SelectItem value="all" className="text-xs font-medium">Tous les mois</SelectItem>
+                    {MONTHS.map(m => (
+                      <SelectItem key={m.value} value={m.value} className="text-xs font-medium">
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Année Filter */}
+              <div className="lg:col-span-2">
+                <Select
+                  value={selectedYear}
+                  onValueChange={(val) => {
+                    setSelectedYear(val);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none">
+                    <SelectValue placeholder="Année" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white shadow-lg">
+                    <SelectItem value="all" className="text-xs font-medium">Toutes les années</SelectItem>
+                    {availableYears.map(y => (
+                      <SelectItem key={y} value={y} className="text-xs font-medium">
+                        {y}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Période Du */}
+              <div className="relative lg:col-span-2">
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-slate-400 pointer-events-none">
+                  Du
+                </div>
+                <Input
+                  type="date"
+                  title="Date début de saisie"
+                  className="h-10 pl-8 pr-2 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none"
+                  value={startDateFilter}
+                  onChange={(e) => {
+                    setStartDateFilter(e.target.value);
+                    if (e.target.value) setSelectedMonth("all");
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+
+              {/* Période Au */}
+              <div className="relative lg:col-span-2">
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-slate-400 pointer-events-none">
+                  Au
+                </div>
+                <Input
+                  type="date"
+                  title="Date fin de saisie"
+                  className="h-10 pl-8 pr-2 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none"
+                  value={endDateFilter}
+                  onChange={(e) => {
+                    setEndDateFilter(e.target.value);
+                    if (e.target.value) setSelectedMonth("all");
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+
+              {/* Recherche globale */}
+              <div className="relative lg:col-span-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <Input
+                  placeholder="Recherche..."
+                  className="h-10 pl-8 pr-7 rounded-xl border-slate-200 bg-white text-xs font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-none"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <XCircle className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

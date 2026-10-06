@@ -634,8 +634,30 @@ export default function MissionsPage() {
     const ongoing = userMissions.filter(m => m.status === 'En cours').length;
     const planned = userMissions.filter(m => m.status === 'Planifiée').length;
     const completed = userMissions.filter(m => m.status === 'Terminée').length;
-    return { total, ongoing, planned, completed };
+    const totalParticipants = userMissions.reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const ongoingParticipants = userMissions.filter(m => m.status === 'En cours').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const plannedParticipants = userMissions.filter(m => m.status === 'Planifiée').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const completedParticipants = userMissions.filter(m => m.status === 'Terminée').reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    return { 
+      total, 
+      ongoing, 
+      planned, 
+      completed,
+      totalParticipants,
+      ongoingParticipants,
+      plannedParticipants,
+      completedParticipants
+    };
   }, [userMissions]);
+
+  const filteredStats = useMemo(() => {
+    const totalDossiers = filteredMissions.length;
+    const totalParticipants = filteredMissions.reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    const uniqueAgents = new Set(
+      filteredMissions.flatMap(m => (m.participants || []).map(p => p.employeeId || p.employeeName).filter(Boolean))
+    ).size;
+    return { totalDossiers, totalParticipants, uniqueAgents };
+  }, [filteredMissions]);
 
   return (
     <PermissionGuard permission="page:missions:view" allowPersonal>
@@ -705,8 +727,9 @@ export default function MissionsPage() {
             <div className="text-2xl lg:text-3xl font-black text-slate-900 mt-2">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.total}
             </div>
-            <div className="text-[10px] font-medium text-slate-400 mt-1">
-              Registre global actif
+            <div className="text-[10px] font-medium text-slate-500 mt-1 flex items-center gap-1">
+              <Users className="h-3 w-3 text-slate-400 shrink-0" />
+              <span>{stats.totalParticipants} participants au total</span>
             </div>
           </div>
 
@@ -729,8 +752,9 @@ export default function MissionsPage() {
             <div className="text-2xl lg:text-3xl font-black text-slate-900 mt-2">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.ongoing}
             </div>
-            <div className="text-[10px] font-medium text-amber-600 mt-1">
-              Déploiements sur le terrain
+            <div className="text-[10px] font-medium text-amber-600 mt-1 flex items-center gap-1">
+              <Users className="h-3 w-3 text-amber-500 shrink-0" />
+              <span>{stats.ongoingParticipants} agents sur le terrain</span>
             </div>
           </div>
 
@@ -753,8 +777,9 @@ export default function MissionsPage() {
             <div className="text-2xl lg:text-3xl font-black text-slate-900 mt-2">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.planned}
             </div>
-            <div className="text-[10px] font-medium text-blue-600 mt-1">
-              Missions à venir
+            <div className="text-[10px] font-medium text-blue-600 mt-1 flex items-center gap-1">
+              <Users className="h-3 w-3 text-blue-500 shrink-0" />
+              <span>{stats.plannedParticipants} agents programmés</span>
             </div>
           </div>
 
@@ -777,8 +802,9 @@ export default function MissionsPage() {
             <div className="text-2xl lg:text-3xl font-black text-slate-900 mt-2">
               {loading ? <Skeleton className="h-8 w-16" /> : stats.completed}
             </div>
-            <div className="text-[10px] font-medium text-emerald-600 mt-1">
-              Dossiers clôturés
+            <div className="text-[10px] font-medium text-emerald-600 mt-1 flex items-center gap-1">
+              <Users className="h-3 w-3 text-emerald-500 shrink-0" />
+              <span>{stats.completedParticipants} agents clôturés</span>
             </div>
           </div>
         </div>
@@ -818,7 +844,7 @@ export default function MissionsPage() {
                 ))}
               </div>
 
-              {/* Date Target Selector & Reset Action */}
+              {/* Date Target Selector, Participants Count & Reset Action */}
               <div className="flex items-center gap-2 flex-wrap self-start lg:self-auto">
                 <div className="inline-flex items-center bg-white border border-slate-200/80 rounded-xl p-0.5 text-[11px] font-bold shadow-2xs">
                   <button
@@ -851,21 +877,31 @@ export default function MissionsPage() {
                   </button>
                 </div>
 
-                {hasActiveFilters && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-slate-500">
-                      {filteredMissions.length} {filteredMissions.length > 1 ? "trouvés" : "trouvé"}
+                {/* Filter Selection Summary: Dossiers & Participants */}
+                <div className="flex items-center gap-1.5 bg-white border border-slate-200/80 px-2.5 py-1 rounded-xl text-[11px] font-bold text-slate-700 shadow-2xs">
+                  <span className="text-slate-900 font-extrabold">{filteredStats.totalDossiers}</span>
+                  <span className="text-slate-500 font-medium">{filteredStats.totalDossiers > 1 ? "dossiers" : "dossier"}</span>
+                  <span className="text-slate-300">•</span>
+                  <Users className="h-3.5 w-3.5 text-indigo-600 ml-0.5" />
+                  <span className="text-indigo-700 font-extrabold">{filteredStats.totalParticipants}</span>
+                  <span className="text-indigo-600/80 font-medium">{filteredStats.totalParticipants > 1 ? "participants" : "participant"}</span>
+                  {filteredStats.uniqueAgents > 0 && filteredStats.uniqueAgents !== filteredStats.totalParticipants && (
+                    <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">
+                      ({filteredStats.uniqueAgents} {filteredStats.uniqueAgents > 1 ? "agents uniques" : "agent unique"})
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={resetFilters}
-                      className="h-7 px-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 rounded-lg gap-1"
-                    >
-                      <RotateCcw className="h-3 w-3" />
-                      Réinitialiser
-                    </Button>
-                  </div>
+                  )}
+                </div>
+
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetFilters}
+                    className="h-7 px-2 text-[11px] font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 rounded-lg gap-1"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Réinitialiser
+                  </Button>
                 )}
               </div>
             </div>

@@ -1,478 +1,1090 @@
-
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getMissions } from "@/services/mission-service";
-import type { Mission } from "@/lib/data";
-import { Loader2, Printer, FileText, FileSpreadsheet } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { subscribeToMissions } from "@/services/mission-service";
+import type { Mission, OrganizationSettings } from "@/lib/data";
+import { 
+  Loader2, Printer, FileText, FileSpreadsheet, Calendar, 
+  Users, Wallet, TrendingUp, ArrowLeft, Download, Copy, Check,
+  Layers, ListFilter, CheckCircle2, PlayCircle, Clock, Search,
+  BarChart3, RefreshCw
+} from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { fr } from "date-fns/locale";
 import { MissionsOfficialReport } from "@/components/reports/missions-official-report";
 import { MissionsRecapTableModal } from "@/components/missions/missions-recap-table-modal";
 import { useSettings } from "@/hooks/use-settings";
+import { useAuth } from "@/hooks/use-auth";
+import { usePermissions } from "@/hooks/use-permissions";
+import { PermissionGuard } from "@/components/auth/permission-guard";
+import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
-interface ReportData {
-  missions: Mission[];
-  totalCost: number;
-}
+const MONTHS = [
+  { value: "all", label: "Toute l'année" },
+  { value: "01", label: "Janvier" },
+  { value: "02", label: "Février" },
+  { value: "03", label: "Mars" },
+  { value: "04", label: "Avril" },
+  { value: "05", label: "Mai" },
+  { value: "06", label: "Juin" },
+  { value: "07", label: "Juillet" },
+  { value: "08", label: "Août" },
+  { value: "09", label: "Septembre" },
+  { value: "10", label: "Octobre" },
+  { value: "11", label: "Novembre" },
+  { value: "12", label: "Décembre" },
+];
 
 export default function MissionReportPage() {
-  const [year, setYear] = useState<string>(new Date().getFullYear().toString());
-  const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
-  const [loading, setLoading] = useState(false);
+  const currentYear = new Date().getFullYear().toString();
+  const currentMonth = format(new Date(), "MM");
+
+  const [year, setYear] = useState<string>(currentYear);
+  const [month, setMonth] = useState<string>("all");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [dateTarget, setDateTarget] = useState<"dateSaisie" | "startDate">("dateSaisie");
+  const [activeTab, setActiveTab] = useState<"recap" | "grandlivre" | "analytics">("recap");
+  const [recapGroupBy, setRecapGroupBy] = useState<"objet" | "dossier">("objet");
+  const [recapDirectionTitle, setRecapDirectionTitle] = useState<string>("DE LA DIRECTION ADMINISTRATIVE");
+  const [copied, setCopied] = useState(false);
+
+  const [loading, setLoading] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
   const [showRecapModal, setShowRecapModal] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [reportData, setReportData] = useState<ReportData | null>(null);
-  const { settings } = useSettings();
-
   const [allMissions, setAllMissions] = useState<Mission[]>([]);
-  const [statsLoading, setStatsLoading] = useState(true);
+
+  const { settings } = useSettings();
+  const { user, hasPermission } = useAuth();
+  const { can } = usePermissions();
+  const { toast } = useToast();
+
+  const canManageAllMissions = can('missions', 'create') || can('missions', 'update') || can('missions', 'delete') || hasPermission('page:admin:view') || ['administrateur', 'super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president', 'manager-rh', 'chef-de-service'].includes(user?.roleId || '');
 
   useEffect(() => {
-    getMissions()
-      .then(setAllMissions)
-      .catch(console.error)
-      .finally(() => setStatsLoading(false));
-  }, []);
+    const isAdmin = canManageAllMissions;
+    const unsubscribe = subscribeToMissions(
+      (missions) => {
+        setAllMissions(missions);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error loading missions:", err);
+        setLoading(false);
+      },
+      user?.id,
+      user?.employeeId,
+      isAdmin
+    );
+    return () => unsubscribe();
+  }, [user, hasPermission, can, canManageAllMissions]);
 
-  const yearlyStats = useMemo(() => {
-    const yearsMap = new Map<string, { count: number; totalCost: number }>();
-    allMissions.forEach(m => {
-        try {
-            const y = parseISO(m.startDate).getFullYear().toString();
-            const cost = calculateMissionCost(m);
-            const current = yearsMap.get(y) || { count: 0, totalCost: 0 };
-            yearsMap.set(y, { count: current.count + 1, totalCost: current.totalCost + cost });
-        } catch (e) {
-            console.error(e);
-        }
-    });
-    return Array.from(yearsMap.entries()).map(([year, data]) => ({
-        year,
-        count: data.count,
-        totalCost: data.totalCost
-    })).sort((a, b) => b.year.localeCompare(a.year));
-  }, [allMissions]);
-
-  const monthlyStats = useMemo(() => {
-    const monthly = Array.from({ length: 12 }, (_, i) => {
-        const monthLabel = format(new Date(2000, i, 1), 'MMMM', { locale: fr });
-        return {
-            monthLabel: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
-            monthIndex: i,
-            count: 0,
-            totalCost: 0
-        };
-    });
+  const safeParseMissionDate = (m: Mission, target: "dateSaisie" | "startDate"): Date | null => {
+    const primary = target === "dateSaisie" ? m.dateSaisie : m.startDate;
+    const fallback = target === "dateSaisie" ? m.startDate : m.dateSaisie;
     
-    allMissions.forEach(m => {
-        try {
-            const date = parseISO(m.startDate);
-            const y = date.getFullYear().toString();
-            if (y === year) {
-                const monthIdx = date.getMonth();
-                const cost = calculateMissionCost(m);
-                monthly[monthIdx].count += 1;
-                monthly[monthIdx].totalCost += cost;
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    });
-    return monthly;
-  }, [allMissions, year]);
-  
-  const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-  const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: format(new Date(2000, i, 1), 'MMMM', { locale: fr }) }));
-  
-  const selectedPeriodText = `${months.find(m => m.value === month)?.label || ''} ${year}`;
+    if (primary) {
+      try {
+        const d = parseISO(primary);
+        if (!isNaN(d.getTime())) return d;
+      } catch {}
+    }
+    if (fallback) {
+      try {
+        const d = parseISO(fallback);
+        if (!isNaN(d.getTime())) return d;
+      } catch {}
+    }
+    return null;
+  };
 
   const calculateMissionCost = (mission: Mission): number => {
-    return mission.participants.reduce((total, p) => {
-        return total + (p.totalIndemnites || 0) + (p.coutTransport || 0) + (p.coutHebergement || 0);
+    return (mission.participants || []).reduce((total, p) => {
+      return total + (p.totalIndemnites || 0) + (p.coutTransport || 0) + (p.coutHebergement || 0);
     }, 0);
-  }
+  };
 
-  const generateReport = async () => {
-    setLoading(true);
-    setError(null);
-    setReportData(null);
-
-    const selectedYear = parseInt(year);
-    const selectedMonth = parseInt(month) - 1;
-
-    try {
-      const missionsList = allMissions.length > 0 ? allMissions : await getMissions();
-
-      const periodStart = startOfMonth(new Date(selectedYear, selectedMonth));
-      const periodEnd = endOfMonth(new Date(selectedYear, selectedMonth));
-
-      const filteredMissions = missionsList.filter(m => {
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    allMissions.forEach(m => {
+      [m.dateSaisie, m.startDate, m.endDate].forEach(ds => {
+        if (ds) {
           try {
-            const missionStart = parseISO(m.startDate);
-            const missionEnd = parseISO(m.endDate);
-            // Check if mission interval overlaps with the selected month
-            return missionStart <= periodEnd && missionEnd >= periodStart;
-          } catch (e) {
-            console.error("Invalid date format for mission:", m);
-            return false;
-          }
+            const d = parseISO(ds);
+            if (!isNaN(d.getTime())) {
+              const y = d.getFullYear().toString();
+              if (y && y.length === 4) years.add(y);
+            }
+          } catch {}
+        }
       });
-      
-      const totalCost = filteredMissions.reduce((acc, mission) => acc + calculateMissionCost(mission), 0);
+    });
+    years.add(currentYear);
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [allMissions, currentYear]);
 
-      setReportData({
-        missions: filteredMissions,
-        totalCost: totalCost,
+  // Filtered missions based on active configuration
+  const filteredMissions = useMemo(() => {
+    return allMissions.filter(m => {
+      const mDate = safeParseMissionDate(m, dateTarget);
+
+      // Custom date interval (Du ... Au ...)
+      if (startDate || endDate) {
+        if (!mDate) return false;
+        const formatted = format(mDate, "yyyy-MM-dd");
+        if (startDate && formatted < startDate) return false;
+        if (endDate && formatted > endDate) return false;
+        return true;
+      }
+
+      // Year filter
+      if (year !== "all") {
+        if (!mDate) return false;
+        if (mDate.getFullYear().toString() !== year) return false;
+      }
+
+      // Month filter
+      if (month !== "all") {
+        if (!mDate) return false;
+        if (format(mDate, "MM") !== month) return false;
+      }
+
+      return true;
+    });
+  }, [allMissions, year, month, startDate, endDate, dateTarget]);
+
+  // KPI Calculations
+  const stats = useMemo(() => {
+    const totalCount = filteredMissions.length;
+    const totalCost = filteredMissions.reduce((acc, m) => acc + calculateMissionCost(m), 0);
+    const totalParticipants = filteredMissions.reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+    
+    const uniqueAgents = new Set(
+      filteredMissions.flatMap(m => (m.participants || []).map(p => p.employeeId || p.employeeName).filter(Boolean))
+    ).size;
+
+    const ongoing = filteredMissions.filter(m => m.status === "En cours").length;
+    const planned = filteredMissions.filter(m => m.status === "Planifiée").length;
+    const completed = filteredMissions.filter(m => m.status === "Terminée").length;
+
+    return {
+      totalCount,
+      totalCost,
+      totalParticipants,
+      uniqueAgents,
+      ongoing,
+      planned,
+      completed
+    };
+  }, [filteredMissions]);
+
+  // Administrative Recap Rows (Matching the uploaded image)
+  const recapRows = useMemo(() => {
+    const totalCount = filteredMissions.length;
+    const totalParticipants = filteredMissions.reduce((acc, m) => acc + (m.participants?.length || 0), 0);
+
+    if (totalCount === 0) return [];
+
+    if (recapGroupBy === "dossier") {
+      return filteredMissions.map(m => {
+        const pCount = m.participants?.length || 0;
+        return {
+          key: m.id,
+          objet: m.numeroMission ? `[${m.numeroMission}] ${m.title}` : m.title,
+          count: 1,
+          countPercentage: (1 / totalCount) * 100,
+          participants: pCount,
+          participantsPercentage: totalParticipants > 0 ? (pCount / totalParticipants) * 100 : 0,
+        };
       });
-
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de générer le rapport. Veuillez réessayer.");
-    } finally {
-      setLoading(false);
     }
-  };
-  
-  const handlePrint = () => {
-    setIsPrinting(true);
-  };
-  
+
+    const map = new Map<string, { count: number; participants: number }>();
+    filteredMissions.forEach(m => {
+      const rawTitle = (m.title || "Mission sans titre").trim();
+      const key = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
+      const existing = map.get(key) || { count: 0, participants: 0 };
+      existing.count += 1;
+      existing.participants += (m.participants?.length || 0);
+      map.set(key, existing);
+    });
+
+    return Array.from(map.entries()).map(([objet, data]) => ({
+      key: objet,
+      objet,
+      count: data.count,
+      countPercentage: (data.count / totalCount) * 100,
+      participants: data.participants,
+      participantsPercentage: totalParticipants > 0 ? (data.participants / totalParticipants) * 100 : 0
+    }));
+  }, [filteredMissions, recapGroupBy]);
+
+  // Monthly Analytics for the selected year
+  const monthlyStats = useMemo(() => {
+    const monthsData = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(2026, i, 1);
+      return {
+        monthCode: format(d, "MM"),
+        monthName: format(d, "MMMM", { locale: fr }),
+        count: 0,
+        participants: 0,
+        cost: 0
+      };
+    });
+
+    allMissions.forEach(m => {
+      const mDate = safeParseMissionDate(m, dateTarget);
+      if (mDate && mDate.getFullYear().toString() === year) {
+        const mIdx = mDate.getMonth();
+        if (monthsData[mIdx]) {
+          monthsData[mIdx].count += 1;
+          monthsData[mIdx].participants += (m.participants?.length || 0);
+          monthsData[mIdx].cost += calculateMissionCost(m);
+        }
+      }
+    });
+
+    return monthsData;
+  }, [allMissions, year, dateTarget]);
+
+  const selectedPeriodText = useMemo(() => {
+    if (startDate && endDate) {
+      return `Du ${format(parseISO(startDate), "dd/MM/yyyy")} au ${format(parseISO(endDate), "dd/MM/yyyy")}`;
+    }
+    if (month !== "all") {
+      const mObj = MONTHS.find(m => m.value === month);
+      return `${mObj?.label || ""} ${year}`;
+    }
+    if (year !== "all") {
+      return `Exercice Annuel ${year}`;
+    }
+    return "Toutes les périodes";
+  }, [startDate, endDate, month, year]);
+
   const formatCurrency = (value: number) => {
-    if (value === 0) return '-';
-    return value.toLocaleString('fr-FR') + ' FCFA';
-  }
+    if (value === 0) return "0 FCFA";
+    return value.toLocaleString("fr-FR") + " FCFA";
+  };
+
+  const handlePrintRecap = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      toast({
+        variant: "destructive",
+        title: "Fenêtre bloquée",
+        description: "Veuillez autoriser les fenêtres pop-up pour imprimer."
+      });
+      return;
+    }
+
+    const title = `CI-JOINT LE TABLEAU RECAPITULATIF DES ORDRES DE MISSION ${recapDirectionTitle.trim().toUpperCase()}`;
+    const rowsHtml = recapRows.map(r => `
+      <tr>
+        <td style="border: 1px solid #000; padding: 6px 8px; text-align: left; font-size: 11px;">${r.objet}</td>
+        <td style="border: 1px solid #000; padding: 6px 8px; text-align: center; font-weight: bold; font-size: 11px;">${r.count}</td>
+        <td style="border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 11px;">${r.countPercentage.toFixed(r.countPercentage % 1 === 0 ? 0 : 2)}</td>
+        <td style="border: 1px solid #000; padding: 6px 8px; text-align: center; font-weight: bold; font-size: 11px;">${r.participants < 10 && r.participants > 0 ? `0${r.participants}` : r.participants}</td>
+        <td style="border: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 11px;">${r.participantsPercentage.toFixed(r.participantsPercentage % 1 === 0 ? 0 : 2)}</td>
+      </tr>
+    `).join("");
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${title}</title>
+        <style>
+          @page { size: A4 portrait; margin: 15mm 12mm; }
+          body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .title { font-size: 13px; font-weight: bold; text-decoration: underline; text-transform: uppercase; line-height: 1.4; margin-bottom: 6px; }
+          .sub { font-size: 11px; font-style: italic; color: #333; }
+          table { width: 100%; border-collapse: collapse; border: 2px solid #000; }
+          th { border: 1px solid #000; padding: 6px 8px; font-size: 10.5px; font-weight: bold; text-transform: uppercase; background: #f8fafc; }
+          td { border: 1px solid #000; }
+          tr.total td { border-top: 2px solid #000; font-weight: bold; background: #f1f5f9; padding: 7px 8px; font-size: 11px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">${title}</div>
+          <div class="sub">Période : ${selectedPeriodText}</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align: left; width: 60%;">OBJET ET DOMAINE DE LA MISSION</th>
+              <th style="width: 10%;">Nombre</th>
+              <th style="width: 10%;">%</th>
+              <th style="width: 10%;">Participants</th>
+              <th style="width: 10%;">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+            <tr class="total">
+              <td>TOTAL</td>
+              <td style="text-align: center;">${stats.totalCount}</td>
+              <td style="text-align: center;">100</td>
+              <td style="text-align: center;">${stats.totalParticipants}</td>
+              <td style="text-align: center;">100</td>
+            </tr>
+          </tbody>
+        </table>
+        <script>
+          window.onload = function() { window.print(); setTimeout(() => window.close(), 500); }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
+  const handleExportCSV = () => {
+    const header = ["OBJET ET DOMAINE DE LA MISSION", "Nombre", "% Missions", "Participants", "% Participants"];
+    const csvRows = [
+      [`CI-JOINT LE TABLEAU RECAPITULATIF DES ORDRES DE MISSION ${recapDirectionTitle.toUpperCase()}`],
+      [`Période: ${selectedPeriodText}`],
+      [],
+      header,
+      ...recapRows.map(r => [
+        `"${r.objet.replace(/"/g, '""')}"`,
+        r.count,
+        r.countPercentage.toFixed(2),
+        r.participants,
+        r.participantsPercentage.toFixed(2)
+      ]),
+      ["TOTAL", stats.totalCount, "100.00", stats.totalParticipants, "100.00"]
+    ];
+
+    const csvContent = "\uFEFF" + csvRows.map(e => e.join(";")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `recapitulatif-missions-${year}-${month}.csv`;
+    link.click();
+  };
+
+  const handleCopyToClipboard = () => {
+    const textLines = [
+      `CI-JOINT LE TABLEAU RECAPITULATIF DES ORDRES DE MISSION ${recapDirectionTitle.toUpperCase()}`,
+      `Période : ${selectedPeriodText}`,
+      "",
+      `OBJET ET DOMAINE DE LA MISSION\tNombre\t%\tParticipants\t%`,
+      ...recapRows.map(r => `${r.objet}\t${r.count}\t${r.countPercentage.toFixed(2)}%\t${r.participants}\t${r.participantsPercentage.toFixed(2)}%`),
+      `TOTAL\t${stats.totalCount}\t100%\t${stats.totalParticipants}\t100%`
+    ];
+
+    navigator.clipboard.writeText(textLines.join("\n")).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({
+        title: "Copié dans le presse-papier",
+        description: "Vous pouvez coller ce tableau directement dans Excel ou Word."
+      });
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-transparent pb-24">
-      {/* Header Institutionnel Glass */}
-      <div className={`sticky top-0 z-30 w-full bg-white/40 backdrop-blur-xl border-b border-white/10 pb-6 pt-8 ${isPrinting ? 'hidden' : ''}`}>
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">
-                Rapports Opérationnels
-              </h1>
-              <div className="flex items-center gap-4 mt-3">
-                <div className="flex items-center gap-2 bg-slate-900 text-white px-3 py-1 rounded-lg shadow-lg shadow-slate-900/10">
-                  <FileText className="h-3.5 w-3.5" />
-                  <span className="text-[11px] font-black uppercase tracking-wider">Missions & Mobilité</span>
-                </div>
-                <span className="h-4 w-px bg-slate-200" />
-                <span className="text-slate-500 font-bold uppercase text-[11px] tracking-widest flex items-center gap-2">
-                  <Printer className="h-3.5 w-3.5" /> Centre d'Impression
-                </span>
+    <PermissionGuard permission="page:missions:view" allowPersonal>
+      <div className="flex flex-col gap-6 pb-20 max-w-7xl mx-auto w-full px-4 sm:px-6">
+        {/* Page Top Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-b border-slate-200/80 pb-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Link 
+                href="/missions" 
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Retour aux Missions
+              </Link>
+              <span className="text-slate-300">•</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                Centre Opérationnel
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 uppercase">
+              Rapports & Statistiques des Missions
+            </h1>
+            <p className="text-xs font-semibold text-slate-500 mt-0.5">
+              Tableaux récapitulatifs, grand livre des déplacements et analyse budgétaire
+            </p>
+          </div>
+
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRecapModal(true)}
+              className="h-10 rounded-xl border-slate-200 bg-white font-bold text-xs text-slate-700 hover:bg-slate-50 gap-2 shadow-2xs"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+              Tableau Récapitulatif
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => setIsPrinting(true)}
+              className="h-10 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-bold text-xs gap-2 shadow-sm"
+            >
+              <Printer className="h-4 w-4 text-emerald-400" />
+              Grand Livre (Impression)
+            </Button>
+          </div>
+        </div>
+
+        {/* Configuration Card with Filter Pills */}
+        <Card className="border border-slate-200/80 bg-white rounded-2xl shadow-sm overflow-hidden">
+          <CardHeader className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/60 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <CardTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-indigo-600" />
+                  Configuration de la Période & Critères
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-400 mt-0.5">
+                  Filtrez les missions selon l'exercice budgétaire, le mois ou une plage de dates précise
+                </CardDescription>
               </div>
+
+              {/* Quick Target Toggle: Date de Saisie vs Date Déroulement */}
+              <div className="inline-flex items-center bg-white border border-slate-200/80 rounded-xl p-0.5 text-[11px] font-bold shadow-2xs self-start sm:self-auto">
+                <button
+                  onClick={() => setDateTarget("dateSaisie")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg transition-all text-[11px]",
+                    dateTarget === "dateSaisie"
+                      ? "bg-slate-900 text-white shadow-xs font-extrabold"
+                      : "text-slate-600 hover:text-slate-900"
+                  )}
+                >
+                  Date de saisie
+                </button>
+                <button
+                  onClick={() => setDateTarget("startDate")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg transition-all text-[11px]",
+                    dateTarget === "startDate"
+                      ? "bg-slate-900 text-white shadow-xs font-extrabold"
+                      : "text-slate-600 hover:text-slate-900"
+                  )}
+                >
+                  Date de mission
+                </button>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-4 sm:p-5 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+              {/* Année */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Année Fiscale
+                </Label>
+                <Select value={year} onValueChange={(val) => { setYear(val); setStartDate(""); setEndDate(""); }}>
+                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white font-bold text-xs shadow-2xs">
+                    <SelectValue placeholder="Année" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white shadow-xl">
+                    <SelectItem value="all" className="text-xs font-bold">Toutes les années</SelectItem>
+                    {availableYears.map(y => (
+                      <SelectItem key={y} value={y} className="text-xs font-bold">{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Mois */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Période Mensuelle
+                </Label>
+                <Select value={month} onValueChange={(val) => { setMonth(val); setStartDate(""); setEndDate(""); }}>
+                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white font-bold text-xs shadow-2xs">
+                    <SelectValue placeholder="Mois" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200 bg-white shadow-xl max-h-64">
+                    {MONTHS.map(m => (
+                      <SelectItem key={m.value} value={m.value} className="text-xs font-bold">{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Période Du */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Plage : Du
+                </Label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    if (e.target.value) {
+                      setMonth("all");
+                    }
+                  }}
+                  className="h-10 rounded-xl border-slate-200 bg-white text-xs font-semibold shadow-2xs"
+                />
+              </div>
+
+              {/* Période Au */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Plage : Au
+                </Label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    if (e.target.value) {
+                      setMonth("all");
+                    }
+                  }}
+                  className="h-10 rounded-xl border-slate-200 bg-white text-xs font-semibold shadow-2xs"
+                />
+              </div>
+            </div>
+
+            {/* Quick Filter Shortcuts */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100 text-[11px]">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Raccourcis :</span>
+              <button
+                onClick={() => { setYear(currentYear); setMonth("all"); setStartDate(""); setEndDate(""); }}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg font-bold transition-all",
+                  year === currentYear && month === "all" && !startDate && !endDate
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                )}
+              >
+                Année {currentYear}
+              </button>
+              <button
+                onClick={() => { setYear(currentYear); setMonth(currentMonth); setStartDate(""); setEndDate(""); }}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg font-bold transition-all",
+                  year === currentYear && month === currentMonth && !startDate && !endDate
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                )}
+              >
+                Ce Mois ({MONTHS.find(m => m.value === currentMonth)?.label})
+              </button>
+              <button
+                onClick={() => { setYear("all"); setMonth("all"); setStartDate(""); setEndDate(""); }}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg font-bold transition-all",
+                  year === "all" && month === "all" && !startDate && !endDate
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                )}
+              >
+                Tout l'historique
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 4 Executive KPI Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4">
+          {/* Total Missions */}
+          <div className="rounded-2xl bg-white p-4 sm:p-5 border border-slate-200/80 shadow-sm">
+            <div className="flex items-start justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                Ordres de Mission
+              </span>
+              <div className="h-8 w-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                <FileText className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin text-slate-300" /> : stats.totalCount}
+            </div>
+            <div className="text-[10px] font-semibold text-slate-400 mt-1">
+              {selectedPeriodText}
+            </div>
+          </div>
+
+          {/* Total Participants */}
+          <div className="rounded-2xl bg-white p-4 sm:p-5 border border-indigo-200/80 bg-gradient-to-br from-white to-indigo-50/30 shadow-sm">
+            <div className="flex items-start justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-indigo-700">
+                Total Participants
+              </span>
+              <div className="h-8 w-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <Users className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-indigo-950 mt-2">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin text-indigo-300" /> : stats.totalParticipants}
+            </div>
+            <div className="text-[10px] font-semibold text-indigo-600 mt-1">
+              {stats.uniqueAgents} agents uniques mobilisés
+            </div>
+          </div>
+
+          {/* Budget Prévisionnel */}
+          <div className="rounded-2xl bg-white p-4 sm:p-5 border border-emerald-200/80 bg-gradient-to-br from-white to-emerald-50/30 shadow-sm">
+            <div className="flex items-start justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700">
+                Coût Prévisionnel
+              </span>
+              <div className="h-8 w-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <Wallet className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-emerald-950 mt-2 truncate">
+              {loading ? <Loader2 className="h-6 w-6 animate-spin text-emerald-300" /> : formatCurrency(stats.totalCost)}
+            </div>
+            <div className="text-[10px] font-semibold text-emerald-600 mt-1">
+              Indemnités & Déplacements
+            </div>
+          </div>
+
+          {/* Statuts Répartition */}
+          <div className="rounded-2xl bg-white p-4 sm:p-5 border border-slate-200/80 shadow-sm">
+            <div className="flex items-start justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                Répartition des Statuts
+              </span>
+              <div className="h-8 w-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                {stats.completed} Term.
+              </span>
+              <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+                {stats.ongoing} En cours
+              </span>
+              <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/60">
+                {stats.planned} Plan.
+              </span>
+            </div>
+            <div className="text-[10px] font-semibold text-slate-400 mt-2">
+              Progression globale
             </div>
           </div>
         </div>
-      </div>
 
-      <div className={`container mx-auto px-4 py-4 space-y-4 ${isPrinting ? 'p-0' : ''}`}>
-        {/* Filtres Premium */}
-        <div className={isPrinting ? 'hidden' : ''}>
-          <Card className="border-none bg-white/40 backdrop-blur-md rounded-xl shadow-xl border border-white/20 overflow-hidden">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Configuration du Rapport</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-6 items-end">
-                <div className="grid gap-3 flex-1 w-full">
-                  <Label htmlFor="year" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Année Fiscale</Label>
-                  <Select value={year} onValueChange={setYear}>
-                    <SelectTrigger id="year" className="h-12 rounded-2xl border-slate-200 bg-white/50 shadow-sm focus:ring-2 focus:ring-slate-900 transition-all font-bold">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
-                      {years.map(y => <SelectItem key={y} value={y} className="focus:bg-slate-900 focus:text-white rounded-xl mx-1 my-0.5">{y}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-3 flex-1 w-full">
-                  <Label htmlFor="month" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Période Mensuelle</Label>
-                  <Select value={month} onValueChange={setMonth}>
-                    <SelectTrigger id="month" className="h-12 rounded-2xl border-slate-200 bg-white/50 shadow-sm focus:ring-2 focus:ring-slate-900 transition-all font-bold">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
-                      {months.map(m => <SelectItem key={m.value} value={m.value} className="focus:bg-slate-900 focus:text-white rounded-xl mx-1 my-0.5 uppercase text-[10px] font-black tracking-widest">{m.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button 
-                  onClick={generateReport} 
-                  disabled={loading} 
-                  className="h-12 px-5 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all shadow-xl shadow-slate-900/20 active:scale-95 disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-blue-400" /> : <FileText className="mr-2 h-4 w-4 text-emerald-400" />}
-                  Générer Rapport
-                </Button>
-              </div>
-              
-              {error && (
-                <Alert variant="destructive" className="mt-6 rounded-2xl border-rose-100 bg-rose-50/50">
-                  <AlertTitle className="font-black uppercase text-[10px] tracking-widest">Erreur Système</AlertTitle>
-                  <AlertDescription className="text-xs font-medium">{error}</AlertDescription>
-                </Alert>
+        {/* Navigation Tabs */}
+        <div className="flex items-center justify-between border-b border-slate-200 gap-2 overflow-x-auto">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab("recap")}
+              className={cn(
+                "py-3 px-4 text-xs font-black uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 shrink-0",
+                activeTab === "recap"
+                  ? "border-slate-900 text-slate-900"
+                  : "border-transparent text-slate-400 hover:text-slate-700"
               )}
-            </CardContent>
-          </Card>
+            >
+              <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
+              Tableau Récapitulatif Administratif
+            </button>
+
+            <button
+              onClick={() => setActiveTab("grandlivre")}
+              className={cn(
+                "py-3 px-4 text-xs font-black uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 shrink-0",
+                activeTab === "grandlivre"
+                  ? "border-slate-900 text-slate-900"
+                  : "border-transparent text-slate-400 hover:text-slate-700"
+              )}
+            >
+              <ListFilter className="h-4 w-4 text-blue-600" />
+              Grand Livre des Déplacements ({stats.totalCount})
+            </button>
+
+            <button
+              onClick={() => setActiveTab("analytics")}
+              className={cn(
+                "py-3 px-4 text-xs font-black uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 shrink-0",
+                activeTab === "analytics"
+                  ? "border-slate-900 text-slate-900"
+                  : "border-transparent text-slate-400 hover:text-slate-700"
+              )}
+            >
+              <BarChart3 className="h-4 w-4 text-emerald-600" />
+              Analyse Mensuelle ({year})
+            </button>
+          </div>
         </div>
 
-        {/* Statistics Dashboard Section */}
-        {!isPrinting && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-500">
-            {/* Yearly Stats Card */}
-            <Card className="border-none bg-white/40 backdrop-blur-md rounded-xl shadow-xl border border-white/20 overflow-hidden">
-              <CardHeader className="pb-3 bg-slate-900/[0.02] border-b border-slate-100">
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statistiques Annuelles</CardTitle>
-                <CardDescription className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
-                  Volume et budget des missions par année
+        {/* TAB 1: Tableau Récapitulatif Administratif (Exact replica of the uploaded image) */}
+        {activeTab === "recap" && (
+          <div className="space-y-4">
+            {/* Table Control Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs">
+              <div className="flex items-center gap-2 flex-1">
+                <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider shrink-0">
+                  Intitulé du Tableau :
+                </Label>
+                <Input
+                  value={recapDirectionTitle}
+                  onChange={(e) => setRecapDirectionTitle(e.target.value)}
+                  placeholder="ex: DE LA DIRECTION ADMINISTRATIVE"
+                  className="h-8 text-xs font-semibold bg-slate-50 border-slate-200 focus:bg-white max-w-md"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-bold">
+                  <button
+                    onClick={() => setRecapGroupBy("objet")}
+                    className={cn(
+                      "px-2.5 py-1 rounded-md transition-all flex items-center gap-1",
+                      recapGroupBy === "objet" ? "bg-white text-slate-900 shadow-2xs font-extrabold" : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    <Layers className="h-3 w-3" />
+                    Groupé par Objet
+                  </button>
+                  <button
+                    onClick={() => setRecapGroupBy("dossier")}
+                    className={cn(
+                      "px-2.5 py-1 rounded-md transition-all flex items-center gap-1",
+                      recapGroupBy === "dossier" ? "bg-white text-slate-900 shadow-2xs font-extrabold" : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    <ListFilter className="h-3 w-3" />
+                    Détail par Dossier
+                  </button>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyToClipboard}
+                  className="h-8 text-xs font-bold border-slate-200 bg-white hover:bg-slate-50 gap-1.5"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 text-slate-500" />}
+                  <span>{copied ? "Copié" : "Copier"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCSV}
+                  className="h-8 text-xs font-bold border-slate-200 bg-white hover:bg-slate-50 gap-1.5"
+                >
+                  <Download className="h-3.5 w-3.5 text-slate-500" />
+                  <span>CSV</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  onClick={handlePrintRecap}
+                  className="h-8 text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 gap-1.5 shadow-sm"
+                >
+                  <Printer className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Imprimer Tableau</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Rendered Table matching user image */}
+            <div className="bg-white border-2 border-slate-900 rounded-xl shadow-md overflow-hidden max-w-4xl mx-auto">
+              <div className="p-4 text-center border-b-2 border-slate-900 bg-white">
+                <h3 className="text-xs sm:text-sm md:text-base font-black underline tracking-wide uppercase text-slate-900 leading-snug">
+                  CI-JOINT LE TABLEAU RECAPITULATIF DES ORDRES DE MISSION {recapDirectionTitle.trim().toUpperCase()}
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium italic mt-1">
+                  Période : {selectedPeriodText}
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <Table className="w-full border-collapse">
+                  <TableHeader>
+                    <TableRow className="border-b-2 border-slate-900 bg-slate-100 hover:bg-slate-100 text-slate-900">
+                      <TableHead className="font-black text-slate-900 text-left border-r border-slate-900 py-3 px-4 text-xs uppercase w-[58%]">
+                        OBJET ET DOMAINE DE LA MISSION
+                      </TableHead>
+                      <TableHead className="font-black text-slate-900 text-center border-r border-slate-900 py-3 px-2 text-xs uppercase w-[10%]">
+                        Nombre
+                      </TableHead>
+                      <TableHead className="font-black text-slate-900 text-center border-r border-slate-900 py-3 px-2 text-xs uppercase w-[9%]">
+                        %
+                      </TableHead>
+                      <TableHead className="font-black text-slate-900 text-center border-r border-slate-900 py-3 px-2 text-xs uppercase w-[12%]">
+                        Participants
+                      </TableHead>
+                      <TableHead className="font-black text-slate-900 text-center py-3 px-2 text-xs uppercase w-[11%]">
+                        %
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-12">
+                          <Loader2 className="h-6 w-6 animate-spin text-slate-400 mx-auto" />
+                          <p className="text-xs font-bold text-slate-400 mt-2">Calcul des statistiques administratives...</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : recapRows.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-12">
+                          <p className="font-bold text-slate-700 text-sm">Aucune mission trouvée pour cette période</p>
+                          <p className="text-xs text-slate-400 mt-1">Modifiez les filtres d'année ou de mois ci-dessus pour afficher les données.</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      recapRows.map((row) => (
+                        <TableRow key={row.key} className="border-b border-slate-900 hover:bg-slate-50/70 text-slate-900">
+                          <TableCell className="border-r border-slate-900 py-2.5 px-4 text-xs font-normal leading-relaxed text-slate-900">
+                            {row.objet}
+                          </TableCell>
+                          <TableCell className="border-r border-slate-900 py-2.5 px-2 text-center text-xs font-bold text-slate-900">
+                            {row.count}
+                          </TableCell>
+                          <TableCell className="border-r border-slate-900 py-2.5 px-2 text-center text-xs text-slate-900">
+                            {row.countPercentage.toFixed(row.countPercentage % 1 === 0 ? 0 : 2)}
+                          </TableCell>
+                          <TableCell className="border-r border-slate-900 py-2.5 px-2 text-center text-xs font-bold text-slate-900">
+                            {row.participants < 10 && row.participants > 0 ? `0${row.participants}` : row.participants}
+                          </TableCell>
+                          <TableCell className="py-2.5 px-2 text-center text-xs text-slate-900">
+                            {row.participantsPercentage.toFixed(row.participantsPercentage % 1 === 0 ? 0 : 2)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+
+                    {/* TOTAL ROW */}
+                    {recapRows.length > 0 && (
+                      <TableRow className="border-t-2 border-slate-900 bg-slate-100 hover:bg-slate-100 font-black text-slate-900">
+                        <TableCell className="border-r border-slate-900 py-3 px-4 text-xs font-black uppercase text-slate-900">
+                          TOTAL
+                        </TableCell>
+                        <TableCell className="border-r border-slate-900 py-3 px-2 text-center text-xs font-black text-slate-900">
+                          {stats.totalCount}
+                        </TableCell>
+                        <TableCell className="border-r border-slate-900 py-3 px-2 text-center text-xs font-black text-slate-900">
+                          100
+                        </TableCell>
+                        <TableCell className="border-r border-slate-900 py-3 px-2 text-center text-xs font-black text-slate-900">
+                          {stats.totalParticipants}
+                        </TableCell>
+                        <TableCell className="py-3 px-2 text-center text-xs font-black text-slate-900">
+                          100
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: Grand Livre des Déplacements */}
+        {activeTab === "grandlivre" && (
+          <Card className="border border-slate-200/80 bg-white rounded-2xl shadow-sm overflow-hidden">
+            <CardHeader className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-sm font-black uppercase tracking-tight text-slate-900">
+                  Grand Livre des Déplacements — {selectedPeriodText}
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500 mt-0.5">
+                  Registre détaillé avec impact financier par mission
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => setIsPrinting(true)}
+                  className="h-8 text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 gap-1.5"
+                >
+                  <Printer className="h-3.5 w-3.5 text-blue-400" />
+                  Imprimer Rapport Officiel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-slate-50/80">
+                    <TableRow className="border-b border-slate-200 text-slate-500">
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider w-[120px]">N° Dossier</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider">Objet de la Mission</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider">Destination</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-center">Période</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-center">Effectif</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-center">Statut</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-right">Coût Prévisionnel</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-10">
+                          <Loader2 className="h-6 w-6 animate-spin text-slate-400 mx-auto" />
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredMissions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-12 text-slate-400 font-bold text-xs">
+                          Aucune mission trouvée pour cette période.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredMissions.map((m) => (
+                        <TableRow key={m.id} className="border-b border-slate-100 hover:bg-slate-50/70">
+                          <TableCell className="py-3 px-4 font-bold text-xs text-slate-900">
+                            <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md font-mono text-[11px]">
+                              {m.numeroMission || `#${m.id.substring(0, 5).toUpperCase()}`}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 font-bold text-xs text-slate-900 uppercase">
+                            <Link href={`/missions/${m.id}`} className="hover:text-indigo-600 hover:underline">
+                              {m.title}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-xs font-semibold text-slate-600 uppercase">
+                            {m.lieuMission || "Territoire National"}
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-xs text-center text-slate-600">
+                            {m.startDate ? format(parseISO(m.startDate), "dd/MM/yy") : "-"} au {m.endDate ? format(parseISO(m.endDate), "dd/MM/yy") : "-"}
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-xs text-center font-bold text-indigo-700">
+                            {m.participants?.length || 0}
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-center">
+                            <span className={cn(
+                              "inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
+                              m.status === "Terminée" ? "bg-emerald-100 text-emerald-800" :
+                              m.status === "En cours" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800"
+                            )}>
+                              {m.status}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-right font-black text-xs text-slate-900">
+                            {formatCurrency(calculateMissionCost(m))}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* TAB 3: Analyse Mensuelle & Annuelle */}
+        {activeTab === "analytics" && (
+          <div className="space-y-6">
+            <Card className="border border-slate-200/80 bg-white rounded-2xl shadow-sm overflow-hidden">
+              <CardHeader className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/50">
+                <CardTitle className="text-sm font-black uppercase tracking-tight text-slate-900">
+                  Ventilation Mensuelle des Missions & Budgets (Exercice {year})
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500">
+                  Évolution mois par mois du nombre de missions, participants et budgets mobilisés
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                {statsLoading ? (
-                  <div className="flex justify-center items-center h-48">
-                    <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-                  </div>
-                ) : yearlyStats.length > 0 ? (
-                  <Table>
-                    <TableHeader className="bg-slate-50/30">
-                      <TableRow className="border-b border-slate-100 hover:bg-transparent">
-                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500">Année</TableHead>
-                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Nbre Missions</TableHead>
-                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500 text-right">Budget global</TableHead>
+                <Table>
+                  <TableHeader className="bg-slate-50/80">
+                    <TableRow className="border-b border-slate-200">
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider">Mois</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-center">Nbre Missions</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-center">Participants</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-right">Budget Alloué</TableHead>
+                      <TableHead className="py-3 px-4 font-black uppercase text-[10px] tracking-wider text-center w-[120px]">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {monthlyStats.map((m) => (
+                      <TableRow key={m.monthCode} className={cn(
+                        "border-b border-slate-100 transition-colors",
+                        m.count > 0 ? "bg-indigo-50/20 hover:bg-indigo-50/40" : "hover:bg-slate-50"
+                      )}>
+                        <TableCell className="py-3 px-4 font-bold text-xs text-slate-800 capitalize">
+                          {m.monthName}
+                        </TableCell>
+                        <TableCell className="py-3 px-4 text-center">
+                          {m.count > 0 ? (
+                            <span className="bg-slate-900 text-white font-black text-xs px-2.5 py-0.5 rounded-full">
+                              {m.count}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300 font-bold">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-3 px-4 text-center font-bold text-xs text-indigo-700">
+                          {m.participants > 0 ? m.participants : <span className="text-slate-300 font-bold">-</span>}
+                        </TableCell>
+                        <TableCell className="py-3 px-4 text-right font-black text-xs text-slate-900">
+                          {m.cost > 0 ? formatCurrency(m.cost) : <span className="text-slate-300 font-bold">-</span>}
+                        </TableCell>
+                        <TableCell className="py-3 px-4 text-center">
+                          {m.count > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setMonth(m.monthCode);
+                                setActiveTab("recap");
+                              }}
+                              className="h-7 px-2 text-[10px] font-bold text-indigo-600 hover:bg-indigo-50"
+                            >
+                              Voir le Récap
+                            </Button>
+                          )}
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {yearlyStats.map(stat => (
-                        <TableRow key={stat.year} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                          <TableCell className="py-3 px-4 font-black text-xs text-slate-900">{stat.year}</TableCell>
-                          <TableCell className="py-3 px-4 text-center font-bold text-xs text-slate-700">{stat.count}</TableCell>
-                          <TableCell className="py-3 px-4 text-right font-black text-xs text-slate-900">{formatCurrency(stat.totalCost)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <div className="text-center py-8 text-xs text-slate-400 uppercase tracking-[0.1em] font-bold">Aucune mission enregistrée</div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Monthly Stats Card */}
-            <Card className="border-none bg-white/40 backdrop-blur-md rounded-xl shadow-xl border border-white/20 overflow-hidden">
-              <CardHeader className="pb-3 bg-slate-900/[0.02] border-b border-slate-100">
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statistiques Mensuelles (Année {year})</CardTitle>
-                <CardDescription className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
-                  Volume et budget des missions par mois
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0 max-h-[300px] overflow-y-auto">
-                {statsLoading ? (
-                  <div className="flex justify-center items-center h-48">
-                    <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader className="bg-slate-50/30 sticky top-0 bg-white z-10">
-                      <TableRow className="border-b border-slate-100 hover:bg-transparent">
-                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500">Mois</TableHead>
-                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Nbre Missions</TableHead>
-                        <TableHead className="py-3 px-4 font-black uppercase tracking-widest text-[9px] text-slate-500 text-right">Budget global</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {monthlyStats.map(stat => (
-                        <TableRow key={stat.monthIndex} className={cn(
-                          "border-b border-slate-50 hover:bg-slate-50/50 transition-colors",
-                          stat.count > 0 ? "bg-blue-50/20" : ""
-                        )}>
-                          <TableCell className="py-3 px-4 font-bold text-xs text-slate-700">{stat.monthLabel}</TableCell>
-                          <TableCell className="py-3 px-4 text-center font-black text-xs text-slate-900">
-                            {stat.count > 0 ? (
-                              <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-black">
-                                {stat.count}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="py-3 px-4 text-right font-black text-xs text-slate-900">{formatCurrency(stat.totalCost)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {reportData && (
-          <Card className={`border-none bg-white rounded-xl shadow-2xl overflow-hidden ${isPrinting ? 'shadow-none' : ''}`}>
-            <CardHeader className="p-5 border-b border-slate-50">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center text-white">
-                            <FileText className="h-4 w-4" />
-                          </div>
-                          <CardTitle className="text-2xl font-black uppercase tracking-tighter text-slate-900">Synthèse Globale - {selectedPeriodText}</CardTitle>
-                        </div>
-                        <CardDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                            {reportData.missions.length} mission(s) identifiée(s) pour cette période administrative.
-                        </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-end mr-4">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Impact Budgétaire</span>
-                        <span className="text-2xl font-black text-slate-900 tracking-tighter leading-none">{formatCurrency(reportData.totalCost)}</span>
-                      </div>
-                      {!isPrinting && (
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="outline" 
-                            onClick={() => setShowRecapModal(true)}
-                            className="h-12 px-5 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all gap-2 text-slate-700"
-                          >
-                            <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Tableau Récapitulatif
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            onClick={handlePrint}
-                            className="h-12 px-6 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all"
-                          >
-                              <Printer className="mr-2 h-4 w-4 text-blue-500" /> Imprimer
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader className="bg-slate-50/50">
-                          <TableRow className="border-b border-slate-100 hover:bg-transparent">
-                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500">N° Mission</TableHead>
-                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500">Désignation</TableHead>
-                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Période</TableHead>
-                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Agents</TableHead>
-                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500 text-right">Coût Previsionnel</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {reportData.missions.length > 0 ? (
-                            reportData.missions.map(mission => (
-                                <TableRow key={mission.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors group">
-                                    <TableCell className="py-5 px-5 font-black text-xs text-slate-900">{mission.numeroMission}</TableCell>
-                                    <TableCell className="py-5 px-5">
-                                      <div className="flex flex-col">
-                                        <span className="font-bold text-sm text-slate-700 uppercase tracking-tight">{mission.title}</span>
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{mission.lieuMission || "National"}</span>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="py-5 px-5 text-center">
-                                      <div className="inline-flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full text-[10px] font-bold text-slate-600 uppercase tracking-tight">
-                                        <Calendar className="h-3 w-3" />
-                                        {format(parseISO(mission.startDate), 'dd/MM/yy')} - {format(parseISO(mission.endDate), 'dd/MM/yy')}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="py-5 px-5 text-center text-sm font-black text-slate-900">{mission.participants.length}</TableCell>
-                                    <TableCell className="py-5 px-5 text-right font-black text-slate-900">{formatCurrency(calculateMissionCost(mission))}</TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8 bg-slate-50/30">
-                                <div className="flex flex-col items-center gap-2">
-                                  <FileText className="h-10 w-10 text-slate-200" />
-                                  <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Aucun enregistrement pour cette période.</p>
-                                </div>
-                            </TableCell>
-                            </TableRow>
-                        )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {!reportData && !loading && !isPrinting && (
-          <div className="bg-white/40 backdrop-blur-md rounded-2xl border-2 border-dashed border-slate-200 h-96 flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-700">
-              <div className="h-20 w-20 bg-white rounded-xl shadow-xl flex items-center justify-center text-slate-200 mb-6 group-hover:scale-110 transition-transform">
-                  <FileText className="h-10 w-10" />
-              </div>
-              <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 max-w-[240px] text-center leading-loose">
-                  Sélectionnez une période et <br /> lancez la génération du rapport
-              </p>
-          </div>
-        )}
-      </div>
-      
-      {reportData && (
-        <>
-          <MissionsOfficialReport 
-            missions={reportData.missions} 
-            organizationSettings={settings} 
-            fiscalYear={year} 
-            periodText={selectedPeriodText} 
-            totalBudget={reportData.totalCost} 
+        {/* Modal Printable Official Grand Livre */}
+        {isPrinting && (
+          <MissionsOfficialReport
+            missions={filteredMissions}
+            organizationSettings={settings}
+            fiscalYear={year}
+            periodText={selectedPeriodText}
+            totalBudget={stats.totalCost}
             isPrinting={isPrinting}
             onAfterPrint={() => setIsPrinting(false)}
           />
+        )}
 
-          <MissionsRecapTableModal
-            isOpen={showRecapModal}
-            onClose={() => setShowRecapModal(false)}
-            missions={reportData.missions}
-            organizationSettings={settings}
-            periodLabel={selectedPeriodText}
-          />
-        </>
-      )}
-    </div>
+        {/* Modal Tableau Récapitulatif Administratif */}
+        <MissionsRecapTableModal
+          isOpen={showRecapModal}
+          onClose={() => setShowRecapModal(false)}
+          missions={filteredMissions}
+          organizationSettings={settings}
+          periodLabel={selectedPeriodText}
+        />
+      </div>
+    </PermissionGuard>
   );
-}
-
-function Calendar({ className }: { className?: string }) {
-    return (
-        <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            className={className}
-        >
-            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-            <line x1="16" x2="16" y1="2" y2="6"/>
-            <line x1="8" x2="8" y1="2" y2="6"/>
-            <line x1="3" x2="21" y1="10" y2="10"/>
-        </svg>
-    );
 }

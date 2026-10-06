@@ -6,7 +6,7 @@ import {
   MoreHorizontal, FileText, Calendar,
   CheckCircle2, Clock, PlayCircle, MapPin, 
   ChevronRight, Sparkles, Filter, Users, XCircle, ArrowUpRight,
-  Printer, RotateCcw, Hash
+  Printer, RotateCcw, Hash, FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import type { Mission, OrganizationSettings, MissionParticipant } from "@/lib/data";
 import { AddMissionSheet } from "@/components/missions/add-mission-sheet";
+import { MissionsRecapTableModal } from "@/components/missions/missions-recap-table-modal";
 import { Input } from "@/components/ui/input";
 import { subscribeToMissions, addMission, deleteMission } from "@/services/mission-service";
 import { getOrganizationSettings } from "@/services/organization-service";
@@ -382,6 +383,7 @@ export default function MissionsPage() {
   const [showGroupPrint, setShowGroupPrint] = useState(false);
   const [showIndividualPrint, setShowIndividualPrint] = useState(false);
   const [selectedIndividualParticipant, setSelectedIndividualParticipant] = useState<MissionParticipant | null>(null);
+  const [showRecapModal, setShowRecapModal] = useState(false);
 
 
   const canCreate = can('missions', 'create') || hasPermission('missions:create') || hasPermission('page:missions:create') || hasPermission('page:missions:add') || hasPermission('page:admin:view');
@@ -679,6 +681,26 @@ export default function MissionsPage() {
     };
   }, [filteredMissions]);
 
+  const activePeriodLabel = useMemo(() => {
+    const parts: string[] = [];
+    if (startDateFilter && endDateFilter) {
+      parts.push(`Du ${format(parseISO(startDateFilter), "dd/MM/yyyy")} au ${format(parseISO(endDateFilter), "dd/MM/yyyy")}`);
+    } else if (startDateFilter) {
+      parts.push(`À partir du ${format(parseISO(startDateFilter), "dd/MM/yyyy")}`);
+    } else if (endDateFilter) {
+      parts.push(`Jusqu'au ${format(parseISO(endDateFilter), "dd/MM/yyyy")}`);
+    }
+    if (selectedMonth !== "all") {
+      const mObj = MONTHS.find(m => m.value === selectedMonth);
+      if (mObj) parts.push(`Mois : ${mObj.label}`);
+    }
+    if (selectedYear !== "all") {
+      parts.push(`Année ${selectedYear}`);
+    }
+    if (parts.length === 0) return "Toutes les périodes";
+    return parts.join(" - ");
+  }, [startDateFilter, endDateFilter, selectedMonth, selectedYear]);
+
   return (
     <PermissionGuard permission="page:missions:view" allowPersonal>
       <div className="flex flex-col gap-6 pb-16 max-w-7xl mx-auto w-full">
@@ -700,7 +722,17 @@ export default function MissionsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowRecapModal(true)} 
+              className="h-10 rounded-xl border-slate-200/80 bg-white px-3.5 font-bold text-xs text-slate-700 hover:bg-slate-50 transition-all shadow-sm gap-2"
+              title="Afficher le tableau récapitulatif des ordres de mission"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+              Tableau Récapitulatif
+            </Button>
+
             {canManageAllMissions && (
               <Button 
                 variant="outline" 
@@ -1345,6 +1377,14 @@ export default function MissionsPage() {
             }}
           />
         )}
+
+        <MissionsRecapTableModal
+          isOpen={showRecapModal}
+          onClose={() => setShowRecapModal(false)}
+          missions={filteredMissions}
+          organizationSettings={logos}
+          periodLabel={activePeriodLabel}
+        />
       </div>
     </PermissionGuard>
   );

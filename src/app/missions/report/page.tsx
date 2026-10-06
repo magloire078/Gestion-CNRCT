@@ -21,12 +21,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { getMissions } from "@/services/mission-service";
 import type { Mission } from "@/lib/data";
-import { Loader2, Printer, FileText } from "lucide-react";
+import { Loader2, Printer, FileText, FileSpreadsheet } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MissionsOfficialReport } from "@/components/reports/missions-official-report";
+import { MissionsRecapTableModal } from "@/components/missions/missions-recap-table-modal";
 import { useSettings } from "@/hooks/use-settings";
 
 interface ReportData {
@@ -39,6 +40,7 @@ export default function MissionReportPage() {
   const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
   const [loading, setLoading] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [showRecapModal, setShowRecapModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const { settings } = useSettings();
@@ -348,13 +350,22 @@ export default function MissionReportPage() {
                         <span className="text-2xl font-black text-slate-900 tracking-tighter leading-none">{formatCurrency(reportData.totalCost)}</span>
                       </div>
                       {!isPrinting && (
-                        <Button 
-                          variant="outline" 
-                          onClick={handlePrint}
-                          className="h-12 px-6 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all"
-                        >
-                            <Printer className="mr-2 h-4 w-4 text-blue-500" /> Imprimer
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setShowRecapModal(true)}
+                            className="h-12 px-5 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all gap-2 text-slate-700"
+                          >
+                            <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Tableau Récapitulatif
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={handlePrint}
+                            className="h-12 px-6 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all"
+                          >
+                              <Printer className="mr-2 h-4 w-4 text-blue-500" /> Imprimer
+                          </Button>
+                        </div>
                       )}
                     </div>
                 </div>
@@ -422,6 +433,7 @@ export default function MissionReportPage() {
       </div>
       
       {reportData && (
+        <>
           <MissionsOfficialReport 
             missions={reportData.missions} 
             organizationSettings={settings} 
@@ -431,6 +443,15 @@ export default function MissionReportPage() {
             isPrinting={isPrinting}
             onAfterPrint={() => setIsPrinting(false)}
           />
+
+          <MissionsRecapTableModal
+            isOpen={showRecapModal}
+            onClose={() => setShowRecapModal(false)}
+            missions={reportData.missions}
+            organizationSettings={settings}
+            periodLabel={selectedPeriodText}
+          />
+        </>
       )}
     </div>
   );

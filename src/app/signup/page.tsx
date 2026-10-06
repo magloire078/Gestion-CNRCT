@@ -50,12 +50,20 @@ export default function SignupPage() {
 
     try {
       await signUp({ name, email }, password);
-      router.push("/");
+      router.push("/intranet");
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError("Cette adresse email est déjà utilisée. Essayez de vous connecter.");
+      const msg = err?.message || "";
+      const code = err?.code || "";
+      if (code === 'auth/email-already-in-use' || msg.includes('email-already-in-use')) {
+        setError("Cette adresse email est déjà associée à un compte. Veuillez vous connecter.");
+      } else if (code === 'auth/weak-password' || msg.includes('weak-password')) {
+        setError("Le mot de passe doit contenir au moins 6 caractères.");
+      } else if (code === 'auth/invalid-email' || msg.includes('invalid-email')) {
+        setError("Format d'adresse email invalide.");
+      } else if (msg.includes('profile-creation-failed')) {
+        setError("Erreur lors de la configuration de votre profil. Veuillez contacter l'administrateur.");
       } else {
-        setError(err.message || "Échec de l'inscription. Veuillez réessayer.");
+        setError(msg || "Échec de l'inscription. Veuillez vérifier vos informations et réessayer.");
       }
     } finally {
       setLoading(false);

@@ -81,30 +81,50 @@ async function createUserProfile(user: FirebaseUser, name: string, preProvisione
 
     await setDoc(userDocRef, userProfile);
 
-    // Now fetch the full profile with role
-    return (await getUserProfile(user.uid))!;
+    // Now fetch the full profile with role or return fallback
+    const fullProfile = await getUserProfile(user.uid);
+    if (fullProfile) {
+        return fullProfile;
+    }
+
+    return {
+        id: user.uid,
+        ...userProfile,
+        permissions: [],
+        resourcePermissions: {}
+    } as User;
 }
 
 export async function signUp(userData: { name: string, email: string }, password: string): Promise<User> {
     const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
     const { user } = userCredential;
 
-    await updateProfile(user, { displayName: userData.name });
+    try {
+        await updateProfile(user, { displayName: userData.name });
+    } catch (e) {
+        console.warn("Could not update displayName:", e);
+    }
 
     try {
-        // Check for pre-provisioned profile by email
-        const { collection, getDocs, query, where } = await import('@/lib/firebase');
-        const q = query(collection(db, 'users'), where('email', '==', userData.email));
-        const querySnapshot = await getDocs(q);
+        // Check for pre-provisioned profile by email (if permission allows)
         let preProvisionedData = null;
         let oldDocId = null;
 
-        if (!querySnapshot.empty) {
-            const oldDoc = querySnapshot.docs.find(d => d.id !== user.uid);
-            if (oldDoc) {
-                preProvisionedData = oldDoc.data();
-                oldDocId = oldDoc.id;
+        try {
+            const { collection, getDocs, query, where } = await import('@/lib/firebase');
+            const q = query(collection(db, 'users'), where('email', '==', userData.email));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                const oldDoc = querySnapshot.docs.find(d => d.id !== user.uid);
+                if (oldDoc) {
+                    preProvisionedData = oldDoc.data();
+                    oldDocId = oldDoc.id;
+                }
             }
+        } catch (e) {
+            // Normal for newly registered non-admin users where users collection listing is restricted
+            console.info("Pre-provisioned check skipped (standard user signup)");
         }
 
         const userProfile = await createUserProfile(user, userData.name, preProvisionedData);
@@ -126,8 +146,6 @@ export async function signUp(userData: { name: string, email: string }, password
 
         return userProfile;
     } catch (profileError) {
-        // If profile creation fails, we should ideally handle this,
-        // maybe by deleting the auth user or flagging the account.
         console.error("Profile creation failed after signup:", profileError);
         throw new Error("profile-creation-failed");
     }
@@ -147,8 +165,6 @@ export async function signIn(email: string, password: string): Promise<User> {
         // Just-in-time profile creation if profile doesn't exist
         if (!userProfile) {
             // Before creating, verify the document truly doesn't exist.
-            // getUserProfile() can return null both when the doc is missing AND
-            // when it fails silently due to permission errors (e.g. on roles collection).
             const userDocRef = doc(db, 'users', user.uid);
             const userDocSnap = await getDoc(userDocRef);
 
@@ -157,19 +173,24 @@ export async function signIn(email: string, password: string): Promise<User> {
                 console.warn(`User profile not found for uid: ${user.uid}. Creating one now.`);
                 try {
                     // Check if admin pre-provisioned this user
-                    const { collection, getDocs, query, where, deleteDoc } = await import('@/lib/firebase');
-                    const q = query(collection(db, 'users'), where('email', '==', user.email));
-                    const querySnapshot = await getDocs(q);
-
                     let preProvisionedData = null;
                     let oldDocId = null;
-                    if (!querySnapshot.empty) {
-                        const oldDoc = querySnapshot.docs.find(d => d.id !== user.uid);
-                        if (oldDoc) {
-                            preProvisionedData = oldDoc.data();
-                            oldDocId = oldDoc.id;
-                            console.warn(`Found pre-provisioned profile for ${user.email} (doc: ${oldDocId}), migrating to ${user.uid}`);
+
+                    try {
+                        const { collection, getDocs, query, where } = await import('@/lib/firebase');
+                        const q = query(collection(db, 'users'), where('email', '==', user.email));
+                        const querySnapshot = await getDocs(q);
+
+                        if (!querySnapshot.empty) {
+                            const oldDoc = querySnapshot.docs.find(d => d.id !== user.uid);
+                            if (oldDoc) {
+                                preProvisionedData = oldDoc.data();
+                                oldDocId = oldDoc.id;
+                                console.warn(`Found pre-provisioned profile for ${user.email} (doc: ${oldDocId}), migrating to ${user.uid}`);
+                            }
                         }
+                    } catch (e) {
+                        console.info("Pre-provisioned check skipped during JIT sign-in profile creation");
                     }
 
                     userProfile = await createUserProfile(user, user.displayName || user.email!, preProvisionedData);
@@ -198,12 +219,13 @@ export async function signIn(email: string, password: string): Promise<User> {
                 const rawData = userDocSnap.data();
                 userProfile = {
                     id: user.uid,
-                    name: rawData.name || user.displayName || user.email!,
-                    email: rawData.email || user.email!,
-                    roleId: rawData.roleId || '',
-                    photoUrl: rawData.photoUrl || user.photoURL || '',
+                    name: rawData?.name || user.displayName || user.email || 'Utilisateur',
+                    email: user.email!,
+                    roleId: rawData?.roleId || 'employe-operationnel',
+                    photoUrl: rawData?.photoUrl || user.photoURL || '',
                     role: null,
                     permissions: [],
+                    resourcePermissions: rawData?.resourcePermissions || {}
                 };
             }
         }

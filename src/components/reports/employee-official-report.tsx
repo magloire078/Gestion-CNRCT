@@ -146,6 +146,18 @@ export function EmployeeOfficialReport({
         });
     }, [employees]);
 
+    // Rows per page depending on orientation
+    const rowsPerPage = orientation === 'landscape' ? 20 : 25;
+    
+    // Chunk sorted employees into pages to prevent row cuts in print
+    const employeePages = useMemo(() => {
+        const pages: Employe[][] = [];
+        for (let i = 0; i < sortedEmployees.length; i += rowsPerPage) {
+            pages.push(sortedEmployees.slice(i, i + rowsPerPage));
+        }
+        return pages.length > 0 ? pages : [[]];
+    }, [sortedEmployees, rowsPerPage]);
+
     // Customary Chief breakdown stats
     const chiefStats = useMemo(() => {
         let canton = 0;
@@ -171,21 +183,21 @@ export function EmployeeOfficialReport({
         const comiteInfo = findComiteRegionalMember(fullName, emp.Region, (emp as any).Departement);
 
         switch (key) {
-            case 'index': return <span className="font-bold text-slate-500 text-[8px]">{idx + 1}</span>;
-            case 'name': return <span className="font-bold uppercase text-slate-900 text-[8px] tracking-tight">{fullName || <span className="text-slate-300">—</span>}</span>;
+            case 'index': return <span className="font-semibold text-slate-500 text-[8px] tabular-nums">{idx + 1}</span>;
+            case 'name': return <span className="font-bold uppercase text-slate-900 text-[8px] tracking-tight">{fullName || <span className="text-slate-300 font-normal">—</span>}</span>;
             case 'department': {
                 const val = cleanValue(emp.department);
-                return val ? <span className="font-semibold text-slate-800 text-[8px]">{val}</span> : <span className="text-slate-300">—</span>;
+                return val ? <span className="font-medium text-slate-700 text-[8px]">{val}</span> : <span className="text-slate-300 font-normal">—</span>;
             }
             case 'CNPS': return emp.CNPS ? <span className="font-bold text-emerald-700 text-[8px]">OUI</span> : <span className="text-slate-400 text-[8px]">NON</span>;
             case 'sexe': {
                 const s = cleanValue(emp.sexe);
-                if (!s) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                if (!s) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
                 const isFemme = s.toLowerCase().startsWith('f');
                 return (
                     <span className={cn(
                         "font-bold text-[8px] uppercase",
-                        isFemme ? "text-rose-700 font-black" : "text-slate-800"
+                        isFemme ? "text-rose-700 font-black" : "text-slate-700"
                     )}>
                         {isFemme ? "F" : "M"}
                     </span>
@@ -193,36 +205,47 @@ export function EmployeeOfficialReport({
             }
             case 'situationMatrimoniale': {
                 const val = cleanValue(emp.situationMatrimoniale || (emp as any).situation_famille || (emp as any).Situation_Matrimoniale);
-                if (!val) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
-                return <span className="font-semibold text-[8px] text-slate-800 uppercase">{val}</span>;
+                if (!val) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
+                return <span className="font-medium text-[8px] text-slate-700 uppercase">{val}</span>;
             }
             case 'enfants': {
                 const val = emp.enfants ?? (emp as any).nombre_enfants;
-                if (val === undefined || val === null || val === '' || val === 0) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
-                return <span className="font-black text-[8px] text-slate-800 tabular-nums">{val}</span>;
+                if (val === undefined || val === null || val === '' || val === 0) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
+                return <span className="font-bold text-[8px] text-slate-800 tabular-nums">{val}</span>;
             }
             case 'statutChef': {
                 const statuses = getMemberChiefStatuses(emp);
-                if (statuses.length === 0) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                if (statuses.length === 0) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
                 return (
                     <div className="flex flex-col gap-0.5 justify-center items-center py-0.5">
                         {statuses.map(s => {
                             const isRoi = s.toLowerCase().includes("roi") || s.toLowerCase().includes("province");
                             const isCanton = s.toLowerCase().includes("canton");
                             const isTribu = s.toLowerCase().includes("tribu");
-                            const isVillage = s.toLowerCase().includes("village");
+                            
+                            if (isRoi) {
+                                return (
+                                    <span key={s} className="text-[7.5px] font-black uppercase px-1.5 py-0.5 rounded bg-purple-100 text-purple-950 border border-purple-300 whitespace-nowrap">
+                                        {s}
+                                    </span>
+                                );
+                            }
+                            if (isCanton) {
+                                return (
+                                    <span key={s} className="text-[7.5px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-950 border border-amber-300 whitespace-nowrap">
+                                        {s}
+                                    </span>
+                                );
+                            }
+                            if (isTribu) {
+                                return (
+                                    <span key={s} className="text-[7.5px] font-bold uppercase px-1.5 py-0.5 rounded bg-sky-50 text-sky-900 border border-sky-200 whitespace-nowrap">
+                                        {s}
+                                    </span>
+                                );
+                            }
                             return (
-                                <span 
-                                    key={s} 
-                                    className={cn(
-                                        "text-[7px] font-black tracking-tight uppercase leading-tight px-1.5 py-0.5 rounded border whitespace-nowrap",
-                                        isRoi ? "bg-purple-50 text-purple-950 border-purple-200" :
-                                        isCanton ? "bg-amber-50 text-amber-950 border-amber-200" :
-                                        isTribu ? "bg-blue-50 text-blue-950 border-blue-200" :
-                                        isVillage ? "bg-emerald-50 text-emerald-950 border-emerald-200" :
-                                        "bg-slate-50 text-slate-900 border-slate-200"
-                                    )}
-                                >
+                                <span key={s} className="text-[7.5px] font-semibold uppercase text-slate-800 whitespace-nowrap">
                                     {s}
                                 </span>
                             );
@@ -232,16 +255,22 @@ export function EmployeeOfficialReport({
             }
             case 'profile': {
                 const prof = cleanValue(getMemberProfile(emp) || (emp as any).profile || (emp.estRenouvele !== undefined ? (emp.estRenouvele ? 'Reconduit' : 'Nouveau') : ''));
-                if (!prof) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                if (!prof) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
                 const isReconduit = prof.toLowerCase().includes('reconduit');
                 const isRemplace = prof.toLowerCase().includes('remplac');
                 return (
                     <span className={cn(
-                        "text-[7px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider whitespace-nowrap inline-block border",
-                        isReconduit ? "bg-emerald-50 text-emerald-800 border-emerald-300" :
-                        isRemplace ? "bg-rose-50 text-rose-800 border-rose-300" :
-                        "bg-blue-50 text-blue-800 border-blue-300"
+                        "text-[7.5px] font-bold uppercase tracking-wider whitespace-nowrap inline-flex items-center gap-1",
+                        isReconduit ? "text-emerald-700" :
+                        isRemplace ? "text-rose-700 font-black" :
+                        "text-blue-700"
                     )}>
+                        <span className={cn(
+                            "h-1.5 w-1.5 rounded-full inline-block",
+                            isReconduit ? "bg-emerald-600" :
+                            isRemplace ? "bg-rose-600" :
+                            "bg-blue-600"
+                        )} />
                         {prof}
                     </span>
                 );
@@ -266,9 +295,9 @@ export function EmployeeOfficialReport({
                 }
                 
                 const formatted = formatPhone(contactStr);
-                if (!formatted) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                if (!formatted) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
                 return (
-                    <span className="font-mono tabular-nums font-bold tracking-tight text-slate-800 text-[8px] whitespace-nowrap">
+                    <span className="font-mono tabular-nums font-semibold tracking-tight text-slate-700 text-[7.5px] whitespace-nowrap">
                         {formatted}
                     </span>
                 );
@@ -277,26 +306,27 @@ export function EmployeeOfficialReport({
             case 'dateEmbauche': 
             case 'Date_Depart': {
                 const val = (emp as any)[key];
-                if (!val) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                if (!val) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
                 try {
-                    return <span className="font-mono text-[8px] font-semibold text-slate-800">{format(new Date(val), 'dd/MM/yyyy')}</span>;
+                    return <span className="font-mono text-[7.5px] font-medium text-slate-700">{format(new Date(val), 'dd/MM/yyyy')}</span>;
                 } catch (e) {
-                    return <span className="text-[8px]">{val}</span>;
+                    return <span className="text-[7.5px]">{val}</span>;
                 }
             }
             case 'age': {
-                if (!emp.Date_Naissance) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                if (!emp.Date_Naissance) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
                 const birthDate = new Date(emp.Date_Naissance);
                 const age = new Date().getFullYear() - birthDate.getFullYear();
-                return <span className="font-bold text-[8px] text-slate-800">{age} ans</span>;
+                return <span className="font-semibold text-[8px] text-slate-700">{age} ans</span>;
             }
             case 'status': {
                 const st = cleanValue(emp.status);
-                if (!st) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                if (!st) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
+                const isActif = st.toLowerCase().includes('actif');
                 return (
                     <span className={cn(
-                        "font-black uppercase text-[7px] tracking-wider px-1.5 py-0.5 rounded border inline-block whitespace-nowrap",
-                        st === 'Actif' ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-slate-100 text-slate-700 border-slate-200"
+                        "font-bold uppercase text-[7.5px] tracking-wider whitespace-nowrap",
+                        isActif ? "text-emerald-700" : "text-rose-700 bg-rose-50 px-1 py-0.5 rounded border border-rose-200 font-black"
                     )}>
                         {st}
                     </span>
@@ -305,42 +335,52 @@ export function EmployeeOfficialReport({
             case 'Departement': {
                 const rawDept = cleanValue((emp as any).Departement || (emp as any).departement || comiteInfo?.department);
                 const rawRegion = cleanValue((emp as any).Region || (emp as any).region || comiteInfo?.region);
-                if (!rawDept) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
-                return <span className="font-bold text-slate-800 text-[8px] uppercase">{getOfficialDepartment(rawRegion || '', rawDept)}</span>;
+                if (!rawDept) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
+                return <span className="font-semibold text-slate-800 text-[8px] uppercase">{getOfficialDepartment(rawRegion || '', rawDept)}</span>;
             }
             case 'Region': {
                 const raw = cleanValue((emp as any).Region || (emp as any).region || comiteInfo?.region);
-                if (!raw) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
-                return <span className="font-black text-slate-900 text-[8px] uppercase">{getOfficialRegion(raw)}</span>;
+                if (!raw) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
+                return <span className="font-bold text-slate-900 text-[8px] uppercase">{getOfficialRegion(raw)}</span>;
             }
             case 'subPrefecture': {
                 const sp = cleanValue((emp as any).subPrefecture || (emp as any).sousPrefecture || (emp as any).Commune);
                 const cleaned = cleanVillage(sp);
-                if (cleaned) return <span className="font-semibold text-slate-800 text-[8px] uppercase">{cleaned}</span>;
-                if (comiteInfo?.department) return <span className="font-semibold text-slate-800 text-[8px] uppercase">{comiteInfo.department}</span>;
-                return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                if (cleaned) return <span className="font-medium text-slate-700 text-[8px] uppercase">{cleaned}</span>;
+                if (comiteInfo?.department) return <span className="font-medium text-slate-700 text-[8px] uppercase">{comiteInfo.department}</span>;
+                return <span className="text-slate-300 font-normal text-[8px]">—</span>;
             }
             case 'Village': {
                 const directVillage = cleanValue((emp as any).Village || (emp as any).village || (emp as any).localite || (emp as any).villageName);
                 const cleaned = cleanVillage(directVillage);
-                if (cleaned) return <span className="font-semibold text-slate-800 text-[8px] uppercase">{cleaned}</span>;
+                if (cleaned) return <span className="font-medium text-slate-700 text-[8px] uppercase">{cleaned}</span>;
                 if (comiteInfo?.fonctionLocalite) {
                     const cleanedLocalite = cleanVillage(comiteInfo.fonctionLocalite);
-                    if (cleanedLocalite) return <span className="font-semibold text-slate-800 text-[8px] uppercase">{cleanedLocalite}</span>;
+                    if (cleanedLocalite) return <span className="font-medium text-slate-700 text-[8px] uppercase">{cleanedLocalite}</span>;
                 }
-                return <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                return <span className="text-slate-300 font-normal text-[8px]">—</span>;
             }
             case 'poste': {
                 const p = cleanValue(emp.poste);
-                if (!p) return <span className="text-slate-300 font-bold text-[8px]">—</span>;
-                return <span className="font-bold text-slate-700 text-[8px] uppercase tracking-tight">{p}</span>;
+                if (!p) return <span className="text-slate-300 font-normal text-[8px]">—</span>;
+                const isMembreComite = p.toLowerCase().includes('membre comit');
+                return (
+                    <span className={cn(
+                        "text-[7.5px] uppercase tracking-tight",
+                        isMembreComite ? "text-slate-500 font-medium" : "text-slate-900 font-bold"
+                    )}>
+                        {p}
+                    </span>
+                );
             }
             default: {
                 const val = cleanValue((emp as any)[key]);
-                return val ? <span className="text-[8px] text-slate-800">{val}</span> : <span className="text-slate-300 font-bold text-[8px]">—</span>;
+                return val ? <span className="text-[8px] text-slate-700">{val}</span> : <span className="text-slate-300 font-normal text-[8px]">—</span>;
             }
         }
     };
+
+    const totalPagesCount = employeePages.length + 1; // +1 for Cover / Summary page
 
     return (
         <InstitutionalReportWrapper 
@@ -348,162 +388,214 @@ export function EmployeeOfficialReport({
             onAfterPrint={onAfterPrint}
             orientation={orientation}
         >
-            <div className="bg-white text-black w-full font-sans print:min-h-0">
+            <div className="bg-white text-black w-full font-sans print:min-h-0 print:p-0">
                 
-                {/* --- PAGE DE RÉSUMÉ GRAPHIQUE ÉPURÉE --- */}
-                <div className="print-page p-4 sm:p-5 bg-white flex flex-col items-center break-after-page min-h-0">
+                {/* --- PAGE 1 : SYNTHÈSE EXÉCUTIVE & COUVERTURE --- */}
+                <div className="print-page p-6 bg-white flex flex-col justify-between items-center break-after-page min-h-[95vh] border-b border-slate-100">
                     
-                    <div className="w-full mb-1">
-                        <InstitutionalHeader showService={false} settings={logos} compact={true} />
+                    <div className="w-full">
+                        <InstitutionalHeader showService={false} settings={logos} compact={false} />
                     </div>
                     
-                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight mb-1 text-center max-w-4xl">
-                      ÉTAT NOMINATIF DU PERSONNEL ET DES EFFECTIFS REPRÉSENTÉS
-                    </h1>
-                    
-                    <p className="text-sm sm:text-base font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">
-                      PÉRIMÈTRE : {unitLabel}
-                    </p>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="h-px w-8 bg-slate-300" />
-                      <div className="flex items-center gap-1.5 text-slate-500 font-bold uppercase tracking-widest text-[10px]">
-                        <Calendar className="h-3 w-3 text-emerald-600" />
-                        {todayStr}
-                      </div>
-                      <div className="h-px w-8 bg-slate-300" />
-                    </div>
-
-                    {/* Synthesis Core KPIs */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full max-w-3xl mb-2">
-                        <div className="flex flex-col items-center gap-0.5 p-3 bg-slate-50 rounded-xl border border-slate-200 shadow-sm">
-                            <Users className="h-4 w-4 text-slate-500 mb-0.5" />
-                            <span className="text-2xl font-black text-slate-900 leading-none">{stats.total}</span>
-                            <span className="text-[8.5px] font-black text-slate-500 uppercase tracking-wider text-center mt-0.5">Effectif Global</span>
+                    <div className="flex flex-col items-center text-center my-auto max-w-4xl py-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-[10px] font-black uppercase tracking-widest mb-3 border border-slate-200">
+                            RÉPUBLIQUE DE CÔTE D'IVOIRE • CNRCT
                         </div>
-                        <div className="flex flex-col items-center gap-0.5 p-3 bg-emerald-50/60 rounded-xl border border-emerald-200 shadow-sm">
-                            <UserCheck className="h-4 w-4 text-emerald-700 mb-0.5" />
-                            <span className="text-2xl font-black text-emerald-950 leading-none">{stats.active}</span>
-                            <span className="text-[8.5px] font-black text-emerald-800 uppercase tracking-wider text-center mt-0.5">Membres Actifs</span>
+                        <h1 className="text-2xl sm:text-3xl font-black text-slate-950 uppercase tracking-tight mb-2 leading-tight">
+                            ÉTAT NOMINATIF OFFICIEL DU PERSONNEL & MEMBRES
+                        </h1>
+                        <div className="text-base sm:text-lg font-bold text-slate-700 uppercase tracking-wider mb-4">
+                            PÉRIMÈTRE : <span className="text-emerald-800 font-black">{unitLabel}</span>
                         </div>
-                        <div className="flex flex-col items-center gap-0.5 p-3 bg-blue-50/60 rounded-xl border border-blue-200 shadow-sm">
-                            <TrendingUp className="h-4 w-4 text-blue-600 mb-0.5" />
-                            <span className="text-2xl font-black text-blue-950 leading-none">{stats.men}</span>
-                            <span className="text-[8.5px] font-black text-blue-700 uppercase tracking-wider text-center mt-0.5">Hommes</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-0.5 p-3 bg-rose-50/60 rounded-xl border border-rose-200 shadow-sm">
-                            <PieChart className="h-4 w-4 text-rose-600 mb-0.5" />
-                            <span className="text-2xl font-black text-rose-950 leading-none">{stats.women}</span>
-                            <span className="text-[8.5px] font-black text-rose-700 uppercase tracking-wider text-center mt-0.5">Femmes</span>
-                        </div>
-                    </div>
-
-                    {/* Customary Chief Statuses Cards (If applicable) */}
-                    {chiefStats.hasChiefs && (
-                        <div className="w-full max-w-3xl mt-3 pt-3 border-t border-slate-200">
-                            <div className="text-center mb-2.5">
-                                <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-500">Répartition par Titres Coutumiers</span>
+                        
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="h-px w-12 bg-slate-300" />
+                            <div className="flex items-center gap-2 text-slate-600 font-bold uppercase tracking-widest text-[11px]">
+                                <Calendar className="h-3.5 w-3.5 text-emerald-600" />
+                                {todayStr}
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                                <div className="flex flex-col items-center p-2.5 bg-amber-50/80 rounded-xl border border-amber-200 shadow-sm">
-                                    <Crown className="h-4 w-4 text-amber-600 mb-0.5" />
-                                    <span className="text-xl font-black text-amber-950 leading-none">{chiefStats.canton}</span>
-                                    <span className="text-[8px] font-black text-amber-800 uppercase tracking-wider text-center mt-0.5">Chefs de Canton</span>
-                                </div>
-                                <div className="flex flex-col items-center p-2.5 bg-blue-50/80 rounded-xl border border-blue-200 shadow-sm">
-                                    <Shield className="h-4 w-4 text-blue-600 mb-0.5" />
-                                    <span className="text-xl font-black text-blue-950 leading-none">{chiefStats.tribu}</span>
-                                    <span className="text-[8px] font-black text-blue-800 uppercase tracking-wider text-center mt-0.5">Chefs de Tribu</span>
-                                </div>
-                                <div className="flex flex-col items-center p-2.5 bg-emerald-50/80 rounded-xl border border-emerald-200 shadow-sm">
-                                    <Users className="h-4 w-4 text-emerald-600 mb-0.5" />
-                                    <span className="text-xl font-black text-emerald-950 leading-none">{chiefStats.village}</span>
-                                    <span className="text-[8px] font-black text-emerald-800 uppercase tracking-wider text-center mt-0.5">Chefs de Village</span>
-                                </div>
-                                <div className="flex flex-col items-center p-2.5 bg-purple-50/80 rounded-xl border border-purple-200 shadow-sm">
-                                    <Layers className="h-4 w-4 text-purple-600 mb-0.5" />
-                                    <span className="text-xl font-black text-purple-950 leading-none">{chiefStats.multi}</span>
-                                    <span className="text-[8px] font-black text-purple-800 uppercase tracking-wider text-center mt-0.5">Cumuls de Titres</span>
-                                </div>
+                            <div className="h-px w-12 bg-slate-300" />
+                        </div>
+
+                        {/* Synthesis Core KPIs */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-2xl mb-4">
+                            <div className="flex flex-col items-center p-3.5 bg-slate-50 rounded-xl border border-slate-200/90 shadow-sm">
+                                <Users className="h-4 w-4 text-slate-600 mb-1" />
+                                <span className="text-2xl font-black text-slate-900 leading-none">{stats.total}</span>
+                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider text-center mt-1">Total Enregistrés</span>
+                            </div>
+                            <div className="flex flex-col items-center p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-200/90 shadow-sm">
+                                <UserCheck className="h-4 w-4 text-emerald-700 mb-1" />
+                                <span className="text-2xl font-black text-emerald-950 leading-none">{stats.active}</span>
+                                <span className="text-[9px] font-bold text-emerald-800 uppercase tracking-wider text-center mt-1">Membres Actifs</span>
+                            </div>
+                            <div className="flex flex-col items-center p-3.5 bg-blue-50/70 rounded-xl border border-blue-200/90 shadow-sm">
+                                <TrendingUp className="h-4 w-4 text-blue-700 mb-1" />
+                                <span className="text-2xl font-black text-blue-950 leading-none">{stats.men}</span>
+                                <span className="text-[9px] font-bold text-blue-800 uppercase tracking-wider text-center mt-1">Hommes</span>
+                            </div>
+                            <div className="flex flex-col items-center p-3.5 bg-rose-50/70 rounded-xl border border-rose-200/90 shadow-sm">
+                                <PieChart className="h-4 w-4 text-rose-700 mb-1" />
+                                <span className="text-2xl font-black text-rose-950 leading-none">{stats.women}</span>
+                                <span className="text-[9px] font-bold text-rose-800 uppercase tracking-wider text-center mt-1">Femmes</span>
                             </div>
                         </div>
-                    )}
-                </div>
 
-                {/* --- PAGE DE DONNÉES --- */}
-                <div className="print-page p-3 sm:p-4 landscape-section bg-white break-before-page">
-                    
-                    {/* Header text above table */}
-                    <div className="mb-2 text-[10px] font-black text-slate-900 uppercase tracking-wider text-left border-b-2 border-slate-900 pb-1.5 flex justify-between items-center">
-                        <span className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-emerald-600 inline-block" />
-                            LISTE DU PERSONNEL {unitLabel} — ÉDITION DU {todayStr}
-                        </span>
-                        <span className="text-[9.5px] text-slate-600 font-bold bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">
-                            {sortedEmployees.length} MEMBRES ENREGISTRÉS
-                        </span>
+                        {/* Customary Chief Statuses Cards */}
+                        {chiefStats.hasChiefs && (
+                            <div className="w-full max-w-2xl pt-4 border-t border-slate-200">
+                                <div className="text-center mb-2.5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Répartition par Titres Coutumiers</span>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                    <div className="flex flex-col items-center p-2.5 bg-amber-50 rounded-xl border border-amber-200 shadow-sm">
+                                        <Crown className="h-4 w-4 text-amber-700 mb-0.5" />
+                                        <span className="text-xl font-black text-amber-950 leading-none">{chiefStats.canton}</span>
+                                        <span className="text-[8px] font-bold text-amber-800 uppercase tracking-wider text-center mt-0.5">Chefs de Canton</span>
+                                    </div>
+                                    <div className="flex flex-col items-center p-2.5 bg-sky-50 rounded-xl border border-sky-200 shadow-sm">
+                                        <Shield className="h-4 w-4 text-sky-700 mb-0.5" />
+                                        <span className="text-xl font-black text-sky-950 leading-none">{chiefStats.tribu}</span>
+                                        <span className="text-[8px] font-bold text-sky-800 uppercase tracking-wider text-center mt-0.5">Chefs de Tribu</span>
+                                    </div>
+                                    <div className="flex flex-col items-center p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 shadow-sm">
+                                        <Users className="h-4 w-4 text-emerald-700 mb-0.5" />
+                                        <span className="text-xl font-black text-emerald-950 leading-none">{chiefStats.village}</span>
+                                        <span className="text-[8px] font-bold text-emerald-800 uppercase tracking-wider text-center mt-0.5">Chefs de Village</span>
+                                    </div>
+                                    <div className="flex flex-col items-center p-2.5 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
+                                        <Layers className="h-4 w-4 text-purple-700 mb-0.5" />
+                                        <span className="text-xl font-black text-purple-950 leading-none">{chiefStats.multi}</span>
+                                        <span className="text-[8px] font-bold text-purple-800 uppercase tracking-wider text-center mt-0.5">Cumuls de Titres</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Data Table */}
-                    <div className="w-full overflow-hidden rounded-lg border border-slate-300 shadow-sm">
-                        <table className="w-full table-fixed border-collapse text-[8px] leading-tight bg-white">
-                            <thead>
-                                <tr className="bg-slate-900 text-white uppercase font-black text-center border-b border-slate-900">
-                                    {columnsToDisplay.map((key) => (
-                                        <th 
-                                            key={key} 
-                                            className={cn(
-                                                "border-r border-slate-700 last:border-r-0 py-2 px-1.5 align-middle text-[8px] font-black tracking-wider text-white uppercase bg-slate-900",
-                                                getColumnWidthClass(key)
-                                            )}
-                                        >
-                                            {getColumnLabel(key)}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sortedEmployees.map((emp, idx) => (
-                                    <tr key={emp.id || idx} className="border-b border-slate-200 even:bg-slate-50/70 hover:bg-slate-100/70 transition-colors break-inside-avoid">
-                                        {columnsToDisplay.map((key) => (
-                                            <td key={key} className={cn(
-                                                "border-r border-slate-200 last:border-r-0 py-1.5 px-1.5 align-middle break-words",
-                                                (key === 'index' || key === 'sexe' || key === 'status' || key === 'profile' || key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart' || key === 'statutChef' || key === 'CNPS' || key === 'enfants' || key === 'age') && "text-center",
-                                                (key === 'name' || key === 'Region' || key === 'Departement' || key === 'Village' || key === 'subPrefecture' || key === 'poste' || key === 'department' || key === 'Lieu_Naissance') && "text-left pl-2",
-                                                key === 'matricule' && "text-center font-mono font-bold text-slate-700 text-[7.5px]"
-                                            )}>
-                                                {getCellContent(emp, key, idx)}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Validation Area */}
-                    <div className="mt-4 break-inside-avoid w-full">
-                        <InstitutionalFooter 
-                            signatoryName="YEO Fatogoma"
-                            signatoryTitle="Le Secrétaire Général de la CNRCT"
-                            place="Yamoussoukro"
-                            showCertification={false}
-                            showVisa={false}
-                        />
+                    <div className="w-full flex justify-between items-center text-[9px] text-slate-400 font-bold uppercase border-t border-slate-200 pt-3">
+                        <span>Chambre Nationale des Rois et Chefs Traditionnels</span>
+                        <span>Page 1 sur {totalPagesCount}</span>
                     </div>
                 </div>
+
+                {/* --- PAGES DE TABLEAU DE DONNÉES STRICTEMENT PAGINÉES --- */}
+                {employeePages.map((pageEmployees, pageIndex) => {
+                    const currentPageNumber = pageIndex + 2; // 1 was summary
+                    const isLastPage = pageIndex === employeePages.length - 1;
+                    const startIndex = pageIndex * rowsPerPage;
+
+                    return (
+                        <div 
+                            key={`report-page-${pageIndex}`} 
+                            className="print-page p-4 landscape-section bg-white break-before-page min-h-[95vh] flex flex-col justify-between"
+                        >
+                            <div className="w-full">
+                                {/* Compact Running Header */}
+                                <div className="mb-2 pb-1.5 border-b border-slate-900 flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-emerald-600" />
+                                        <span className="text-[9.5px] font-black text-slate-900 uppercase tracking-wider">
+                                            LISTE DU PERSONNEL {unitLabel} — {todayStr}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[8.5px] text-slate-600 font-bold bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                                            LIGNES {startIndex + 1} À {startIndex + pageEmployees.length} / {sortedEmployees.length}
+                                        </span>
+                                        <span className="text-[8.5px] text-slate-500 font-bold">
+                                            Page {currentPageNumber} sur {totalPagesCount}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Clean Institutional Table */}
+                                <div className="w-full overflow-hidden border border-slate-400">
+                                    <table className="w-full table-fixed border-collapse text-[8px] leading-tight bg-white">
+                                        <thead>
+                                            <tr className="bg-slate-900 text-white uppercase font-black text-center border-b-2 border-slate-950">
+                                                {columnsToDisplay.map((key) => (
+                                                    <th 
+                                                        key={key} 
+                                                        className={cn(
+                                                            "border-r border-slate-700 last:border-r-0 py-2 px-1.5 align-middle text-[8px] font-black tracking-wider text-white uppercase bg-slate-900",
+                                                            getColumnWidthClass(key)
+                                                        )}
+                                                    >
+                                                        {getColumnLabel(key)}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {pageEmployees.map((emp, localIdx) => {
+                                                const globalIdx = startIndex + localIdx;
+                                                return (
+                                                    <tr 
+                                                        key={emp.id || globalIdx} 
+                                                        className="border-b border-slate-300 even:bg-slate-50/60"
+                                                    >
+                                                        {columnsToDisplay.map((key) => (
+                                                            <td 
+                                                                key={key} 
+                                                                className={cn(
+                                                                    "border-r border-slate-300 last:border-r-0 py-1.5 px-1.5 align-middle",
+                                                                    (key === 'index' || key === 'sexe' || key === 'status' || key === 'profile' || key === 'Date_Naissance' || key === 'dateEmbauche' || key === 'Date_Depart' || key === 'statutChef' || key === 'CNPS' || key === 'enfants' || key === 'age') && "text-center",
+                                                                    (key === 'name' || key === 'Region' || key === 'Departement' || key === 'Village' || key === 'subPrefecture' || key === 'poste' || key === 'department' || key === 'Lieu_Naissance') && "text-left pl-1.5",
+                                                                    key === 'matricule' && "text-center font-mono font-bold text-slate-700 text-[7.5px]"
+                                                                )}
+                                                            >
+                                                                {getCellContent(emp, key, globalIdx)}
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Institutional Signature Footer on Last Page */}
+                            {isLastPage && (
+                                <div className="mt-3 pt-2 w-full">
+                                    <InstitutionalFooter 
+                                        signatoryName="YEO Fatogoma"
+                                        signatoryTitle="Le Secrétaire Général de la CNRCT"
+                                        place="Yamoussoukro"
+                                        showCertification={false}
+                                        showVisa={false}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Running footer for intermediate pages */}
+                            {!isLastPage && (
+                                <div className="mt-2 pt-1 border-t border-slate-200 flex justify-between items-center text-[8px] text-slate-400 font-bold uppercase">
+                                    <span>Chambre Nationale des Rois et Chefs Traditionnels — Document Officiel</span>
+                                    <span>Page {currentPageNumber} sur {totalPagesCount}</span>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
                 
                 <style jsx>{`
                     @media print {
                         .print-page {
-                            min-height: 0 !important;
-                            height: auto !important;
-                            padding: 6mm !important;
+                            min-height: 100vh !important;
+                            height: 100vh !important;
+                            box-sizing: border-box !important;
+                            padding: 6mm 8mm !important;
+                            page-break-after: always !important;
+                            break-after: page !important;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
                         }
                         table {
-                            page-break-inside: auto;
                             width: 100% !important;
                             table-layout: fixed !important;
+                            border-collapse: collapse !important;
                         }
                         thead {
                             display: table-header-group !important;
@@ -523,14 +615,16 @@ export function EmployeeOfficialReport({
                             print-color-adjust: exact !important;
                         }
                         tr {
-                            page-break-inside: avoid;
-                            page-break-after: auto;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
                         }
                         .break-after-page {
-                            page-break-after: always;
+                            page-break-after: always !important;
+                            break-after: page !important;
                         }
                         .break-before-page {
-                            page-break-before: always;
+                            page-break-before: always !important;
+                            break-before: page !important;
                         }
                     }
                 `}</style>

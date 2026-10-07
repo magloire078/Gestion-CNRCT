@@ -649,3 +649,13 @@ html {
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-200 rounded-full border-4 border-solid border-background hover:bg-slate-300 transition-colors;
 }
+
+/* No Scrollbar Utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+

@@ -739,19 +739,21 @@ export default function EmployeesPage() {
             )}
           </div>
 
-          <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
-            <TabsList className="bg-white/20 backdrop-blur-xl border border-white/20 p-1 rounded-xl shadow-xl shadow-slate-200/50 flex h-auto overflow-x-auto no-scrollbar gap-1 mb-6">
-              <TabsTrigger value="all" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Effectif Global</TabsTrigger>
-              <TabsTrigger value="directoire" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
-              <TabsTrigger value="personnel-siege" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Personnel Siège</TabsTrigger>
-              <TabsTrigger value="chauffeur-directoire" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Chauffeurs</TabsTrigger>
-              <TabsTrigger value="regional" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Assemblée Rois & Chefs (ARCT)</TabsTrigger>
-              <TabsTrigger value="garde-republicaine" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Garde Républicaine</TabsTrigger>
-              <TabsTrigger value="all-geo" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Membres Géo-localisés</TabsTrigger>
-              <TabsTrigger value="analytics" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all gap-2">
-                <BarChart3 className="h-4 w-4" /> Synthèse
-              </TabsTrigger>
-            </TabsList>
+          <Tabs value={personnelTypeFilter} onValueChange={handleTabChange} className="w-full">
+            <div className="w-full overflow-x-auto no-scrollbar pb-1 mb-6">
+              <TabsList className="bg-slate-100/90 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-sm inline-flex h-auto w-auto min-w-full sm:min-w-0 gap-1.5 justify-start">
+                <TabsTrigger value="all" className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-black transition-all whitespace-nowrap">Effectif Global</TabsTrigger>
+                <TabsTrigger value="directoire" className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-black transition-all whitespace-nowrap">Directoire</TabsTrigger>
+                <TabsTrigger value="personnel-siege" className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-black transition-all whitespace-nowrap">Personnel Siège</TabsTrigger>
+                <TabsTrigger value="chauffeur-directoire" className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-black transition-all whitespace-nowrap">Chauffeurs</TabsTrigger>
+                <TabsTrigger value="regional" className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-black transition-all whitespace-nowrap">Assemblée ARCT</TabsTrigger>
+                <TabsTrigger value="garde-republicaine" className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-black transition-all whitespace-nowrap">Garde Républicaine</TabsTrigger>
+                <TabsTrigger value="all-geo" className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-black transition-all whitespace-nowrap">Membres Géo-localisés</TabsTrigger>
+                <TabsTrigger value="analytics" className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-black transition-all whitespace-nowrap gap-1.5 inline-flex items-center">
+                  <BarChart3 className="h-3.5 w-3.5" /> Synthèse
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="analytics" className="mt-0">
                <EmployeeAnalytics employees={filteredEmployees} />

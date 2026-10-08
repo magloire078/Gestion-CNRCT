@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback, startTransition, memo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, startTransition, useTransition, memo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -106,6 +106,13 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const { hasPermission } = useAuth();
   
   const [activeTab, setActiveTab] = useState("identity");
+  const [isPending, startTransition] = useTransition();
+
+  const handleTabChange = useCallback((tab: string) => {
+    startTransition(() => {
+      setActiveTab(tab);
+    });
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState(employee.photoUrl || "");
@@ -571,7 +578,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
         {/* Main Tabs Area */}
         <div className="lg:col-span-3 space-y-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
             <TabsList className="bg-slate-100 p-1 rounded-2xl border border-slate-200 flex flex-wrap h-auto gap-1">
               <TabsTrigger 
                 value="identity" 

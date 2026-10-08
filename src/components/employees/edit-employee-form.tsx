@@ -571,7 +571,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
         {/* Main Tabs Area */}
         <div className="lg:col-span-3 space-y-6">
-          <Tabs value={activeTab} onValueChange={(v) => startTransition(() => setActiveTab(v))} className="w-full space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
             <TabsList className="bg-slate-100 p-1 rounded-2xl border border-slate-200 flex flex-wrap h-auto gap-1">
               <TabsTrigger 
                 value="identity" 

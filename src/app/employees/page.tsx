@@ -156,12 +156,7 @@ export default function EmployeesPage() {
     setPersonnelTypeFilter(initialFilter || 'all');
   }, [initialFilter]);
 
-  useEffect(() => {
-    if (personnelTypeFilter === 'directoire' || personnelTypeFilter === 'all-geo' || personnelTypeFilter === 'regional') {
-      const timer = setTimeout(() => setShowDirectoireMap(true), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [personnelTypeFilter]);
+
 
   useEffect(() => {
     if (!user || authLoading) return;
@@ -403,6 +398,42 @@ export default function EmployeesPage() {
     return { canton, tribu, village, multi, roi, reconduit, nouveau };
   }, [filteredEmployees, enrichedEmployees, isGeoTab]);
 
+  const globalStats = useMemo(() => {
+    const total = employees.length;
+    let active = 0;
+    let recent30d = 0;
+    let femaleActive = 0;
+    let totalActiveOrLeave = 0;
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+    for (let i = 0; i < employees.length; i++) {
+      const e = employees[i];
+      const isActif = e.status === 'Actif';
+      const isLeave = e.status === 'En congé';
+      const isActifOrNoStatus = isActif || !e.status;
+
+      if (isActif) active++;
+      if (isActifOrNoStatus && e.dateEmbauche && new Date(e.dateEmbauche).getTime() > thirtyDaysAgo) {
+        recent30d++;
+      }
+      if (isActifOrNoStatus || isLeave) {
+        totalActiveOrLeave++;
+        if (e.sexe === 'Femme' || e.sexe === 'F') {
+          femaleActive++;
+        }
+      }
+    }
+
+    const femaleRate = totalActiveOrLeave > 0 ? Math.round((femaleActive / totalActiveOrLeave) * 100) : 0;
+
+    return {
+      total,
+      active,
+      recent30d,
+      femaleRate: `${femaleRate}%`
+    };
+  }, [employees]);
+
   // Adjust page safely
   const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -553,19 +584,15 @@ export default function EmployeesPage() {
   const showDepartmentFilter = personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel-siege';
 
   const handleTabChange = useCallback((value: string) => {
-    setPersonnelTypeFilter(value);
-    setCurrentPage(1);
-    setRegionFilter('all');
-    setGeoDepartementFilter('all');
-    setSubPrefectureFilter('all');
-    setVillageFilter('');
-
-    if (value === 'directoire' || value === 'all-geo' || value === 'regional') {
-      setShowDirectoireMap(false);
-      setTimeout(() => setShowDirectoireMap(true), 200);
-    } else {
-      setShowDirectoireMap(false);
-    }
+    startTransition(() => {
+      setPersonnelTypeFilter(value);
+      setCurrentPage(1);
+      setRegionFilter('all');
+      setGeoDepartementFilter('all');
+      setSubPrefectureFilter('all');
+      setVillageFilter('');
+      setShowDirectoireMap(value === 'all-geo');
+    });
 
     // Schedule URL sync without blocking UI execution
     requestAnimationFrame(() => {
@@ -704,10 +731,10 @@ export default function EmployeesPage() {
               ))
             ) : (
               [
-                { label: "Effectif Total", value: employees.length, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
-                { label: "Agents Actifs", value: employees.filter(e => e.status === 'Actif').length, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
-                { label: "Nouveaux / 30j", value: employees.filter(e => (e.status === 'Actif' || !e.status) && e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
-                { label: "Taux Féminin", value: `${Math.round((employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé').filter(e => e.sexe === 'Femme' || e.sexe === 'F').length / (employees.filter(e => !e.status || e.status === 'Actif' || e.status === 'En congé').length || 1)) * 100) || 0}%`, sub: "Parité active (F/Total)", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
+                { label: "Effectif Total", value: globalStats.total, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
+                { label: "Agents Actifs", value: globalStats.active, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
+                { label: "Nouveaux / 30j", value: globalStats.recent30d, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
+                { label: "Taux Féminin", value: globalStats.femaleRate, sub: "Parité active (F/Total)", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
               ].map((stat, i) => (
                 <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
                   <CardContent className="p-6 relative">

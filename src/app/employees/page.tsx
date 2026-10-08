@@ -45,6 +45,7 @@ import { PermissionGuard } from "@/components/auth/permission-guard";
 import { cn } from "@/lib/utils";
 import { Crown, Layers } from "lucide-react";
 import { getMemberChiefStatuses, getMemberProfile } from "@/lib/comites-regionaux-2026";
+import { getOfficialRegion } from "@/lib/normalization-utils";
 
 const DirectoireMap = dynamic<{ members: any[]; className?: string }>(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
   ssr: false,
@@ -294,6 +295,7 @@ export default function EmployeesPage() {
       const normSubPref = (emp.subPrefecture || emp.Commune || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const chiefStatuses = getMemberChiefStatuses(emp);
       const memberProfile = getMemberProfile(emp);
+      const officialRegion = getOfficialRegion(emp.Region || '') || emp.Region || '';
 
       const _sortName = `${(emp.lastName || '').toLowerCase()} ${(emp.firstName || '').toLowerCase()}`;
       const _sortMatricule = normMatricule;
@@ -306,6 +308,7 @@ export default function EmployeesPage() {
         resolvedVillage,
         chiefStatuses,
         memberProfile,
+        _officialRegion: officialRegion,
         _searchTokens: [normFullName, normName, normMatricule, normVillage, normPoste, normRegion, normDept, normSubPref],
         _normVillage: normVillage,
         _sortName,
@@ -332,7 +335,7 @@ export default function EmployeesPage() {
       const matchesPersonnelType = personnelTypeFilter === 'all' || 
                                    (personnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional' || employee.calculatedGroup === 'garde-republicaine') : personnelTypeFilter === employee.calculatedGroup);
 
-      const matchesRegion = !isGeoTab || regionFilter === 'all' || employee.Region === regionFilter;
+      const matchesRegion = !isGeoTab || regionFilter === 'all' || employee._officialRegion === regionFilter || employee.Region === regionFilter;
       const matchesGeoDept = !isGeoTab || geoDepartementFilter === 'all' || employee.Departement === geoDepartementFilter;
       const matchesSubPref = !isGeoTab || subPrefectureFilter === 'all' || employee.subPrefecture === subPrefectureFilter || employee.Commune === subPrefectureFilter;
       
@@ -1098,6 +1101,10 @@ export default function EmployeesPage() {
                                             <UserPlus className="h-2.5 w-2.5" />
                                           )}
                                           {employee.memberProfile}
+                                        </Badge>
+                                      ) : (employee.status === 'Remplacé' || employee.status === 'Licencié') ? (
+                                        <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-2xs whitespace-nowrap">
+                                          Ancien Mandat
                                         </Badge>
                                       ) : (
                                         <span className="text-slate-300 font-bold text-xs">-</span>

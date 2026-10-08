@@ -279,15 +279,6 @@ export default function EmployeesPage() {
 
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const deferredVillageFilter = useDeferredValue(villageFilter);
-  const deferredRegionFilter = useDeferredValue(regionFilter);
-  const deferredGeoDepartementFilter = useDeferredValue(geoDepartementFilter);
-  const deferredSubPrefectureFilter = useDeferredValue(subPrefectureFilter);
-  const deferredDepartmentFilter = useDeferredValue(departmentFilter);
-  const deferredPersonnelTypeFilter = useDeferredValue(personnelTypeFilter);
-  const deferredStatusFilter = useDeferredValue(statusFilter);
-  const deferredCnpsFilter = useDeferredValue(cnpsFilter);
-  const deferredSexeFilter = useDeferredValue(sexeFilter);
-  const deferredMandatFilter = useDeferredValue(mandatFilter);
 
   const availableRegions = useMemo(() => Object.keys(divisions).sort(), []);
   const availableGeoDepartments = useMemo(() => {
@@ -338,29 +329,29 @@ export default function EmployeesPage() {
       const matchesSearchTerm = searchTerms.length === 0 || searchTerms.every(term => 
         employee._searchTokens.some(token => token.includes(term))
       );
-      const matchesDepartment = deferredDepartmentFilter === 'all' || employee.departmentId === deferredDepartmentFilter;
-      const matchesStatus = deferredStatusFilter === 'all' || employee.status === deferredStatusFilter;
-      const matchesCnps = deferredCnpsFilter === 'all' || employee.CNPS === deferredCnpsFilter;
-      const matchesSexe = deferredSexeFilter === 'all' || employee.sexe === deferredSexeFilter;
+      const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
+      const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
+      const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
+      const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
 
-      const matchesPersonnelType = deferredPersonnelTypeFilter === 'all' || 
-                                   (deferredPersonnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional' || employee.calculatedGroup === 'garde-republicaine') : deferredPersonnelTypeFilter === employee.calculatedGroup);
+      const matchesPersonnelType = personnelTypeFilter === 'all' || 
+                                   (personnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional' || employee.calculatedGroup === 'garde-republicaine') : personnelTypeFilter === employee.calculatedGroup);
 
-      const matchesRegion = !isGeoTab || deferredRegionFilter === 'all' || employee.Region === deferredRegionFilter;
-      const matchesGeoDept = !isGeoTab || deferredGeoDepartementFilter === 'all' || employee.Departement === deferredGeoDepartementFilter;
-      const matchesSubPref = !isGeoTab || deferredSubPrefectureFilter === 'all' || employee.subPrefecture === deferredSubPrefectureFilter || employee.Commune === deferredSubPrefectureFilter;
+      const matchesRegion = !isGeoTab || regionFilter === 'all' || employee.Region === regionFilter;
+      const matchesGeoDept = !isGeoTab || geoDepartementFilter === 'all' || employee.Departement === geoDepartementFilter;
+      const matchesSubPref = !isGeoTab || subPrefectureFilter === 'all' || employee.subPrefecture === subPrefectureFilter || employee.Commune === subPrefectureFilter;
       
       const matchesVillageFiltered = !isGeoTab || normalizedVillageFilter === "" || employee._normVillage.includes(normalizedVillageFilter);
 
       let matchesMandat = true;
       if (isGeoTab) {
-        if (deferredMandatFilter === 'reconduit') {
+        if (mandatFilter === 'reconduit') {
           matchesMandat = employee.memberProfile === 'Reconduit' || employee.estRenouvele === true;
-        } else if (deferredMandatFilter === 'nouveau') {
+        } else if (mandatFilter === 'nouveau') {
           matchesMandat = employee.memberProfile === 'Nouveau' || (employee.estRenouvele === false && employee.status === 'Actif');
-        } else if (deferredMandatFilter === 'actuelle') {
+        } else if (mandatFilter === 'actuelle') {
           matchesMandat = employee.estRenouvele !== false; // Active mandate if not explicitly archived
-        } else if (deferredMandatFilter === 'precedente') {
+        } else if (mandatFilter === 'precedente') {
           matchesMandat = employee.estRenouvele === false; // Previous mandate
         }
       }
@@ -384,7 +375,7 @@ export default function EmployeesPage() {
     });
 
     return sorted;
-  }, [enrichedEmployees, deferredSearchTerm, deferredDepartmentFilter, deferredStatusFilter, deferredCnpsFilter, deferredSexeFilter, deferredPersonnelTypeFilter, deferredVillageFilter, isGeoTab, deferredRegionFilter, deferredGeoDepartementFilter, deferredSubPrefectureFilter, sortBy, sortOrder, deferredMandatFilter]);
+  }, [enrichedEmployees, deferredSearchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, deferredVillageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter, sortBy, sortOrder, mandatFilter]);
 
   const chiefMetrics = useMemo(() => {
     let canton = 0;
@@ -561,23 +552,23 @@ export default function EmployeesPage() {
 
   const showDepartmentFilter = personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel-siege';
 
-  const handleTabChange = (value: string) => {
-    startTransition(() => {
-      setPersonnelTypeFilter(value);
-      setCurrentPage(1);
+  const handleTabChange = useCallback((value: string) => {
+    setPersonnelTypeFilter(value);
+    setCurrentPage(1);
+    setRegionFilter('all');
+    setGeoDepartementFilter('all');
+    setSubPrefectureFilter('all');
+    setVillageFilter('');
 
-      if (value === 'directoire') {
-        setShowDirectoireMap(false);
-        setTimeout(() => setShowDirectoireMap(true), 300);
-      } else {
-        setShowDirectoireMap(false);
-      }
+    if (value === 'directoire' || value === 'all-geo' || value === 'regional') {
+      setShowDirectoireMap(false);
+      setTimeout(() => setShowDirectoireMap(true), 200);
+    } else {
+      setShowDirectoireMap(false);
+    }
 
-      setRegionFilter('all');
-      setGeoDepartementFilter('all');
-      setSubPrefectureFilter('all');
-      setVillageFilter('');
-
+    // Schedule URL sync without blocking UI execution
+    requestAnimationFrame(() => {
       const url = new URL(window.location.href);
       if (value === 'all') {
         url.searchParams.delete('filter');
@@ -586,7 +577,7 @@ export default function EmployeesPage() {
       }
       window.history.replaceState(null, '', url.pathname + url.search);
     });
-  };
+  }, []);
 
   const getEmployeeOrgUnit = (employee: Employe) => {
     const service = services.find(s => s.id === employee.serviceId);
@@ -756,7 +747,7 @@ export default function EmployeesPage() {
             </div>
 
             <TabsContent value="analytics" className="mt-0">
-               <EmployeeAnalytics employees={filteredEmployees} />
+               {personnelTypeFilter === 'analytics' && <EmployeeAnalytics employees={filteredEmployees} />}
             </TabsContent>
 
             {!['analytics'].includes(personnelTypeFilter) && (

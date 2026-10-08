@@ -122,6 +122,13 @@ export default function EmployeeDetailPage() {
     const [isPrinting, setIsPrinting] = useState(false);
     const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
     const [isPending, startTransition] = useTransition();
+    const [activeTab, setActiveTab] = useState("identity");
+
+    const handleTabChange = (val: string) => {
+        startTransition(() => {
+            setActiveTab(val);
+        });
+    };
 
     // Promotion state
     const [isPromotionDialogOpen, setIsPromotionDialogOpen] = useState(false);
@@ -319,7 +326,7 @@ export default function EmployeeDetailPage() {
     const canViewSalary = canManagePayroll || isSelf;
 
     // Payroll Totals
-    const payroll = calculatePayrollTotals(employee);
+    const payroll = useMemo(() => calculatePayrollTotals(employee), [employee]);
     const isActive = employee.status === "Actif";
     const isRegionalMember = employee.poste?.toLowerCase().includes("comité régional") || employee.poste?.toLowerCase().includes("comite regional");
 
@@ -625,7 +632,8 @@ export default function EmployeeDetailPage() {
 
             {/* --- MAIN TABBED CONTENT --- */}
             <Tabs 
-                defaultValue="identity" 
+                value={activeTab}
+                onValueChange={handleTabChange}
                 className="space-y-6"
             >
                 <TabsList className="bg-slate-100 p-1 rounded-2xl border border-slate-200 flex flex-wrap h-auto gap-1">
